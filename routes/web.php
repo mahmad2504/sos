@@ -16,7 +16,14 @@ Route::get('/', function () {
 });
 
 Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
-Route::get('/changePassword','HomeController@showChangePasswordForm');
+Route::get('/home', 'HomeController@index')->name('home');   // View 
+Route::get('/changePassword','HomeController@showChangePasswordForm')->name('showchangepassword'); // View
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
+
+//// Project //////
+Route::post('/project', 'ProjectController@create')->name('createproject');// arg project modal with no id
+Route::put('/project', 'ProjectController@update')->name('updateproject'); // arg project modal with id
+Route::delete('/project', 'ProjectController@delete')->name('deleteproject'); // arg project.id
+Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  // arg user.id
+
+

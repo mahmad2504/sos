@@ -10,7 +10,8 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
+   
+
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -18,13 +19,27 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+	<link href="{{ asset('css/loading.css') }}" rel="stylesheet">
+
+    @yield('csslinks')
+    <style>
+	.modal-content 
+	{
+		background-clip: border-box;
+		border: none !important;
+	}
+	@yield('style')
+	</style>
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm d-none">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+                <a id="home_menuitem" class="navbar-brand" href="{{ url('/') }}">
+                    Home
+                </a>
+				<a id="dashboard_menuitem" style="display:none" class="navbar-brand" href="{{ url('/') }}">
+                    Dashboard
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -60,6 +75,9 @@
                                                      document.getElementById('logout-form').submit();">
                                         {{ __('Logout') }}
                                     </a>
+									<a class="dropdown-item" href="{{ route('showchangepassword') }}">
+                                       {{ __('Change Password') }}
+                                    </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                         @csrf
@@ -71,10 +89,106 @@
                 </div>
             </div>
         </nav>
-
+		
         <main class="py-4">
+			<div style="display:none;" class="loading">Loading&#8230;</div>
             @yield('content')
         </main>
     </div>
+	<script src="{{ asset('js/app.js') }}" ></script>
+	<script>
+		function ShowLoading()
+		{
+			$('.loading').show();	
+		}
+		function HideLoading()
+		{
+			$('.loading').hide();	
+		}
+		function MakeDate(day,month,year)
+		{
+			//var now = new Date();
+			var day = ("0" + day).slice(-2);
+			var month = ("0" + month).slice(-2);
+			var today = year+"-"+(month)+"-"+(day) ;
+			return today;
+		}
+		function ShowNavBar()
+		{
+			$('.navbar').removeClass('d-none');	
+		}
+		function HideNavBar()
+		{
+			$('.navbar').addClass('d-none');	
+		}
+		var dates = {
+			year:function()
+			{
+				var today = new Date();
+				return today.getFullYear();
+			},
+			month:function()
+			{
+				var today = new Date();
+				return today.getMonth();
+			},
+			day:function()
+			{
+				var today = new Date();
+				return today.getDate();
+			},
+			convert:function(d) {
+				// Converts the date in d to a date-object. The input can be:
+				//   a date object: returned without modification
+				//  an array      : Interpreted as [year,month,day]. NOTE: month is 0-11.
+				//   a number     : Interpreted as number of milliseconds
+				//                  since 1 Jan 1970 (a timestamp) 
+				//   a string     : Any format supported by the javascript engine, like
+				//                  "YYYY/MM/DD", "MM/DD/YYYY", "Jan 31 2009" etc.
+				//  an object     : Interpreted as an object with year, month and date
+				//                  attributes.  **NOTE** month is 0-11.
+				return (
+					d.constructor === Date ? d :
+					d.constructor === Array ? new Date(d[0],d[1],d[2]) :
+					d.constructor === Number ? new Date(d) :
+					d.constructor === String ? new Date(d) :
+					typeof d === "object" ? new Date(d.year,d.month,d.date) :
+					NaN
+				);
+			},
+			compare:function(a,b) {
+				// Compare two dates (could be of any type supported by the convert
+				// function above) and returns:
+				//  -1 : if a < b
+				//   0 : if a = b
+				//   1 : if a > b
+				// NaN : if a or b is an illegal date
+				// NOTE: The code inside isFinite does an assignment (=).
+				return (
+					isFinite(a=this.convert(a).valueOf()) &&
+					isFinite(b=this.convert(b).valueOf()) ?
+					(a>b)-(a<b) :
+					NaN
+				);
+			},
+			inRange:function(d,start,end) {
+				// Checks if date in d is between dates in start and end.
+				// Returns a boolean or NaN:
+				//    true  : if d is between start and end (inclusive)
+				//    false : if d is before start or after end
+				//    NaN   : if one or more of the dates is illegal.
+				// NOTE: The code inside isFinite does an assignment (=).
+			   return (
+					isFinite(d=this.convert(d).valueOf()) &&
+					isFinite(start=this.convert(start).valueOf()) &&
+					isFinite(end=this.convert(end).valueOf()) ?
+					start <= d && d <= end :
+					NaN
+				);
+			}
+		}
+		@yield('script')
+		</script>
+		
 </body>
 </html>

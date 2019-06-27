@@ -25,8 +25,11 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
-    }
+		$user = Auth::user();
+		$projects = Auth::user()->projects;
+		$user = Auth::user();
+		return view('home',compact('projects','user'));
+	}
 	public function showChangePasswordForm()
 	{
         return view('auth.changepassword');

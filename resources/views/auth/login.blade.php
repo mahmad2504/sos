@@ -71,3 +71,10 @@
     </div>
 </div>
 @endsection
+@section('script')
+$(document).ready(function()
+{
+	console.log("Login Page Loaded");
+	ShowNavBar();
+});
+@endsection

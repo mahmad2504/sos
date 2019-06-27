@@ -70,3 +70,10 @@
         </div>
     </div>
 @endsection
+@section('script')
+$(document).ready(function()
+{
+	console.log("Change Password Page");
+	ShowNavBar();
+});
+@endsection
