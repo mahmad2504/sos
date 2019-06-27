@@ -27,3 +27,6 @@ Route::delete('/project', 'ProjectController@delete')->name('deleteproject'); //
 Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  // arg user.id
 
 
+//// Sync //////
+Route::get('/sync', 'SyncController@sync')->name('syncproject');// arg project modal with project.id
+

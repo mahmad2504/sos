@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('csslinks')
+<link rel="stylesheet" href="{{ asset('css/logger.css') }}" />
 @endsection
 @section('style')
 .progress {height: 5px;}
@@ -83,6 +84,30 @@
   </div>
 </div>
 <!-- End Edit Modal -->
+
+<!-- Modal For Sync-->
+<div class="modal fade" id="syncmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" style="overflow-y: initial;">
+		<div class="modal-content">
+			<div class="modal-body" style="width:500px;  height: 600px; overflow-y: auto; ">
+				<div class="d-flex">
+					<h3>Sync&nbsp&nbsp</h3>
+					<span style="margin-top:8px;" id="synctitle"></span>
+					<button data-dismiss="modal" class="ml-auto close">×</button>
+				</div>
+				<hr>
+				<button style="margin-left:20px;" url='' projectid='' id="sync">Sync</button>
+				<button style="" id="rebuild">Rebuild</button>
+				<button style="margin-left:40px;" id="close">Disconnect</button>
+				<span style="float:right;margin-right:20px;margin-top:5px;" id="connection"></span>
+				<hr>
+				<div  style="display: block;margin-top: 20px;" id="log"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- End Sync Modal -->
+<script src="{{ asset('js/logger.js') }}" ></script>
 @endsection
 @section('script')
 
@@ -282,6 +307,20 @@ function OnEdit(event) // when edit button is pressed on card to show edit dialo
 	SetPsettingsModalFields(settings);
 	$('#psettings_modal').modal('show');
 }
+
+function OnSync(event)
+{
+	event.preventDefault(); 
+	$element  = $(event.target);
+	project  = FindProject($element.attr('projectid'));
+	$('#synctitle').text(project.name);
+	console.log("Sync button pressed project#"+project.name);
+	$('#sync').attr('projectid', project.id);
+	$('#sync').attr('url', "{{route('syncproject')}}");
+	Clear();
+	$('#syncmodal').modal('show');	
+}
+
 function OnProjectsDataLoad(response)
 {
 	console.log("Projects Data Received");
@@ -290,7 +329,7 @@ function OnProjectsDataLoad(response)
 	console.log(projects);
 	PopulateCard(projects);
 	$('.editbutton').on('click', OnEdit); 
-	//$('.syncbutton').on('click', OnSync);
+	$('.syncbutton').on('click', OnSync);
 	HideLoading();
 }
 function LoadProjectsData(onsuccess,onfail)
@@ -414,6 +453,15 @@ function OnCreateProject(event)
 		}
 	});
 }
+function InitLoader()
+{
+	"use strict";
+	console.log("Loading Sync Module");
+	$("#sync").click(Sync); 
+	$("#close").click(closeConnection);
+	$("#rebuild").click(Rebuild);
+	updateConnectionStatus('Disconnected', false);
+}
 $(document).ready(function()
 {
 	console.log("Loading Home Page");
@@ -424,6 +472,9 @@ $(document).ready(function()
 	$('#create_project').on('click', OnCreateProject);
 	$('#update_project').on('click', OnUpdateProject);
 	$('#delete_project').on('click', OnDeleteProject);
-
+	InitLoader();
 });
+
+
+
 @endsection

@@ -27,6 +27,7 @@ class CreateProjectsTable extends Migration
 			$table->boolean('jira_dependencies')->default(0);
 			$table->boolean('dirty')->default(1);
 			$table->string('progress')->default(0);
+			$table->string('uri')->default('');
             $table->timestamps();
         });
     }

@@ -22,66 +22,85 @@ class ProjectController extends Controller
 				return 'Invalid Project';
 			$project = $projects[0];
 		}
-		
-		if($request->user_id == null)
-			$request->user_id = Auth::user()->id;
-		
-		if(($request->name == null)||(strlen(trim($request->name))==0))
-			return 'Project Name is missing';
-		
-		$users = User::where('id', $request->user_id)->get();
-		if(count($users)==0)
-			return 'Invalid User';
-		
-
-		$projects  = Project::where('user_id', $request->user_id)->where('name', $request->name)->get();
-		
-		if(count($projects)>0)
+		if($project == null)// Create Project Case
 		{
-			if($project == null)
-				return 'Project Name already taken';
-			if($project['id'] != $projects[0]['id'])
-				return 'Project Name already taken';
-		}
-		
-		if($request->jiraquery == null)
-			return 'Jira Query is missing';
-		
-		if (($request->description==null)||(strlen($request->description)==0))
-            $request->description = 'No Description';
-		
-		if ($request->jira_dependencies==null)
-            $request->jira_dependencies = 0;
-		
-		if ($request->sdate==null)
-		{
-            $request->sdate = Utility::GetToday('Y-m-d');
-			$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+6 months"));
-		}
-		if ($request->edate==null)
-            $request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+6 months"));
-		
-		
-		if ($request->progress==null)
-            $request->progress = 0;
-	
-		if($request->last_synced == null)
-			$request->last_synced = 'Never';
-		
-		if($project == null)
 			$project = new Project;
+			if($request->user_id == null)
+				$request->user_id = Auth::user()->id;
+			if(($request->name == null)||(strlen(trim($request->name))==0))
+				return 'Project Name is missing';
+			$users = User::where('id', $request->user_id)->get();
+			if(count($users)==0)
+				return 'Invalid User';
+			$projects  = Project::where('user_id', $request->user_id)->where('name', $request->name)->get();
+			if(count($projects)>0)
+			{
+				return 'Project Name already taken';
+			}
 			
-		$project['user_id'] = $request->user_id;
-		$project['name'] = $request->name;
-		$project['description'] = $request->description;
-		$project['jiraquery'] = $request->jiraquery;
-		$project['last_synced'] = $request->last_synced;
-		$project['jirauri'] = $request->jirauri;
-		$project['sdate'] = $request->sdate;
-		$project['edate'] = $request->edate;
-		$project['jira_dependencies'] = $request->jira_dependencies;
-		$project['progress'] = $request->progress;
+			if($request->jiraquery == null)
+				return 'Jira Query is missing';
+			if (($request->description==null)||(strlen($request->description)==0))
+				$request->description = 'No Description';
+			if ($request->jira_dependencies==null)
+				$request->jira_dependencies = 0;
 		
+			if ($request->sdate==null)
+			{
+				$request->sdate = Utility::GetToday('Y-m-d');
+				$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+6 months"));
+			}
+			if ($request->edate==null)
+				$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+6 months"));
+	
+			if ($request->progress==null)
+				$request->progress = 0;
+			if($request->last_synced == null)
+				$request->last_synced = 'Never';
+		
+			
+			$project['user_id'] = $request->user_id;
+			$project['name'] = $request->name;
+			$project['description'] = $request->description;
+			$project['jiraquery'] = $request->jiraquery;
+			$project['last_synced'] = $request->last_synced;
+			$project['jirauri'] = $request->jirauri;
+			$project['sdate'] = $request->sdate;
+			$project['edate'] = $request->edate;
+			$project['jira_dependencies'] = $request->jira_dependencies;
+			$project['progress'] = $request->progress;
+		}
+		else // Update case
+		{
+			if($request->name != null)
+			{
+				$projects  = Project::where('user_id', $request->user_id)->where('name', $request->name)->get();
+				if(count($projects)>0)
+				{
+					return 'Project Name already taken';
+				}
+				$project['name'] = $request->name;
+			}
+			if($request->jiraquery != null)
+				$project['jiraquery'] = $request->jiraquery;
+			if ($request->description!=null)
+				$project['description'] = $request->description;
+			if ($request->jira_dependencies!=null)
+				$project['jira_dependencies'] = $request->jira_dependencies;
+			if ($request->sdate!=null)
+				$project['sdate'] = $request->sdate;
+			if ($request->edate!=null)
+				$project['edate'] = $request->edate;
+			if ($request->progress!=null)
+				$project['progress'] = $request->progress;
+			if ($request->last_synced!=null)
+				$request->last_synced = $request->last_synced;
+			
+			if($request->jirauri != null)
+				$request->jirauri = $request->jirauri;
+			
+		}
+		$project['dirty'] = 1;
 		return $project;
     }
 	public function Create(Request $request)
