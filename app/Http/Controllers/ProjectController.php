@@ -77,7 +77,12 @@ class ProjectController extends Controller
 				$projects  = Project::where('user_id', $request->user_id)->where('name', $request->name)->get();
 				if(count($projects)>0)
 				{
-					return 'Project Name already taken';
+					foreach($projects as $project)
+					{
+						if($projects[0]['id'] != $request->id)
+							return 'Project Name already taken';
+					}
+					
 				}
 				$project['name'] = $request->name;
 			}
@@ -131,5 +136,9 @@ class ProjectController extends Controller
 	{
 		$project = Project::find($request->id);
 		$project->delete();
+	}
+	public static function UpdateProgressAndLastSync($id,$progress,$last_synced)
+	{
+		Project::where('id', $id)->update(array('last_synced' => $last_synced,'dirty'=>0, 'progress'=>$progress));
 	}
 }

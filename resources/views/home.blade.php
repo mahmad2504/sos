@@ -468,6 +468,13 @@ function InitLoader()
 	$("#rebuild").click(Rebuild);
 	updateConnectionStatus('Disconnected', false);
 }
+function OnSyncModalClosed()
+{
+	closeConnection();
+	ShowLoading();
+	LoadProjectsData(OnProjectsDataLoad,null);
+
+}
 $(document).ready(function()
 {
 	console.log("Loading Home Page");
@@ -478,6 +485,7 @@ $(document).ready(function()
 	$('#create_project').on('click', OnCreateProject);
 	$('#update_project').on('click', OnUpdateProject);
 	$('#delete_project').on('click', OnDeleteProject);
+	$('#syncmodal').on('hidden.bs.modal',OnSyncModalClosed);
 	InitLoader();
 });
 

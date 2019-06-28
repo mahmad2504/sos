@@ -13,6 +13,7 @@ function closeConnection() {
 	source.close();
 	logger.log('> Connection was closed');
 	$('#sync').prop('disabled', false);
+	$('#rebuild').prop('disabled', false);
 	updateConnectionStatus('Disconnected', false);
 }
 function Rebuild()
@@ -46,6 +47,7 @@ function Sync($rebuild=0)
 	{
 		logger.log('> Connected');
 		$('#sync').prop('disabled', true);
+		$('#rebuild').prop('disabled', true);
 		updateConnectionStatus('Connected', true);
 	}, false);
 
@@ -56,6 +58,7 @@ function Sync($rebuild=0)
 		{ //EventSource.CLOSED
 			logger.log('> Disconnected');
 			$('#sync').prop('disabled', false);
+			$('#rebuild').prop('disabled', false);
 			updateConnectionStatus('Disconnected', false);
 			source.close();
 		}

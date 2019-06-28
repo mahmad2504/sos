@@ -28,4 +28,9 @@ class Utility
 		ob_flush();
 		flush();
 	}
+	public static function GetJiraConfig($slot)
+	{
+		return config('jira.servers')[$slot];
+	}
+	
 }
