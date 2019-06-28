@@ -8,8 +8,14 @@
 @section('content')
 
 <div class="container">
+	@if($admin)
+		<h3>Program Dashboard - {{$user->name}}</h3>
+	@endif
     <button rel="tooltip" title="Create New Project" id="new_project" class="btn btn-primary float-left" data-toggle="modal" data-target="#psettings_modal">Add Project</button>
-	<br>
+	@if($user->role == 'admin')
+	<a href="/admin" style="margin-left:5px;" class="btn btn-info" role="button">Admin</a>
+	@endif
+	
 	<br>
 	<br>
 	<div class="card_container">

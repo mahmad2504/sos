@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\User;
 use Hash;
 use Illuminate\Http\Request;
 
@@ -26,9 +27,10 @@ class HomeController extends Controller
     public function index()
     {
 		$user = Auth::user();
-		$projects = Auth::user()->projects;
-		$user = Auth::user();
-		return view('home',compact('projects','user'));
+		$admin = 0;
+		if($user->role == 'admin')
+			return redirect('/admin');
+		return view('home',compact('projects','user','admin'));
 	}
 	public function showChangePasswordForm()
 	{

@@ -16,6 +16,8 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
+Route::get('/', 'HomeController@index');   // View 
 Route::get('/home', 'HomeController@index')->name('home');   // View 
 Route::get('/changePassword','HomeController@showChangePasswordForm')->name('showchangepassword'); // View
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
@@ -29,4 +31,9 @@ Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  
 
 //// Sync //////
 Route::get('/sync', 'SyncController@sync')->name('syncproject');// arg project modal with project.id
+
+
+// Admin /////
+Route::get('/admin', 'AdminController@index')->name('adminhome');
+Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboard');
 
