@@ -197,6 +197,10 @@ class ProjectTree
 			$this->tree = unserialize(file_get_contents($this->treepath));
 		}
 	}
+	function GetJiraUrl()
+	{
+		return $this->jiraconfig['uri'];
+	}
 	function Populate($task)
 	{
 		$task->ExecuteQuery($this->jiraconfig);
@@ -322,6 +326,10 @@ class ProjectTree
     	Utility::ConsoleLog(time(),"Sync Completed Successfully");
 		
 	}
+	function GetHead()
+	{
+		return $this->tree;
+	}
 	function ComputeTotalCorrectedEstimates($task) // Removes Duplicates
 	{
 		$totalestimate = 0;
@@ -332,8 +340,9 @@ class ProjectTree
 			$totalestimate += $task->estimate;
 			$totaltimespent += $task->timespent;
 		}
-		$totalprogress=$totalestimate/$totaltimespent;
-		$totalprogress = round($totaltimespent/$totalestimate*100,1);
+		$totalprogress  = 0;
+		if($totalestimate > 0)
+			$totalprogress = round($totaltimespent/$totalestimate*100,1);
 		$task->progress = $totalprogress;
 		$task->estimate = $totalestimate;
 		$task->timespent = $totaltimespent;

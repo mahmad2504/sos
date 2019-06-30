@@ -23,6 +23,7 @@ Route::get('/changePassword','HomeController@showChangePasswordForm')->name('sho
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
 
 //// Project //////
+Route::get('/project', 'ProjectController@getproject')->name('getproject');// arg project modal with no id
 Route::post('/project', 'ProjectController@create')->name('createproject');// arg project modal with no id
 Route::put('/project', 'ProjectController@update')->name('updateproject'); // arg project modal with id
 Route::delete('/project', 'ProjectController@delete')->name('deleteproject'); // arg project.id
@@ -37,3 +38,9 @@ Route::get('/sync', 'SyncController@sync')->name('syncproject');// arg project m
 Route::get('/admin', 'AdminController@index')->name('adminhome');
 Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboard');
 
+// Dashboard //
+Route::get('/dashboard/{user}/{project}','DashboardController@Show')->name('dashboard');
+
+// Widgets
+Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@ShowTreeView')->name('showtreeview');
+Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetTreeViewData')->name('gettreeviewdata');// project id

@@ -11,6 +11,26 @@ use Redirect,Response;
 
 class ProjectController extends Controller
 {
+	public function GetProject(Request $request) // $request->name input paramter
+    {
+		if(($request->id == null)&&($request->name == null))
+			abort(403, 'Some Missing Parameters [project name/id]');
+		
+		if($request->id  != null)
+			$projects = Project::where('id',$request->id)->get();
+		else
+			$projects = Project::where('name',$request->name)->get();
+		if(count($projects) > 0)
+			return Response::json($projects[0]);
+		else
+		{
+			$returnData = array(
+				'status' => 'error',
+				'message' => 'No record found'
+			);
+			return Response::json($returnData, 500);
+		}
+    }
 	private static function ValidateRequest($request)
     {
 		$project = null;
@@ -120,6 +140,9 @@ class ProjectController extends Controller
 	
 	public function Update(Request $request)
     {  
+		if($request->id == null)
+			abort(403, 'Missing Parameters - ProjectController@Update(project data with id)');
+		
         $project = self::ValidateRequest($request);
 		if (!$project instanceof Project) 
 			return Response::json(Utility::Error($project), 500);
@@ -129,11 +152,17 @@ class ProjectController extends Controller
     }
 	public function GetProjects(Request $request)
 	{
+		if($request->user_id == null)
+			abort(403, 'Missing Parameters - ProjectController@GetProjects(user_id)');
+		
 		$projects = Project::where('user_id',$request->user_id)->get();
         return Response::json($projects);
 	}
 	public function Delete(Request $request)
 	{
+		if($request->id == null)
+			abort(403, 'Missing Parameters - ProjectController@Delete(id)');
+		
 		$project = Project::find($request->id);
 		$project->delete();
 	}

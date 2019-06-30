@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
-
+	<script src="{{ asset('js/app.js') }}" ></script>
     <!-- Scripts -->
    
 
@@ -18,7 +18,9 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
     <!-- Styles -->
+	
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+	<link href="{{ asset('css/screen.css') }}" rel="stylesheet">
 	<link href="{{ asset('css/loading.css') }}" rel="stylesheet">
 
     @yield('csslinks')
@@ -95,7 +97,6 @@
             @yield('content')
         </main>
     </div>
-	<script src="{{ asset('js/app.js') }}" ></script>
 	<script>
 		function ShowLoading()
 		{
