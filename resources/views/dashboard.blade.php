@@ -28,6 +28,7 @@ figure figcaption {
 @section('content')
 <div  class="container">
 	<h1>Dashboard</h1>
+	
 	<p id='description'>&nbsp</p>
 	<hr>
 	<div class="row">
@@ -86,7 +87,7 @@ $(document).ready(function()
 {
 	if(username != null)
 		$('.navbar').removeClass('d-none');
-	LoadProjectsData("{{route('getproject',[$project->name])}}",null,OnProjectDataReceived,function(response){});
+	LoadProjectsData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
 	
 })
 @endsection

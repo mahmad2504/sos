@@ -2,6 +2,7 @@
 @section('csslinks')
 <link rel="stylesheet" href="{{ asset('css/jquery.treetable.css') }}" />
 <link rel="stylesheet" href="{{ asset('css/jquery.treetable.theme.default.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
 @endsection
 @section('style')
 .progress {height: 10px;}
@@ -49,7 +50,7 @@
 	</div>
 </div>
 <script src="{{ asset('js/jquery.treetable.js') }}" ></script>
-
+<script src="{{ asset('js/msc-script.js') }}" ></script>
 @endsection
 @section('script')
 
@@ -104,7 +105,7 @@ $(document).ready(function()
 		{
 			$('.loading').hide();
 			console.log(error);  
-			//mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){window.location.href = "/";})
+			mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){window.location.href = "/";})
 		}
 	});
 	function round(value, precision) 

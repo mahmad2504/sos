@@ -6,13 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    //
-	public function create($request)
+    public function user()
 	{
-		
+		return $this->belongsTo(User::class);
 	}
-	public function user()
-	{
-		$this->belongsTo('App\User');
-	}
+	public function resources()
+    {
+        return $this->hasMany(ProjectResource::class);
+    }
 }

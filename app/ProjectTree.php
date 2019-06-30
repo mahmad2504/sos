@@ -2,11 +2,16 @@
 namespace App;
 use App\Utility;
 use App\Jira;
+use App\Resource;
+use App\Calendar;
+use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ProjectController;
+
 class Task
 {
 	public $children = array();
-	function __construct($level,$pextid,$pos,$summary=null,$query=null)
+	private $parent = null;
+	function __construct($parent,$level,$pextid,$pos,$summary=null,$query=null)
 	{
 		$this->summary = $summary;
 		$this->query = $query;
@@ -14,6 +19,7 @@ class Task
 		$this->level = $level;
 		$this->pos = $pos;
 		$this->pextid = $pextid;
+		$this->parent = $parent;
 		if($pextid == 0)
 			$this->extid = $level;
 		else
@@ -96,7 +102,7 @@ class Task
 		$j=0;
 		foreach($tasks as $key=>$task)
 		{
-			$ntask = new Task($this->level+1,$this->extid,$j++);
+			$ntask = new Task($this->parent,$this->level+1,$this->extid,$j++);
 			$ntask->key = $key;
 			$ntask->id = $task->id;
 			$ntask->otatus = $task->fields->status->name;
@@ -110,12 +116,25 @@ class Task
 								  $task->fields->assignee->displayName,
 								  $task->fields->assignee->emailAddress,
 								  $task->fields->assignee->timeZone);*/
-								  
+				$resource =  new Resource;
+				$resource->name = $task->fields->assignee->name;
+				$resource->displayname = $task->fields->assignee->displayName;
+				$resource->email = $task->fields->assignee->emailAddress;
+				$resource->timeZone = $task->fields->assignee->timeZone;
+			
+				$this->parent->resources[$task->fields->assignee->name]	= $resource;				
 				$ntask->assignee = $task->fields->assignee->name;
 			}
 			else
 			{
 				//ResourcesContainer::Create('unassigned','unassigned','','');
+				$resource =  new Resource;
+				$resource->name = 'unassigned';
+				$resource->displayname = 'unassigned';
+				$resource->email = '';
+				$resource->timeZone = '';
+				
+				$this->parent->resources['unassigned']	= $resource;	
 				$ntask->assignee = 'unassigned';
 			}
 				
@@ -183,6 +202,7 @@ class ProjectTree
 	private $user=null;
 	private $jiraconfig = null;
 	private $tasks = [];
+	public $resources = [];
 	function __construct($user,$project)
 	{
 		$this->datapath = 'data/'.$user->name.'/'.$project->id;
@@ -308,7 +328,7 @@ class ProjectTree
 		Jira::Initialize($this->jiraconfig['uri'],$this->jiraconfig['username'],$this->jiraconfig['password'],$this->datapath,$rebuild);
 		
 		
-		$task = new Task(1,0,0,$this->project->name,$this->project->jiraquery);
+		$task = new Task($this,1,0,0,$this->project->name,$this->project->jiraquery);
 		$this->Populate($task);
 		$this->ComputeStatus($task);
 		$this->ComputeEstimate($task);
@@ -317,6 +337,56 @@ class ProjectTree
 		$this->FindDuplicates($task);
 		$this->ComputeTotalCorrectedEstimates($task);
 		$this->tree = $task;
+		
+		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
+		
+		foreach($allresources as $resource)
+		{
+			$resource->active = 0;
+			$resource->save();
+		}
+		
+			
+		// Update Resources Database 
+		foreach($this->resources as $res)
+		{
+			$resource = Resource::where('name',$res->name)->first();
+			if($resource != null)
+			{
+				$resource->Modify($res);
+				
+			}
+			else // new resource
+			{
+				$resource = $res;
+				$resource->save();
+			}
+			$projectresource = ProjectResource::where('resource_id',$resource->id)->where('project_id',$this->project->id)->first();
+			if($projectresource !=  null)
+			{
+				$projectresource->active = 1;
+				$projectresource->save(); /// Updates resource for a project
+			}
+			else
+			{
+				$projectresource =  new ProjectResource;
+				$projectresource->project_id =$this->project->id;
+				$projectresource->resource_id = $resource->id;
+				$projectresource->save(); // Creates new resource for a project
+			}
+			$calendar = Calendar::where('resource_id',$resource->id)->first();
+			if($calendar == null)
+			{
+				$cal =  new Calendar;
+				$cal->resource_id = $resource->id;
+				$cal->save();
+			}
+		}
+		
+	
+	
+		//var_dump($this->resources);
+		
 		//dd($this->tree);
 		$data = serialize($task);
     	file_put_contents($this->treepath, $data);
@@ -324,6 +394,8 @@ class ProjectTree
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);
     	Utility::ConsoleLog(time(),"Sync Completed Successfully");
+		
+		
 		
 	}
 	function GetHead()

@@ -20,7 +20,7 @@ try {
  */
 
 window.axios = require('axios');
-
+window.Tabulator = require('tabulator-tables');
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /**

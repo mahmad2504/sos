@@ -14,8 +14,14 @@ class ProjectController extends Controller
 	public function GetProject(Request $request) // $request->name input paramter
     {
 		if(($request->id == null)&&($request->name == null))
-			abort(403, 'Some Missing Parameters [project name/id]');
-		
+		{
+			$returnData = array(
+				'status' => 'error',
+				'message' => 'Some Missing Parameters [project name/id]'
+			);
+			return Response::json($returnData, 500);
+		}
+			
 		if($request->id  != null)
 			$projects = Project::where('id',$request->id)->get();
 		else

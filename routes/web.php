@@ -34,13 +34,23 @@ Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  
 Route::get('/sync', 'SyncController@sync')->name('syncproject');// arg project modal with project.id
 
 
+// Dashboard //
+Route::get('/dashboard/{user}/{project}','DashboardController@Show')->name('dashboard');
 // Admin /////
 Route::get('/admin', 'AdminController@index')->name('adminhome');
 Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboard');
 
-// Dashboard //
-Route::get('/dashboard/{user}/{project}','DashboardController@Show')->name('dashboard');
 
 // Widgets
 Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@ShowTreeView')->name('showtreeview');
 Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetTreeViewData')->name('gettreeviewdata');// project id
+
+//// Resource //////
+Route::get('/resources/{project_id}','ResourceController@Show')->name('showresources'); // project id as input param
+
+//// 
+//Route::calendar('/calendar/{resource_id}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
+Route::get('/calendar/{resource_name}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
+Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name('savecalendar'); // project id as input param
+
+
