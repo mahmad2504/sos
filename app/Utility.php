@@ -5,7 +5,7 @@ class Utility
 {
 	public static function GetDataPath($user,$project)
 	{
-		return 'data/'.$user->name.'/'.$project->id;
+		return 'storage/'.$user->name.'/'.$project->id;
 	}
 	public static function Error($message)
 	{
