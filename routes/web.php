@@ -45,10 +45,10 @@ Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboar
 Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@ShowTreeView')->name('showtreeview');
 Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetTreeViewData')->name('gettreeviewdata');// project id
 
-//// Resource //////
-Route::get('/resources/{project_id}','ResourceController@Show')->name('showresources'); // project id as input param
-Route::delete('/projectresource/{id}', 'ResourceController@deleteprojectresource')->name('deleteprojectresource'); // arg project resource id
-Route::put('/projectresource/{id}', 'ResourceController@updateprojectresource')->name('updateprojectresource'); // arg project resource id
+//// Project Resource //////
+Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->name('showprojectresources'); // project id as input param
+Route::delete('/projectresource/{id}', 'ProjectResourceController@deleteprojectresource')->name('deleteprojectresource'); // arg project resource id
+Route::put('/projectresource/{id}', 'ProjectResourceController@updateprojectresource')->name('updateprojectresource'); // arg project resource id
 
 //// 
 //Route::calendar('/calendar/{resource_id}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param

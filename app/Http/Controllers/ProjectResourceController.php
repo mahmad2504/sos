@@ -9,7 +9,7 @@ use App\Project;
 use Auth;
 use Redirect,Response;
 
-class ResourceController extends Controller
+class ProjectResourceController extends Controller
 {
 	public function __construct()
     {

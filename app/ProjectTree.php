@@ -205,7 +205,7 @@ class ProjectTree
 	public $resources = [];
 	function __construct($user,$project)
 	{
-		$this->datapath = 'data/'.$user->name.'/'.$project->id;
+		$this->datapath = Utility::GetDataPath($user,$project);
 		if(!file_exists($this->datapath))
     		mkdir($this->datapath, 0, true);
 		$this->treepath = $this->datapath."/tree";

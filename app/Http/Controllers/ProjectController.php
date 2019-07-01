@@ -166,11 +166,26 @@ class ProjectController extends Controller
 	}
 	public function Delete(Request $request)
 	{
+		
+		
 		if($request->id == null)
 			abort(403, 'Missing Parameters - ProjectController@Delete(id)');
 		
 		$project = Project::find($request->id);
+		$user = $project->user()->first();
+		
+		$datafolder = Utility::GetDataPath($user,$project);
+		
+		$presources = $project->resources()->get();
+		foreach($presources as $presource)
+			$presource->delete();
 		$project->delete();
+		
+		$datafolder = Utility::GetDataPath($user,$project);
+		array_map('unlink', glob("$datafolder/*"));
+		rmdir($datafolder);
+		
+		
 	}
 	public static function UpdateProgressAndLastSync($id,$progress,$last_synced)
 	{

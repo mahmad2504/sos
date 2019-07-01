@@ -245,7 +245,7 @@ function AddCard(project,row)
 	footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Sync With Jira" class="syncbutton fas fa-sync icon float-left ml-1"></i>';
 	footerstr+='<a class="float-right ml-1" href='+'"/dashboard/'+username+'/'+project.name+'">';
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Dashboard" class="icon fas fa-list-alt float-right"></i></a>';
-	footerstr+='<a class="float-right" href='+'"/resources/'+project.id+'">';
+	footerstr+='<a class="float-right" href='+'"/projectresource/'+project.id+'">';
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Resources" class="icon fas fa-user-circle float-right"></i></a>';
 	footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Last sync '+project.last_synced+'</p></div>';
 	var footer = $(footerstr);

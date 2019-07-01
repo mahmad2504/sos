@@ -185,6 +185,7 @@ async function OnSaveCalendar(data)
 	{
 		dataSource[i].startDate = moment(dataSource[i].startDate).format('YYYY-MM-DD');
 		dataSource[i].endDate = moment(dataSource[i].endDate).format('YYYY-MM-DD');
+		delete dataSource[i].color;
 	}
 	calendar._token = "{{ csrf_token() }}"
 	calendar.data=dataSource;

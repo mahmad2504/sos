@@ -38,18 +38,19 @@ function saveEvent() {
     }
     var dataSource = $('#calendar').data('calendar').getDataSource();
     if(event.id) {
+		console.log("there");
         for(var i in dataSource) {
             if(dataSource[i].id == event.id) {
 				dataSource[i].name = event.name;
-                dataSource[i].location = event.location;
+                dataSource[i].location = userid;
                 dataSource[i].startDate = event.startDate;
                 dataSource[i].endDate = event.endDate;
-				dataSource[i].color = 'green';
             }
         }
     }
     else
     {
+		
         var newId = 0;
         for(var i in dataSource) {
             if(dataSource[i].id > newId) {
@@ -59,11 +60,11 @@ function saveEvent() {
         
         newId++;
         event.id = newId;
+		event.location = userid;
 		event.color = 'green';
-		event.color = 'green';
-        dataSource.push(event);
+		dataSource.push(event);
     }
-    
+    console.log(dataSource);
     $('#calendar').data('calendar').setDataSource(dataSource);
     $('#event-modal').modal('hide');
 }
@@ -77,6 +78,10 @@ async function OnCalendarDataLoad(data)
 	{
 		dataSource[i].startDate = new Date(dataSource[i].startDate);
 		dataSource[i].endDate = new Date(dataSource[i].endDate);
+		if(dataSource[i].location == userid)
+			dataSource[i].color = 'green';
+		else
+			dataSource[i].color = 'blue';
 	}
 	$('#calendar').data('calendar').setDataSource(dataSource);
 	$('.loading').hide();
@@ -149,8 +154,12 @@ function InitCalendar()
                     //               + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].name + '</div>'
                     //                + '<div class="event-location">' + e.events[i].location + '</div>'
                     //            + '</div>';
+					var title = "  (Added By other)";
+					if(e.events[i].location == userid)
+						title = "";
+					
 					content += '<div class="event-tooltip-content">'
-                                    + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].id+"  "+e.events[i].name + '</div>'
+                                    + '<div class="event-name" style="color:' + e.events[i].color + '">'+e.events[i].name + title+'</div>'
                                 + '</div>';				
                 }
             

@@ -3,6 +3,10 @@ namespace App;
 use Redirect,Response;
 class Utility
 {
+	public static function GetDataPath($user,$project)
+	{
+		return 'data/'.$user->name.'/'.$project->id;
+	}
 	public static function Error($message)
 	{
 		return Response::json(array(
