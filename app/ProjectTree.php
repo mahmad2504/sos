@@ -382,11 +382,7 @@ class ProjectTree
 				$cal->save();
 			}
 		}
-		
-	
-	
 		//var_dump($this->resources);
-		
 		//dd($this->tree);
 		$data = serialize($task);
     	file_put_contents($this->treepath, $data);
@@ -394,9 +390,6 @@ class ProjectTree
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);
     	Utility::ConsoleLog(time(),"Sync Completed Successfully");
-		
-		
-		
 	}
 	function GetHead()
 	{

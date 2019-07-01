@@ -2,6 +2,7 @@
 @section('csslinks')
 <link rel="stylesheet" href="{{ asset('css/bootstrap-datepicker.min.css') }}" />
 <link rel="stylesheet" href="{{ asset('css/bootstrap-year-calendar.min.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
 @endsection
 
 @section('style')
@@ -156,7 +157,7 @@
 <script src="{{ asset('js/bootstrap-year-calendar.min.js') }}" ></script>
 <script src="{{ asset('js/tabulator.table.js') }}" ></script>
 <script src="{{ asset('js/calendar.js') }}" ></script>
-
+<script src="{{ asset('js/msc-script.js') }}" ></script>
 @endsection
 
 @section('script')
@@ -164,7 +165,8 @@ var userid = {{$user->id}};
 var username =  "{{$user->name}}";
 var projectname =  "{{$project->name}}";
 var resources = @json($presources);
-
+var _token = "{{ csrf_token() }}";
+var table = null;
 function OnCalendarSaved(data)
 {
 	$('.loading').hide();
@@ -201,9 +203,10 @@ async function OnSaveCalendar(data)
 $(document).ready(function()
 {
 	console.log("Loading Resource Page");
+	$('.navbar').removeClass('d-none');
 	$('#save_calendar').on('click',OnSaveCalendar);
 	
-	var table = new Tabulator("#table", InitTabulator());
+	table = new Tabulator("#table", InitTabulator());
 	InitCalendar();
 	
 })

@@ -19,14 +19,24 @@ class ProjectResource extends Model
 		$this->cc = '';
 		$this->active = 1;
 	}
-	public function Modify(Resource $resource)
+	public function Modify($resource)
 	{
-		foreach($this->fillable as $field)
+		if(is_array($resource))
 		{
-			if($resource->$field != null)
-				$this->$field = $resource->$field;
+			foreach($this->fillable as $field)
+			{
+				if(isset($resource[$field]))
+					$this->$field = $resource[$field];
+			}
 		}
-		$this->save();
+		else
+		{
+			foreach($this->fillable as $field)
+			{
+				if($resource->$field != null)
+					$this->$field = $resource->$field;
+			}
+		}
 	}
 	public function resource()
     {

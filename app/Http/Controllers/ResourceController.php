@@ -6,12 +6,38 @@ use Illuminate\Http\Request;
 use App\Utility;
 use App\ProjectResource;
 use App\Project;
+use Auth;
 use Redirect,Response;
 
 class ResourceController extends Controller
 {
+	public function __construct()
+    {
+        $this->middleware('auth');
+    }
+	
+	public function updateprojectresource($id,Request $request)
+	{
+		$presource = ProjectResource::where('id',$id)->first();
+		if($presource == null)
+			return Utility::Error('Project Resource Not Found');
+		$presource->Modify($request->all());
+		$presource->save();
+		return $presource;
+	}
+	public function deleteprojectresource($id)
+	{
+		$presource = ProjectResource::where('id',$id)->first();
+		if($presource == null)
+			return Utility::Error('Project Resource Not Found');
+		
+		if($presource->delete())
+			return $id;
+		return Utility::Error('Unknown Error');
+	}
 	public function Show(Request $request)
 	{
+		$user = Auth::user();
 		if($request->project_id == null)
 			abort(403, 'Missing Parameters - ResourceController@Show(project_id)');
 		$project = Project::where('id',$request->project_id)->first();
@@ -20,18 +46,16 @@ class ResourceController extends Controller
 			abort(403, 'Project Not Found');
 		
 		$user = $project->user()->first();
-		$presources = $project->resources()->get();
-		foreach($presources as $presource)
+		if(($user->id == Auth::user()->id)||(Auth::user()->role=='admin'))
 		{
-			$presource->profile = $presource->resource()->first();
+			$presources = $project->resources()->get();
+			foreach($presources as $presource)
+			{
+				$presource->profile = $presource->resource()->first();
+			}
+			return view('presources',compact('project','user','presources'));
 		}
-		return view('presources',compact('project','user','presources'));
-		//$presources = ProjectResource::where('project_id',$request->project_id)->get();
-		//foreach($presources as $presource)
-		//{
-		//	$presource->details = $presource->resource()->first();
-		//}
-		//return view('presources',compact('project','user','presources'));
-		//return Response::json($presources);
+		else
+			abort(403, 'Unauthorized');
 	}
 }

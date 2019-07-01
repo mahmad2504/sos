@@ -5,10 +5,10 @@ class Utility
 {
 	public static function Error($message)
 	{
-		return array(
-				'status' => 'error',
-				'message' => $message
-			);	
+		return Response::json(array(
+                    'code'      =>  401,
+                    'message'   =>  $message
+                ), 401);
 	}
 	public static function GetToday($format)
 	{

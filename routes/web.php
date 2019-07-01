@@ -47,6 +47,8 @@ Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetTreeViewD
 
 //// Resource //////
 Route::get('/resources/{project_id}','ResourceController@Show')->name('showresources'); // project id as input param
+Route::delete('/projectresource/{id}', 'ResourceController@deleteprojectresource')->name('deleteprojectresource'); // arg project resource id
+Route::put('/projectresource/{id}', 'ResourceController@updateprojectresource')->name('updateprojectresource'); // arg project resource id
 
 //// 
 //Route::calendar('/calendar/{resource_id}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param

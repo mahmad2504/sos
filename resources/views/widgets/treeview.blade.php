@@ -57,7 +57,7 @@
 var username = "{{$user->name}}";
 var userid = {{$user->id}};
 var projectid = {{$project->id}};
-
+var cur_row = null;
 function LoadProjectData(url,data,onsuccess,onfail)
 {
 	$.ajax({

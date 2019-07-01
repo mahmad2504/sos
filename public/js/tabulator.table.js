@@ -79,15 +79,41 @@ function OnCalendarShowClick(element)
 	var username = $(element).data('username');
 	ShowCalendar(username);
 }
-
-
-
+function OnProjectResourceDeleted(id)
+{
+	console.log(id);
+	table.deleteRow(id);		
+}
+function OnProjectResourceDeleteFail(data)
+{
+	mscAlert('Error',data.responseJSON.message);
+}
+function OnDeleteProjectResource(element)
+{
+	var id = $(element).data('id');
+	mscConfirm("Delete?",function(){
+		data = {};
+		data._token = _token;
+		$.ajax({
+			type:"DELETE",
+			url:'/projectresource/'+id,
+			cache: false,
+			data:data,
+			success: OnProjectResourceDeleted,
+			error: OnProjectResourceDeleteFail
+		});
+	});
+	return;
+}
+var lastdata = null;
+var cur_row = null;
 function InitTabulator()
 {
 	var openIcon = function(cell, formatterParams, onRendered){ //plain text value
 		//return '<i class="fas fa-calendar-alt" data-toggle="modal" data-target="#calendar-modal" ></i>';
 		var username = cell.getRow().getData().profile.name;
-		if(username != 'unassigned')
+		var active = cell.getRow().getData().active;
+		if((username != 'unassigned')&&(active  == 1))
 			return '<span onclick="OnCalendarShowClick(this)" data-username="'+username+'" data-toggle="modal" data-backdrop="static" data-target="#calendar-modal" data-keyboard="false">&nbsp<i class="fas fa-calendar-alt"></i></span>';
 	};
 	//define custom formatter
@@ -96,10 +122,14 @@ function InitTabulator()
 	var settings = 
 	{
 		tooltips:true,
+		
+		index:"id",
 		layout:"fitDataFill",
 		//pagination:'local', //enable local pagination.
         //paginationSize:15, // this option can take any positive integer value (default = 10)
 		columnVertAlign:"bottom", 
+		//tooltipsHeader:true,
+		tooltipGenerationMode:"hover",
 		data:resources,
 		//height:105, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
 		//ajaxURL:'/data/resources/'+username+"/"+projectname, //ajax URL
@@ -144,7 +174,8 @@ function InitTabulator()
 					//cell - the cell component for the editable cell
 					//get row data
 					name = cell.getRow().getData().profile.name;
-					if(name == 'unassigned')
+					active = cell.getRow().getData().active;
+					if((name == 'unassigned')||(active == 0))
 						return false;
 					return true; 
 				}
@@ -165,7 +196,8 @@ function InitTabulator()
 					//cell - the cell component for the editable cell
 					//get row data
 					name = cell.getRow().getData().profile.name;
-					if(name == 'unassigned')
+					active = cell.getRow().getData().active;
+					if((name == 'unassigned')||(active == 0))
 						return false;
 					return true; 
 				}
@@ -189,17 +221,127 @@ function InitTabulator()
 					//cell - the cell component for the editable cell
 					//get row data
 					name = cell.getRow().getData().profile.name;
+					
 					if(name == 'unassigned')
 						return false;
 					return true; 
 				}
 			
 			},
-			{resizable: false,title:"Team", sortable:false,field:"team",width:"20%",editor:"input"
-			
+			{resizable: false,title:"Team", sortable:false,field:"team",width:"20%",editor:"input",validator:
+				function(cell, value, parameters){
+					if(lastdata == value)
+						return;
+					lastdata =  value;
+					//cell - the cell component for the edited cell
+					//value - the new input value of the cell
+					//parameters - the parameters passed in with the validator
+					//setTimeout(function(){ alert("Hello"); }, 3000);
+					//mscAlert("Error","ddd");
+					var names = value.split(',');
+					data = table.getData();
+					console.log(data);
+					
+					for(var i=0;i<names.length;i++)
+					{
+						for(var j=0;j<data.length;j++)
+						{
+							
+							if(data[j].profile.name == 'unassigned')
+								data[j].profile.name = '';
+								
+							if(data[j].profile.name == names[i])
+							{
+								data[j].profile.name = '';
+								break;
+							}
+						}
+						if(j==data.length)
+						{
+							mscAlert("Error","Resource "+names[i]);
+							return false;
+						}
+						
+					}
+					lastdata = null;
+					return true;
+				}	
 			},
-			{resizable: false,title:"Calendar", sortable:false, formatter:openIcon}
+			{resizable: false,title:"C", sortable:false, width:"5%",formatter:openIcon,headerTooltip:'Calendar'},
+			{resizable: false,title:"D",field:"active",width:"5%", sortable:false,headerTooltip:'Delete',
+				formatter:function(cell, formatterParams, onRendered){
+					//cell - the cell component
+					//formatterParams - parameters set for the column
+					//onRendered - function to call when the formatter has been rendered
+					active = cell.getRow().getData().active;
+					id = cell.getRow().getData().id;
+					if(active == 1)
+						return '';
+					return '<span onclick="OnDeleteProjectResource(this)" data-id="'+id+'"><i class="fas fa-trash"></i></span>';
+				},
+			}
 		],
+		rowClick:function(e, row){
+			//e - the click event object
+			//row - row component
+			console.log("Row click");
+			cur_row = row;
+		
+		},
+		rowSelected:function(row){
+			//row - row component for the selected row
+			//cosole.log(row);
+		},
+		dataEdited:function(data){
+			//data - the updated table data
+			
+			
+			if(cur_row != null)
+			{
+				
+				//params.id = cur_row._row.data.id;
+				//console.log(params.publish);
+				//GetResource(0,resource,'data=updatevul',params,cur_row._row.data,successcb) ;
+				cur_row.reformat();
+				data = cur_row._row.data;
+				data._token = _token;
+				console.log(cur_row._row.data);
+				$.ajax(
+				{
+					type:"PUT",
+					url:"/projectresource/"+data.id,
+					data:data,
+					success: function(response)
+					{
+						$('.loading').hide();
+						console.log(response);
+						//ShowTree(JSON.parse(response)) ;
+					},
+					error: function (error) 
+					{
+						$('.loading').hide();
+						console.log(error);  
+						//mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){window.location.href = "/";})
+					}
+				});
+			}
+			//this.rowFormatter ();
+		},
+		rowFormatter:function(row){
+			//row - row component
+			var data = row.getData();
+			if(data.active == 0){
+				row.getElement().style.color = "#989898";
+			}
+		},
+		validationFailed:function(cell, value, validators)
+		{
+			//cell - cell component for the edited cell
+			//value - the value that failed validation
+			//validatiors - an array of validator objects that failed
+			//alert( "Column Name: " + cell.field );
+			//alert( validators[0].type); 
+		},
 		initialFilter:[
 			
 		],
