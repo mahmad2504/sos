@@ -55,4 +55,7 @@ Route::put('/projectresource/{id}', 'ProjectResourceController@updateprojectreso
 Route::get('/calendar/{resource_name}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name('savecalendar'); // project id as input param
 
+/// Test
+Route::get('/tjtest/{projectid}','TestController@TJTest'); // project id as input param
+
 

@@ -38,6 +38,10 @@ class ProjectResource extends Model
 			}
 		}
 	}
+	public function calendar()
+    {
+        return $this->hasOne(Calendar::class);
+    }
 	public function resource()
     {
         return $this->belongsTo('App\Resource');

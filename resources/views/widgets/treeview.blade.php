@@ -8,7 +8,11 @@
 .progress {height: 10px;}
 @endsection
 @section('content')
-<div class="container">
+
+
+
+<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:none" class="center">
+
 	<div class="loading">Loading&#8230;</div>
 	<p id='description'>Description</p>
 	<table id="treetable" style="display:none;" class="table">
@@ -16,17 +20,21 @@
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
 		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
 		</caption>
-		<col style="width:45%;border-right:1pt solid lightgrey;">
-		<col style="width:10%;border-right:1pt solid lightgrey;">
-		<col style="width:20%;border-right:1pt solid lightgrey;">
-		<col style="width:10%;border-right:1pt solid lightgrey;">
-		<col style="width:16%;border-right:1pt solid lightgrey;">
+		<col style="width:40%;border-right:1pt solid lightgrey;"> <!--Title  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Blockers  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Dependecnies  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Sprint  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
 		
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
 		  <tr>
 			<th>Title</th>
 			<th>Jira</th>
-			<th>Blockers</th>
+			<th class="blockers">Blockers</th>
+			<th class="dependencies">Dependency</th>
+			<th class='sprintcolumn'>Sprint</th>
 			<th id='estimatecolumn'></th>
 			<th>Progress</th>
 		  </tr>
@@ -124,6 +132,9 @@ $(document).ready(function()
 			['10-1-1-1','10-1-1','file','Title file2','http://www.google.com','HMIP','23','25']
 		];
 		data = response;
+		var dependencies = 0;
+		var blockers = 0;
+		var sprints = 0;
 		
 		for (var exitid in data)
 		{
@@ -139,7 +150,34 @@ $(document).ready(function()
 			var status=row['status'];
 			var priority=row['priority'];
 			var blockedtasks=row['blockedtasks'];
+			var sprintstate = row['sprintstate'];
+			var sprintname = row['sprintname'];
+			var sprintlink = link+"/secure/RapidBoard.jspa?rapidView="+row['sprintid'];
+			
 			var blockedtasksstr = '';
+			
+			
+			var dtasks=row['dependson'];
+			if(row['dependencies'] !== undefined)
+			{
+				dependencies = row['dependencies'];
+			}
+			if(row['blockers'] !== undefined)
+			{
+				blockers = row['blockers'];
+			}
+			console.log(blockers);
+			
+			var dtasksstr = '';
+			
+			var del ='';
+			for(var i=0;i<dtasks.length;i++)
+			{
+				
+				dtasksstr += del+"<a href='"+link+"/browse/"+key+"'>"+dtasks[i]+"</a>";
+				del="&nbsp&nbsp";
+			}
+			
 			var del ='';
 			for (var key in blockedtasks)
 			{
@@ -177,13 +215,25 @@ $(document).ready(function()
 			if(pid != '')
 				rowstr += "data-tt-parent-id='"+pid+"'";
 			
-			blockers ='fff';
-					
+
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
 			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
 			rowstr += id+" "+title+"</span></td>";
 			rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
-			rowstr += "<td  style='font-size:.6rem;'>"+blockedtasksstr+"</td>";
+			rowstr += "<td class='blockers' style='font-size:.6rem;'>"+blockedtasksstr+"</td>";
+			rowstr += "<td class='dependencies' style='font-size:.6rem;'>"+dtasksstr+"</td>";
+			
+			if(sprintstate == 'ACTIVE')
+				style="color:green";
+			else if(sprintstate == 'FUTURE')
+				style="";
+			else if(sprintstate == 'CLOSED')
+				style="text-decoration: line-through;color:grey";
+			else
+				style= '';
+			if(sprintname.length > 0)
+				sprints = 1;
+			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
 			rowstr += "<td>"+estimate+"</td>";
 			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			
@@ -193,10 +243,40 @@ $(document).ready(function()
 			//console.log(rowstr);
 			$('#tablebody').append(rowstr);
 		}
+		
+		
+		/*dependencies=0;
+		blockers =0;
+		sprints=0;*/
+		width = 90;
+		$('#container').css('width',width+'%');
+		if(dependencies == 0)
+		{
+			width = width-10;
+			$('.dependencies').hide();
+			$('#container').css('width',width+'%');
+		}
+		if(blockers == 0)
+		{
+			width = width-10;
+			$('.blockers').hide();
+			$('#container').css('width',width+'%');
+		}
+		
+		
+		if(sprints == 0)
+		{
+			width = width-10;
+			$('.blockers').hide();
+			$('.sprintcolumn').hide();
+		}
+		$('#container').css('display','block');
+		
 		$("#treetable").treetable({ expandable: true });
 		$("#treetable").show();
 		$("#legend").show();
 		$("#treetable").treetable("expandNode", "1");
+		
 	}
 })
 @endsection

@@ -69,10 +69,11 @@ class TreeViewController extends Controller
 			return Response::json($returnData, 500);
     	}
 		$user = $users[0];
-		$projecttree = new ProjectTree($user,$project);
+		$projecttree = new ProjectTree($project);
 		$head = $projecttree->GetHead();
+		//dd($head);
 		$this->jiraurl = $projecttree->GetJiraUrl();
-		$this->FormatForTreeView($head );
+		$this->FormatForTreeView($head,1);
 		
 		foreach($this->blockedtasks as $task)
 		{
@@ -98,13 +99,12 @@ class TreeViewController extends Controller
     	echo json_encode($this->treedata);
 		
 	}
-	private function FormatForTreeView($task)
+	private function FormatForTreeView($task,$first=0)
     {
     	$row = [];
 		if(($task->priority == 1)&&($task->status != 'RESOLVED'))
 			$this->blockedtasks[$task->key] = $task;
-		
-    	$row['extid'] = $task->extid;
+		$row['extid'] = $task->extid;
     	$row['pextid'] = $task->pextid;
     	$row['issuetype'] = $task->issuetype;
     	$row['summary'] = $task->summary;
@@ -114,6 +114,16 @@ class TreeViewController extends Controller
     	$row['progress'] = $task->progress;
 		$row['status'] = $task->status;
 		$row['priority'] = $task->priority;
+		$row['priority'] = $task->priority;
+		$row['dependson'] = $task->dependson;
+		$row['sprintname'] = $task->sprintname;
+		$row['sprintstate'] = $task->sprintstate;
+		$row['sprintid'] = $task->sprintid;
+		if($first)
+		{
+			$row['blockers'] = $task->blockers_present;
+			$row['dependencies'] = $task->dependencies_present;
+		}
 		
     	$this->treedata[$task->extid] = $row;
     	foreach($task->children as $ctask)

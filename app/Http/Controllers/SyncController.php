@@ -40,8 +40,9 @@ class SyncController extends Controller
     	}
 		$user = User::where('id',$project->user_id)->first();
 		
-		$tree  =  new ProjectTree($user,$project);
+		$tree  =  new ProjectTree($project);
 		$tree->Sync($request->rebuild);
+		
 		//dd(Utility::GetJiraConfig($project->jirauri));
 		
 		

@@ -36,9 +36,14 @@ class Task
 		$this->status = 'OPEN';
 		$this->progress = 0;
 		$this->oissuetype = '';
+		$this->sprintname = '';
+		$this->sprintstate = '';
+		$this->sprintid = '';
 		$this->issuetype = 'PROJECT';
 		$this->assignee = 'unassigned';
-		
+		$this->dependencies_present = 0; // valid only for head
+		$this->blockers_present = 0; // valid only for head
+		$this->dependson = [];
 	}
 	
 	function MapIssueType($issuetype)
@@ -81,6 +86,7 @@ class Task
 	public function ExecuteQuery($jiraconf)
 	{
 		$story_points = $jiraconf['storypoints']; // custom field
+		$sprint = $jiraconf['sprint']; // custom field
 		
 		global $estimation_method;
 		global $unestimated_count;
@@ -92,11 +98,11 @@ class Task
 		$fields = 'description,summary,status,issuetype,priority,assignee,issuelinks,';
 		
 		if($estimation_method == 1)
-			$tasks = Jira::Search($this->query,1000,$fields.$story_points);
+			$tasks = Jira::Search($this->query,1000,$fields.$story_points.",".$sprint);
 		else if($estimation_method == 2)
-			$tasks = Jira::Search($this->query,1000,$fields.'timeoriginalestimate,aggregatetimespent');
+			$tasks = Jira::Search($this->query,1000,$fields.'timeoriginalestimate,aggregatetimespent,'.$sprint);
 		else
-			$tasks = Jira::Search($this->query,1000,'timeoriginalestimate,aggregatetimespent,'.$fields.$story_points);
+			$tasks = Jira::Search($this->query,1000,'timeoriginalestimate,aggregatetimespent,'.$fields.$story_points.",".$sprint);
 		
 		
 		$j=0;
@@ -110,6 +116,35 @@ class Task
 			$ntask->summary = $task->fields->summary;
 			$ntask->oissuetype = $task->fields->issuetype->name;
 			$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name);
+			
+			$sprintname = '';
+			$sprintstate = '';
+			$sprintid = '';
+			if(isset($task->fields->$sprint))
+			{
+				$str = $task->fields->$sprint[count($task->fields->$sprint)-1];
+				$sprint_info = explode(',',$str);
+				for($i=0;$i<count($sprint_info);$i++)
+				{
+					$keyvalue = explode('=',$sprint_info[$i]);
+					if($keyvalue[0] =='name')
+					{
+						$sprintname = $keyvalue[1];
+					}
+					else if($keyvalue[0] =='state')
+					{
+						$sprintstate = $keyvalue[1];
+					}
+					else if($keyvalue[0] == 'rapidViewId')
+					{
+						$sprintid = $keyvalue[1];
+					}
+				}
+				$ntask->sprintname = $sprintname;
+				$ntask->sprintstate = $sprintstate;
+				$ntask->sprintid = $sprintid;
+			}
+			
 			if(isset($task->fields->assignee))
 			{
 				/*ResourcesContainer::Create($task->fields->assignee->name,
@@ -153,18 +188,18 @@ class Task
 			if($ntask->storypoints>0)
 				$ntask->estimate = $ntask->storypoints;
 			$ntask->priority = $task->fields->priority->id;
-			$ntask->dependendson = [];
+			$ntask->dependson = [];
 			foreach($task->fields->issuelinks as $issuelink)
 			{
 				if( strtolower($issuelink->type->name) == 'dependency')
 				{
 					if(isset($issuelink->outwardIssue))
 					{
-						$ntask->dependendson[] = $issuelink->outwardIssue->key;
+						$ntask->dependson[] = $issuelink->outwardIssue->key;
 					}
 				}
 			}
-			//var_dump($ntask->dependendson);
+			//var_dump($ntask->dependson);
 			$ntask->timespent =  0;
 			//Utility::ConsoleLog(time(),"Estimate is ".$ntask->estimate);
 			
@@ -202,21 +237,41 @@ class ProjectTree
 	private $user=null;
 	private $jiraconfig = null;
 	private $tasks = [];
+	public $presources = [];
 	public $resources = [];
-	function __construct($user,$project)
+	function __construct(Project $project)
 	{
+		$user = $project->user()->first();
+		$this->presources = $project->resources()->get();
 		$this->datapath = Utility::GetDataPath($user,$project);
 		if(!file_exists($this->datapath))
     		mkdir($this->datapath, 0, true);
 		$this->treepath = $this->datapath."/tree";
 		$this->user = $user;
 		$this->project  = $project;
+		
 		$this->jiraconfig = Utility::GetJiraConfig($project->jirauri);
 		if(file_exists($this->treepath))
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));
 		}
 	}
+	public function __get($property) 
+	{
+		switch($property)
+		{
+			case 'start':
+				return $this->project->start;
+			case 'end':
+				return $this->project->end;
+			case 'name':
+				return $this->project->name;
+			
+		}
+		if (property_exists($this, $property)) {
+		return $this->$property;
+    }
+  }
 	function GetJiraUrl()
 	{
 		return $this->jiraconfig['uri'];
@@ -318,6 +373,35 @@ class ProjectTree
 		foreach($task->children as $stask)
 			$this->FindDuplicates($stask);
 	}
+	function UpdateDependencies($head)
+	{
+		foreach($this->tasks as $task)
+		{
+			//Utility::ConsoleLog(time(),'********'.count($task->dependson));
+			if(($task->priority == 1)&&($task->status != 'RESOLVED'))
+				$head->blockers_present = 1;
+			
+			$del = [];
+			for($i=0;$i<count($task->dependson);$i++)
+			{
+				$key = $task->dependson[$i];
+				//Utility::ConsoleLog(time(),'###########'.$key);
+				if(array_key_exists($key,$this->tasks))
+				{
+					//Utility::ConsoleLog(time(),'###########'.'exist');
+					$ptask = $this->tasks[$key];
+					if($ptask->status == 'RESOLVED')
+						$del[] = $i;
+					else
+						$head->dependencies_present = 1;
+				}
+				else
+					$head->dependencies_present = 1;
+			}
+			foreach($del as $d)
+				unset($task->dependson[$d]);
+		}
+	}
 	function Sync($rebuild=0)
 	{
 		if($rebuild == 1)
@@ -335,8 +419,10 @@ class ProjectTree
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
 		$this->FindDuplicates($task);
+		$this->UpdateDependencies($task);
 		$this->ComputeTotalCorrectedEstimates($task);
 		$this->tree = $task;
+		
 		
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		
@@ -382,6 +468,7 @@ class ProjectTree
 				$cal->save();
 			}
 		}
+		$this->presources = $this->project->resources()->get();
 		//var_dump($this->resources);
 		//dd($this->tree);
 		$data = serialize($task);
@@ -395,6 +482,7 @@ class ProjectTree
 	{
 		return $this->tree;
 	}
+	
 	function ComputeTotalCorrectedEstimates($task) // Removes Duplicates
 	{
 		$totalestimate = 0;
