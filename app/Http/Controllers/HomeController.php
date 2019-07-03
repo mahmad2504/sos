@@ -28,6 +28,7 @@ class HomeController extends Controller
     {
 		$user = Auth::user();
 		$admin = 0;
+		$projects = $user->projects()->get();
 		if($user->role == 'admin')
 			return redirect('/admin');
 		return view('home',compact('projects','user','admin'));
