@@ -71,17 +71,16 @@ class Task
 	{
 		if(($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
 			return 'OPEN';
-		if(($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
+		if(($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
 		
-		if($status=='Open')
-			return 'OPEN';
-		
-		if(($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review'))
+		if(($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
 			return 'INPROGRESS';
 		Utility::ConsoleLog(time(),"Unmapped status=".$status);
 		exit();
 	}
+	
+	
 
 	public function ExecuteQuery($jiraconf)
 	{
