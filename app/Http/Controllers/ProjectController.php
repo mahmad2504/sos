@@ -40,13 +40,14 @@ class ProjectController extends Controller
 	private static function ValidateRequest($request)
     {
 		$project = null;
-		//dd($request->all());
+		
 		if($request->id != null)		
 		{
 			$projects = Project::where('id', $request->id)->get();
 			if(count($projects)==0)
 				return 'Invalid Project';
 			$project = $projects[0];
+		
 		}
 		if($project == null)// Create Project Case
 		{
@@ -125,10 +126,9 @@ class ProjectController extends Controller
 			if ($request->progress!=null)
 				$project['progress'] = $request->progress;
 			if ($request->last_synced!=null)
-				$request->last_synced = $request->last_synced;
-			
+				$project->last_synced = $request->last_synced;
 			if($request->jirauri != null)
-				$request->jirauri = $request->jirauri;
+				$project->jirauri = $request->jirauri;
 			
 		}
 		$project['dirty'] = 1;
@@ -152,7 +152,7 @@ class ProjectController extends Controller
         $project = self::ValidateRequest($request);
 		if (!$project instanceof Project) 
 			return Response::json(Utility::Error($project), 500);
-		//dd($project);
+		
 		$project->save();
 		return Response::json($project);
     }

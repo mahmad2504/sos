@@ -368,9 +368,10 @@ function OnUpdateProject(event)
 	{
 		data[field.name] = field.value;
 	});
+	data.jirauri =  $('#psettings_jirauri').val();
 	data.user_id = userid;
 	data._token = "{{ csrf_token() }}";
-	
+	console.log(data);
 	ShowLoading();
 	
 	$.ajax(
