@@ -66,7 +66,7 @@ figure figcaption {
 
 var username = "{{$user->name}}";
 var userid = "{{$user->id}}";
-
+var projectid = {{$project->id}};
 function LoadProjectsData(url,data,onsuccess,onfail)
 {
 	$.ajax({

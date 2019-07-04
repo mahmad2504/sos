@@ -17,18 +17,18 @@ class DashboardController extends Controller
     //
     public function Show($user,$project)
     {
-    	$users = User::where('name',$user)->get();
-    	if(count($users)==0)
+    	$user = User::where('name',$user)->first();
+    	if($user==null)
     	{
 			abort(403, 'Account Not Found');
     	}
-    	$projects = Project::where('name',$project)->get();
-    	if(count($projects)==0)
+		
+		$project = $user->projects()->where('name',$project)->first();
+		if($project==null)
     	{
     		abort(403, 'Project Not Found');
     	}
-    	$user = $users[0];
-    	$project = $projects[0];
+    	//dd($project);
     	return View('dashboard',compact('user','project'));
 
     }
