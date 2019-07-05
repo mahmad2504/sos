@@ -42,11 +42,12 @@ class Tj
 		{
 			$calendar = $presource->calendar;
 			$calendar = json_decode($presource->calendar);
-			$header = $header.'    resource '.$presource->name.' "'.$presource->name.'" {'."\n";
+			$header = $header.'    resource '.$presource->name.'_'.$presource->cc.' "'.$presource->name.'" {'."\n";
 			
 			foreach($calendar as $obj)
 			{
-				$header = $header.'      leaves annual '.$obj->startDate."-".$obj->endDate."\n"; 
+				$days = Utility::DateDiffInDays($obj->startDate,$obj->endDate)+1;
+				$header = $header.'       leaves annual '.$obj->startDate." +".$days."d\n"; 
 			}
 			$header = $header.'       efficiency '.$presource->efficiency."\n"; 			
 			$header = $header.'    }'."\n";

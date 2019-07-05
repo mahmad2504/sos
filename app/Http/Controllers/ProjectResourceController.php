@@ -53,7 +53,13 @@ class ProjectResourceController extends Controller
 			{
 				$presource->profile = $presource->resource()->first();
 			}
-			return view('presources',compact('project','user','presources'));
+			$allcountryinfo = Utility::GetAllCountryInfo();
+			$countryinfo = [];
+			foreach($allcountryinfo as $timezone=>$value)
+			{
+				$countryinfo[$value[0]]=$value[1];
+			}
+			return view('presources',compact('project','user','presources','countryinfo'));
 		}
 		else
 			abort(403, 'Unauthorized');

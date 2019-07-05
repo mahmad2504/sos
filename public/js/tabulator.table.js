@@ -151,17 +151,7 @@ function InitTabulator()
 			{resizable: false,title:"Country",field:"cc", headerFilter:false, width:"10%",editor:"select",
 				editorParams:function(cell)
 				{
-					return {"values":{
-						"PK":"Pakistan", 
-						"IN":"India",
-						"UK":"United Kingdom",
-						"USA":"United States",
-						"EG":"Egypt",
-						"HU":"Hungary",
-						"GE":"Germany",
-						"RO":"Romania",
-						"FR":"France",
-						}};
+					return {"values":countryinfo};
 				},
 				/*cellClick:function(e, cell)
 				{

@@ -167,6 +167,9 @@ var projectname =  "{{$project->name}}";
 var resources = @json($presources);
 var _token = "{{ csrf_token() }}";
 var table = null;
+
+var countryinfo = @json($countryinfo);
+
 function OnCalendarSaved(data)
 {
 	$('.loading').hide();

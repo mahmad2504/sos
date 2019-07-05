@@ -446,16 +446,29 @@ class ProjectTree
 				$resource = $res;
 				$resource->save();
 			}
+			$info = Utility::GetCountryInfo($resource->timezone);
+			//echo $resource->timezone;
+			//print_r($info);
+			if($info[1] == 'Unknown')
+			{
+				if(strlen(trim($resource->timezone))>0)
+					Utility::ConsoleLog(time(),'Error::'.'Country Info for timezone '.$resource->timezone.' not configured ['.$resource->name.']');
+			}
+			$cc = $info[0];
+			$cn = $info[1];
+			
 			$projectresource = ProjectResource::where('resource_id',$resource->id)->where('project_id',$this->project->id)->first();
 			if($projectresource !=  null)
 			{
 				$projectresource->active = 1;
+				$projectresource->cc = $cc;
 				$projectresource->save(); /// Updates resource for a project
 			}
 			else
 			{
 				$projectresource =  new ProjectResource;
 				$projectresource->project_id =$this->project->id;
+				$projectresource->cc = $cc;
 				$projectresource->resource_id = $resource->id;
 				$projectresource->save(); // Creates new resource for a project
 			}

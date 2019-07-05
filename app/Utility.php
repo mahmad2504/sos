@@ -1,8 +1,18 @@
 <?php
 namespace App;
 use Redirect,Response;
+use App;
 class Utility
 {
+	public static function DateDiffInDays($date1, $date2)  
+	{ 
+		// Calulating the difference in timestamps 
+		$diff = strtotime($date2) - strtotime($date1); 
+		  
+		// 1 day = 24 hours 
+		// 24 * 60 * 60 = 86400 seconds 
+		return abs(round($diff / 86400)); 
+	} 
 	public static function GetDataPath($user,$project)
 	{
 		return 'storage/'.$user->name.'/'.$project->id;
@@ -21,6 +31,12 @@ class Utility
 	}
 	public static function ConsoleLog($id , $msg) 
     {
+		if(App::runningInConsole())
+		{
+			echo $msg."\n";
+			return;
+		}
+		
     	$msg = str_replace('"', "'", $msg);
     	
 		echo "id: $id" . PHP_EOL;
@@ -36,5 +52,22 @@ class Utility
 	{
 		return config('jira.servers')[$slot];
 	}
-	
+	public static function GetCountryInfo($timezone)
+	{
+		$timezone = trim($timezone);
+		$data = config('calendar.coutryinfo')[0];
+		if(isset($data[$timezone]))
+		{
+			
+			return $data[$timezone];
+		}
+		else
+		{
+			return $data['X'];
+		}
+	}
+	public static function GetAllCountryInfo()
+	{
+		return config('calendar.coutryinfo')[0];
+	}
 }
