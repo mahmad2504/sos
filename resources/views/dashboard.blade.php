@@ -39,7 +39,10 @@ figure figcaption {
 			</figure>
 		</div>
 		<div class="col-3">
-			
+			<figure class="item">
+				<a href="{{route('showgantt',[$user->name,$project->name])}}"><img src="/images/gantt.png"></img></a>
+				<figcaption styleclass="caption">Gantt Chart</figcaption>
+			</figure>
 		</div>
 		<div class="col-3">
 			

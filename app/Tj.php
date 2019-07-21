@@ -13,9 +13,10 @@ class Tj
 	private $resources =[ ];
 	private $planpath;
 	private $datapath;
+	private $projecttree;
 	public function __construct(ProjectTree $projecttree)
 	{
-		
+		//dd($projecttree);
 		Utility::ConsoleLog(time(),'Generating Project Plan');
 		
 		$header = $this->FlushProjectHeader($projecttree->project);
@@ -29,6 +30,7 @@ class Tj
 		
 		$this->planpath = $this->datapath."/plan.tjp";
 		//dd($header);
+		$this->projecttree = $projecttree;
 		file_put_contents($this->planpath,$header);
 		//echo $projecttree->datapath;
 		//dd($header);
@@ -81,9 +83,12 @@ class Tj
 		if($task->isparent == 0)
 		{
 			$header = $header.$spaces.'   Jira "'.$task->key.'"'."\n";
+			
+			$header = $header.$spaces.'   priority '.$task->schedule_priority."\n";
+			
 			$remffort  = $task->estimate - $task->timespent;
 			
-			if(isset($task->isexcluded))
+			if(isset($task->isexcluded)||($task->duplicate==1))
 			{
 				$remffort = 0;
 			}
@@ -283,6 +288,98 @@ class Tj
 		";
 		return $header;
 	}
+	function ReadOutputCsv()
+	{
+		$data = new \stdClass();
+		$header = array();
+		$colcount = 0;
+		$handle = FALSE;
+		
+		$file = $this->datapath."/monthreport.csv";
+		$handle = fopen($file, "r");
+		$type = 'month';
+		$data->headers = new \stdClass();
+		$data->tasks = array();
+		if($handle !== FALSE) 		
+		{
+			$i=0;
+			while (($indata = fgetcsv($handle, 1000, ";")) !== FALSE) 
+			{
+				$num = count($indata);
+				if($i==0)
+				{
+					$colcount = count($indata);
+					for ($c=0; $c < $num; $c++) 
+					{
+						$header[] = $indata[$c];
+					}
+					//var_dump($header);
+					$data->headers->$type = array_slice($header,5);
+					$i++;
+					continue;
+				}
+				if($colcount != $num)
+				{
+					LogMessage(ERROR,'TJ',"col count not same");
+					//echo "col count not same";
+				}
+				$obj= new \stdClass();
+				$dates = array();
+
+				for ($j=0; $j < $num; $j++) 
+				{
+					$value = $indata[$j];
+					$hf = $header[$j];
+					if($header[$j] == 'Resource')
+					{
+						$resource = explode("(",$value);
+						if( count($resource) > 1)
+						{
+							$res = explode(")",$resource[1]);
+							$value = $res[0];
+						}
+						else
+							$value = $resource[0];
+						$obj->$hf=$value;
+					}
+					else if($header[$j] == 'Start')
+						$obj->$hf=$value;
+					else if($header[$j] == 'End')
+						$obj->$hf=$value;
+					else if($header[$j] == 'ExtId')
+					{
+						$obj->$hf=$value;
+						
+					}
+					else if($header[$j] == 'Name')
+					{
+						//echo $value."<br>";
+						$value = explode(' ',trim($value))[0];
+						//$obj->$header[$j]=$value;
+						//echo $value."<br>";
+						if($obj->ExtId!==$value)
+						{
+							//echo "----------->".$obj->ExtId," ".$value."<br>";
+							$obj->ExtId = $value;
+						}
+						$data->tasks[$obj->ExtId] = $obj;
+					}
+					else
+					{
+						$dates[] = $value;
+					}
+				}
+				$obj->$type = [];
+				for($i=0; $i< count($data->headers->$type); $i++)
+					$obj->$type[$data->headers->$type[$i]] = $dates[$i];
+				//$obj->$type = $dates;
+				$i++;
+			}
+			fclose($handle);
+		}
+		return $data->tasks;
+		
+	}
 	function Execute()
 	{
 		//." 2>&1"
@@ -296,5 +393,17 @@ class Tj
 			exit();
 		}
 		Utility::ConsoleLog(time(),'Schedule Created Successfully');
+		$scheduled_data =  $this->ReadOutputCsv();
+		//dd($scheduled_data);
+		foreach($this->projecttree->tasks as $task)
+		{
+			$extid = $task->extid;
+			$task->sched_start = $scheduled_data[$extid]->Start;
+			$task->sched_end = $scheduled_data[$extid]->End;
+			$task->sched_assignee = $scheduled_data[$extid]->Resource;
+			$task->sched_estimatates_month = $scheduled_data[$extid]->month;
+		}
+		//$this->projecttree->Save();
+		
 	}
 }

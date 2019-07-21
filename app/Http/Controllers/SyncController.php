@@ -50,6 +50,7 @@ class SyncController extends Controller
 		$tj =  new Tj($tree);
 		$tj->Execute();
 		
+		$tree->Save();
 		
 		//dd(Utility::GetJiraConfig($project->jirauri));
 		

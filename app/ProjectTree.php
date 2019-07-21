@@ -25,6 +25,8 @@ class Task
 		else
 			$this->extid = $this->pextid.".".$this->pos;
 		
+		$this->schedule_priority = 0;
+		$this->duplicate = 0;
 		$this->instancecount = 1;
 		$this->storypoints = 0;
 		$this->estimate = 0;
@@ -48,7 +50,7 @@ class Task
 	
 	function MapIssueType($issuetype)
 	{
-		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement'))
+		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 		
 		if(($issuetype=='Workpackage')||($issuetype=='Project'))
@@ -253,6 +255,7 @@ class ProjectTree
 		if(file_exists($this->treepath))
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));
+			$this->FindDuplicates($this->tree);
 		}
 	}
 	public function __get($property) 
@@ -357,12 +360,18 @@ class ProjectTree
 	}
 	function FindDuplicates($task)
 	{
-		if($task->isparent == 0)
+		//if($task->isparent == 0)
 		{
 			if(array_key_exists($task->key,$this->tasks))
 			{
-				ConsoleLog::Send(time(),'Warning::'.$task->key." Duplicate in plan");
 				$this->tasks[$task->key]->instancecount++;
+				$task->instancecount++;
+				if($task->instancecount > 1)
+				{
+					$task->duplicate = 1;
+					$task->twin = $this->tasks[$task->key];
+				}
+				//Utility::ConsoleLog(time(),'Error::Duplicate');
 			}
 			else
 			{
@@ -374,8 +383,17 @@ class ProjectTree
 	}
 	function UpdateDependencies($head)
 	{
+		$schedule_priority = 1000;
 		foreach($this->tasks as $task)
 		{
+			if(($task->status == 'INPROGRESS')&&($task->isparent == 0))
+			{
+				if($task->duplicate ==0)
+				{
+					$task->schedule_priority = $schedule_priority;
+					$schedule_priority--;
+				}
+			}
 			//Utility::ConsoleLog(time(),'********'.count($task->dependson));
 			if(($task->priority == 1)&&($task->status != 'RESOLVED'))
 				$head->blockers_present = 1;
@@ -417,7 +435,17 @@ class ProjectTree
 		$this->ComputeEstimate($task);
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
+		
+		$this->tasks = [];
 		$this->FindDuplicates($task);
+		
+		foreach($this->tasks as $stask)
+		{
+			if($stask->instancecount > 1)
+				Utility::ConsoleLog(time(),'Warning::'.$stask->key." Duplicate in plan");	
+		}
+			
+		
 		$this->UpdateDependencies($task);
 		$this->ComputeTotalCorrectedEstimates($task);
 		$this->tree = $task;
@@ -481,14 +509,19 @@ class ProjectTree
 			}
 		}
 		$this->presources = $this->project->resources()->get();
-		//var_dump($this->resources);
-		//dd($this->tree);
-		$data = serialize($task);
+		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
 		
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
-		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);
+		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
+	}
+	function Save()
+	{
+		$data = serialize($this->tree);
+    	file_put_contents($this->treepath, $data);
+		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
+		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$last_synced);
 	}
 	function GetHead()
 	{

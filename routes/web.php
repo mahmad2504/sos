@@ -42,8 +42,12 @@ Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboar
 
 
 // Widgets
-Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@ShowTreeView')->name('showtreeview');
-Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetTreeViewData')->name('gettreeviewdata');// project id
+Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@Show')->name('showtreeview');
+Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetData')->name('gettreeviewdata');// project id
+
+Route::get('/widget/gantt/{user}/{project}','Widgets\GanttController@Show')->name('showgantt');
+Route::get('/widget/data/gantt/{id}','Widgets\GanttController@GetData')->name('getganttdata');// project id
+
 
 //// Project Resource //////
 Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->name('showprojectresources'); // project id as input param

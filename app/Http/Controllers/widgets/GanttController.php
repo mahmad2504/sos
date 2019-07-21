@@ -12,7 +12,7 @@ use Auth;
 use App\Utility;
 use App\ProjectTree;
 
-class TreeViewController extends Controller
+class GanttController extends Controller
 {
 	private $treedata = []; 
 	private $blockedtasks = [];
@@ -39,11 +39,13 @@ class TreeViewController extends Controller
     		abort(403, 'Project Not Found');
     	}
     	
-		return View('widgets.treeview',compact('user','project'));
+		return View('widgets.gantt',compact('user','project'));
 
     }
 	public function GetData(Request $request)
 	{
+		return file_get_contents('data.json');
+		
 		if($request->id==null)
 		{
 			$returnData = array(
@@ -73,6 +75,7 @@ class TreeViewController extends Controller
     	}
 		$user = $users[0];
 		$projecttree = new ProjectTree($project);
+		
 		$head = $projecttree->GetHead();
 		//dd($head);
 		$this->jiraurl = $projecttree->GetJiraUrl();
