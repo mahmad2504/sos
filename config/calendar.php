@@ -10,6 +10,7 @@ return
 		 'Europe/Paris' => ['FR','France'],
 		 'Africa/Cairo'=>['EG','Egypt'],
 		 'Europe/London'=>['UK','United Kingdom'],
+		 'Asia/Kolkata'=>['IN','India'],
 		 'X' => ['-','Unknown']
 		],
 	]

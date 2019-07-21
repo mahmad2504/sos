@@ -18,6 +18,7 @@ class TestController extends Controller
 		$projecttree = new ProjectTree($project);
 		//dd($projecttree);
 		$tj =  new Tj($projecttree);
+		$tj->Execute();
 	}
 	
 }

@@ -1,9 +1,12 @@
 var source =  null;
 var logger = new Logger('log');
-
+var nextmsgid = 0;
+var firstmsgid = 0;
 function Clear()
 {
-	logger.clear()
+	logger.clear();
+	nextmsgid = 0;
+	firstmsgid = 0;
 }
 
 function closeConnection() {
@@ -22,6 +25,9 @@ function Rebuild()
 }
 function Sync($rebuild=0) 
 {
+	nextmsgid = 0;
+	firstmsgid = 0;
+	$('#log').empty();
 	if($rebuild == 1)
 		console.log("Initiating Rebuild");
 	else
@@ -66,24 +72,71 @@ function Sync($rebuild=0)
 }
 function Logger(id) {
   this.el = document.getElementById(id);
+  this.id = id;
+  
 }
 Logger.prototype.log = function(msg, opt_class) {
   var fragment = document.createDocumentFragment();
   var p = document.createElement('p');
   p.className = opt_class || 'info';
-  p.textContent = msg;
+  
+  
+  msgcount = nextmsgid - firstmsgid;
+  if(msgcount > 20)
+  {
+	  document.getElementById(firstmsgid).remove();
+	  firstmsgid++;
+  }
+  var wait  = 0;
+  p.setAttribute("id", nextmsgid++);
   if(msg.search('Error::')>0)
+  {
   	p.style.color = "#ff0000";
-  if(msg.search('Warning::')>0)
+	msg = msg.replace('Error::','');
+  }
+  else if(msg.search('Warning::')>0)
+  {
   	p.style.color = "#FF4500";
+	msg = msg.replace('Warning::','');
+  }
+  
+  else if(msg.search('Success::')>0)
+  {
+  	p.style.color = "#32CD32";
+    msg = msg.replace('Success::','');
+  }
+   else if(msg.search('Wait::')>0)
+  {
+  	 msg = msg.replace('Wait::','');
+	 wait  = 1;
+  }
+  p.textContent = msg;
   //console.log(msg);
  //this.el.textContent = '';
   fragment.appendChild(p);
+  
+  
+  		
+  //var img = $('<img id="dynamic">'); //Equivalent: $(document.createElement('img'))
+  //img.attr('src', '/images/loading.gif');
+  //img.css({ 'height': '80px', 'width': '80px' });
+  //img.appendTo('#'+this.id);
+  var e = document.getElementById('loader');
+  if(e)
+	  e.remove();
+ 
   this.el.appendChild(fragment);
+  if(wait)
+  {
+	var img = $('<div id="loader" class="loader">'); //Equivalent: $(document.createElement('img'))
+	img.appendTo('#'+(nextmsgid-1));
+  }	
 };
 
 Logger.prototype.clear = function() {
-  this.el.textContent = '';
+	$('#log').empty();
+	
+  //this.el.textContent = '';
 };
 function updateConnectionStatus(msg, connected) {
   var el = document.querySelector('#connection');

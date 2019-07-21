@@ -7,6 +7,7 @@ use App\Utility;
 use App\Project;
 use App\User;
 use App\ProjectTree;
+use App\Tj;
 class SyncController extends Controller
 {
 	public function sync(Request $request)
@@ -43,9 +44,16 @@ class SyncController extends Controller
 		$tree  =  new ProjectTree($project);
 		$tree->Sync($request->rebuild);
 		
+		//$project = Project::where('id',$projectid)->first();
+		//$projecttree = new ProjectTree($project);
+		//dd($projecttree);
+		$tj =  new Tj($tree);
+		$tj->Execute();
+		
+		
 		//dd(Utility::GetJiraConfig($project->jirauri));
 		
-		
+		Utility::ConsoleLog(time(),"Success::Sync Completed");
 	}
     //
 }
