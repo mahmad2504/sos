@@ -38,24 +38,33 @@ function ShowGantt(data)
 	  vShowTaskInfoLink: 1, // Show link in tool tip (0/1)
 	  vShowEndWeekDate: 0,  // Show/Hide the date for the last day of the week in header for daily
 	  vAdditionalHeaders: { 
-		  category: {
-			title: 'Category'
+		  pStatus: {
+			title: 'Status'
 		  },
-		  sector: {
-			title: 'Sector'
+		  pPrioriy: {
+			title: 'Priority'
+		  },
+		  pJira: {
+			title: 'Jira'
 		  }
 		},
 	  vUseSingleCell: 100000, // Set the threshold cell per table row (Helps performance for large data.
 	  vFormatArr: ['Day', 'Week', 'Month', 'Quarter'], // Even with setUseSingleCell using Hour format on such a large chart can cause issues in some browsers,  
 	});
 	g.setShowDur(0);
-	g.setShowStartDate(0);
+	//g.setShowStartDate(0);
 	g.setShowCost(1);
 	g.setDateInputFormat('yyyy-mm-dd'); 
 	g.setScrollTo('2018-07-02');
 	// Load from a Json url
 	console.log(data);
-	JSGantt.parseJSONString(data, g);
+	for(var i=0;i<data.length;i++)
+	{
+		data[i].pGantt = g;
+		g.AddTaskItemObject(data[i]);
+	}
+		
+	//JSGantt.parseJSONString(data, g);
 	
 	g.Draw();
 }	

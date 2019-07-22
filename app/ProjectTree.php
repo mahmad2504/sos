@@ -394,6 +394,8 @@ class ProjectTree
 					$schedule_priority--;
 				}
 			}
+			
+					
 			//Utility::ConsoleLog(time(),'********'.count($task->dependson));
 			if(($task->priority == 1)&&($task->status != 'RESOLVED'))
 				$head->blockers_present = 1;
@@ -417,6 +419,16 @@ class ProjectTree
 			}
 			foreach($del as $d)
 				unset($task->dependson[$d]);
+		}
+		foreach($this->tasks as $task)
+		{
+			if(($task->schedule_priority == 0)&&($task->isparent == 0)&&($task->status == 'OPEN'))
+			{
+				$task->schedule_priority = $schedule_priority;
+				$schedule_priority--;
+			}
+			if($schedule_priority == 0)
+				break;
 		}
 	}
 	function Sync($rebuild=0)

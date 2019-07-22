@@ -17,6 +17,7 @@ class GanttController extends Controller
 	private $treedata = []; 
 	private $blockedtasks = [];
 	private $jiraurl = null;
+	private $data = [];
     public function Show(Request $request)
     {
 		if($request->user == null || $request->project==null)
@@ -44,7 +45,7 @@ class GanttController extends Controller
     }
 	public function GetData(Request $request)
 	{
-		return file_get_contents('data.json');
+		//return file_get_contents('data.json');
 		
 		if($request->id==null)
 		{
@@ -64,75 +65,61 @@ class GanttController extends Controller
 			return Response::json($returnData, 500);
     	}
 		$project = $projects[0];
-    	$users =  User::where('id',$project->user_id)->get();
-		if(count($users)==0)
-    	{
-    		$returnData = array(
-				'status' => 'error',
-				'message' => 'User Not Found'
-			);
-			return Response::json($returnData, 500);
-    	}
-		$user = $users[0];
 		$projecttree = new ProjectTree($project);
 		
 		$head = $projecttree->GetHead();
-		//dd($head);
-		$this->jiraurl = $projecttree->GetJiraUrl();
-		$this->FormatForTreeView($head,1);
-		
-		foreach($this->blockedtasks as $task)
-		{
-			$ids = explode(".",$task->extid);
-			$last = '';
-			$del = '';
-			foreach($ids as $id)
-			{
-				$parentid = $last.$del.$id;
-				$del = '.';
-				$last = $parentid;
-				if($parentid == $task->extid)
-					break;
-				//echo $parentid."<br>";
-				//var_dump($this->treedata[$parentid]);
-				if(!array_key_exists('blockedtasks',$this->treedata[$parentid]))
-					$this->treedata[$parentid]['blockedtasks'] = array();
-				$this->treedata[$parentid]['blockedtasks'][$task->key] = $task->key;
-			}
-		}
-		//echo json_encode($this->blockedtasks);
-		//$this->treedata = array_values($this->treedata);
-    	echo json_encode($this->treedata);
-		
+		$this->FormatForGantt($head,1);
+		return $this->data;
 	}
-	private function FormatForTreeView($task,$first=0)
+	private function FormatForGantt($task,$first=0)
     {
-    	$row = [];
-		if(($task->priority == 1)&&($task->status != 'RESOLVED'))
-			$this->blockedtasks[$task->key] = $task;
-		$row['extid'] = $task->extid;
-    	$row['pextid'] = $task->pextid;
-    	$row['issuetype'] = $task->issuetype;
-    	$row['summary'] = $task->summary;
-    	$row['jiraurl'] = $this->jiraurl;
-    	$row['key'] = $task->key;
-    	$row['estimate'] = $task->estimate;
-    	$row['progress'] = $task->progress;
-		$row['status'] = $task->status;
-		$row['priority'] = $task->priority;
-		$row['priority'] = $task->priority;
-		$row['dependson'] = $task->dependson;
-		$row['sprintname'] = $task->sprintname;
-		$row['sprintstate'] = $task->sprintstate;
-		$row['sprintid'] = $task->sprintid;
-		if($first)
+		$row['pID'] = $task->extid;
+		$row['pName'] = $task->summary;
+		
+		if(!isset($task->sched_start))
+			$row['pStart'] = $task->twin->sched_start;
+		else
+			$row['pStart'] = $task->sched_start;
+		
+		if(!isset($task->sched_end))
+			$row['pEnd'] = $task->twin->sched_end;
+		else
+			$row['pEnd'] = $task->sched_end;
+		
+		if(!isset($task->sched_assignee))
+			$row['pRes'] = $task->twin->sched_assignee;
+		else
+			$row['pRes'] = $task->sched_assignee;
+		
+		$row['pPlanStart'] =  "";
+		$row['pPlanEnd'] =  "";
+		
+		
+		if( $task->isparent )
+			$row['pClass'] = "ggroupblack";
+		else
 		{
-			$row['blockers'] = $task->blockers_present;
-			$row['dependencies'] = $task->dependencies_present;
+			if($task->status == 'INPROGRESS')
+				$row['pClass'] = 'gtaskgreen';
+			else
+				$row['pClass'] = 'gtaskblue';
 		}
 		
-    	$this->treedata[$task->extid] = $row;
+		$row['pLink'] = "";
+		$row['pMile'] = 0;
+		$row['pComp'] = 0;
+		$row['pGroup'] = $task->isparent;
+		$row['pOpen'] = 1;
+		$row['pDepend'] = '';
+		$row['pCaption'] = 'FFFF';
+		$row['pNotes'] = 'Some Notes text';
+		
+		$row['pStatus'] = $task->status;
+		$row['pPrioriy'] = $task->schedule_priority;
+		$row['pJira'] = $task->key;
+		
+		$this->data[] = $row;
     	foreach($task->children as $ctask)
-    		$this->FormatForTreeView($ctask);
+    		$this->FormatForGantt($ctask);
     }
 }
