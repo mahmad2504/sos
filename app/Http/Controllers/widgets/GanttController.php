@@ -18,6 +18,7 @@ class GanttController extends Controller
 	private $blockedtasks = [];
 	private $jiraurl = null;
 	private $data = [];
+	private $j=1;
     public function Show(Request $request)
     {
 		if($request->user == null || $request->project==null)
@@ -68,32 +69,50 @@ class GanttController extends Controller
 		$projecttree = new ProjectTree($project);
 		
 		$head = $projecttree->GetHead();
+		//dd($projecttree->tasks);
 		$this->FormatForGantt($head,1);
 		return $this->data;
 	}
 	private function FormatForGantt($task,$first=0)
     {
 		$row['pID'] = $task->extid;
+		$row['pIndex'] = $this->j++; 
 		$row['pName'] = $task->summary;
+		if($task->status != 'RESOLVED')
+		{
+			if(!isset($task->sched_start))
+			{
+				/*if(!isset($task->twin->sched_start))
+				{
+					echo $task->key;
+					exit();
+				}*/
+				$row['pStart'] = $task->twin->sched_start;
+			}
+			else
+				$row['pStart'] = $task->sched_start;
 		
-		if(!isset($task->sched_start))
-			$row['pStart'] = $task->twin->sched_start;
+			if(!isset($task->sched_end))
+				$row['pEnd'] = $task->twin->sched_end;
+			else
+				$row['pEnd'] = $task->sched_end;
+		
+			if(!isset($task->sched_assignee))
+				$row['pRes'] = $task->twin->sched_assignee;
+			else
+				$row['pRes'] = $task->sched_assignee;
+		}
 		else
-			$row['pStart'] = $task->sched_start;
-		
-		if(!isset($task->sched_end))
-			$row['pEnd'] = $task->twin->sched_end;
-		else
-			$row['pEnd'] = $task->sched_end;
-		
-		if(!isset($task->sched_assignee))
-			$row['pRes'] = $task->twin->sched_assignee;
-		else
-			$row['pRes'] = $task->sched_assignee;
-		
+		{
+			$row['pStart'] = '';
+			$row['pEnd'] = '';
+			if(isset($task->closedon))
+				$row['pClosedOn'] = $task->closedon;
+			$row['pRes']  = '';
+		}
 		$row['pPlanStart'] =  "";
 		$row['pPlanEnd'] =  "";
-		
+		$row['pParent'] = $task->pextid;
 		
 		if( $task->isparent )
 			$row['pClass'] = "ggroupblack";
@@ -102,14 +121,16 @@ class GanttController extends Controller
 			if($task->status == 'INPROGRESS')
 				$row['pClass'] = 'gtaskgreen';
 			else
-				$row['pClass'] = 'gtaskblue';
+				$row['pClass'] = 'gtaskopen';//'gtaskblue';
 		}
 		
-		$row['pLink'] = "";
+		$row['pLink'] = '/browse/'.$task->key;
 		$row['pMile'] = 0;
 		$row['pComp'] = 0;
 		$row['pGroup'] = $task->isparent;
 		$row['pOpen'] = 1;
+		if($task->status == 'RESOLVED')
+			$row['pOpen'] = 0;
 		$row['pDepend'] = '';
 		$row['pCaption'] = 'FFFF';
 		$row['pNotes'] = 'Some Notes text';
@@ -117,8 +138,13 @@ class GanttController extends Controller
 		$row['pStatus'] = $task->status;
 		$row['pPrioriy'] = $task->schedule_priority;
 		$row['pJira'] = $task->key;
-		
+		//if(count($this->data)0==255)
+			
+		if(count($this->data)>250)
+			return;
 		$this->data[] = $row;
+		
+		
     	foreach($task->children as $ctask)
     		$this->FormatForGantt($ctask);
     }

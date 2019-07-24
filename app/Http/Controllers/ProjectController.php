@@ -26,8 +26,14 @@ class ProjectController extends Controller
 			$projects = Project::where('id',$request->id)->get();
 		else
 			$projects = Project::where('name',$request->name)->get();
+		
+		//echo Utility::GetJiraURL($projects[0]);
+		
 		if(count($projects) > 0)
+		{
+			$projects[0]->jiraurl = Utility::GetJiraURL($projects[0]);
 			return Response::json($projects[0]);
+		}
 		else
 		{
 			$returnData = array(

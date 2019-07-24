@@ -44,9 +44,11 @@ class SyncController extends Controller
 		$tree  =  new ProjectTree($project);
 		$tree->Sync($request->rebuild);
 		
+		
 		//$project = Project::where('id',$projectid)->first();
 		//$projecttree = new ProjectTree($project);
-		//dd($projecttree);
+		
+		
 		$tj =  new Tj($tree);
 		$tj->Execute();
 		

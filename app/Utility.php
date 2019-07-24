@@ -2,6 +2,7 @@
 namespace App;
 use Redirect,Response;
 use App;
+use  App\Project;
 class Utility
 {
 	public static function DateDiffInDays($date1, $date2)  
@@ -47,6 +48,11 @@ class Utility
 		echo PHP_EOL;
 		ob_flush();
 		flush();
+	}
+	public static function GetJiraURL(Project $project)
+	{
+		return Self::GetJiraConfig($project->jirauri)['uri'];
+		
 	}
 	public static function GetJiraConfig($slot)
 	{

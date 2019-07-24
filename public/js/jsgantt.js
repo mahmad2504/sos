@@ -377,16 +377,17 @@ exports.GanttChart = function (pDiv, pFormat) {
             this.newNode(vTmpRow, 'td', null, 'gtasklist', '\u00A0');
             var vTmpCell = this.newNode(vTmpRow, 'td', null, 'gspanning gtaskname');
             vTmpCell.appendChild(this.drawSelector('top'));
+			if (this.vShowStartDate == 1)
+                this.newNode(vTmpRow, 'td', null, 'gspanning gstartdate', '\u00A0');
+            if (this.vShowEndDate == 1)
+                this.newNode(vTmpRow, 'td', null, 'gspanning genddate', '\u00A0');
             if (this.vShowRes == 1)
                 this.newNode(vTmpRow, 'td', null, 'gspanning gresource', '\u00A0');
             if (this.vShowDur == 1)
                 this.newNode(vTmpRow, 'td', null, 'gspanning gduration', '\u00A0');
             if (this.vShowComp == 1)
                 this.newNode(vTmpRow, 'td', null, 'gspanning gpccomplete', '\u00A0');
-            if (this.vShowStartDate == 1)
-                this.newNode(vTmpRow, 'td', null, 'gspanning gstartdate', '\u00A0');
-            if (this.vShowEndDate == 1)
-                this.newNode(vTmpRow, 'td', null, 'gspanning genddate', '\u00A0');
+            
             if (this.vShowPlanStartDate == 1)
                 this.newNode(vTmpRow, 'td', null, 'gspanning gstartdate', '\u00A0');
             if (this.vShowPlanEndDate == 1)
@@ -405,16 +406,17 @@ exports.GanttChart = function (pDiv, pFormat) {
             vTmpRow = this.newNode(vTmpTBody, 'tr');
             this.newNode(vTmpRow, 'td', null, 'gtasklist', '\u00A0');
             this.newNode(vTmpRow, 'td', null, 'gtaskname', '\u00A0');
+			if (this.vShowStartDate == 1)
+                this.newNode(vTmpRow, 'td', null, 'gtaskheading gstartdate', this.vLangs[this.vLang]['startdate']);
+            if (this.vShowEndDate == 1)
+                this.newNode(vTmpRow, 'td', null, 'gtaskheading genddate', this.vLangs[this.vLang]['enddate']);
             if (this.vShowRes == 1)
                 this.newNode(vTmpRow, 'td', null, 'gtaskheading gresource', this.vLangs[this.vLang]['resource']);
             if (this.vShowDur == 1)
                 this.newNode(vTmpRow, 'td', null, 'gtaskheading gduration', this.vLangs[this.vLang]['duration']);
             if (this.vShowComp == 1)
                 this.newNode(vTmpRow, 'td', null, 'gtaskheading gpccomplete', this.vLangs[this.vLang]['comp']);
-            if (this.vShowStartDate == 1)
-                this.newNode(vTmpRow, 'td', null, 'gtaskheading gstartdate', this.vLangs[this.vLang]['startdate']);
-            if (this.vShowEndDate == 1)
-                this.newNode(vTmpRow, 'td', null, 'gtaskheading genddate', this.vLangs[this.vLang]['enddate']);
+            
             if (this.vShowPlanStartDate == 1)
                 this.newNode(vTmpRow, 'td', null, 'gtaskheading gplanstartdate', this.vLangs[this.vLang]['planstartdate']);
             if (this.vShowPlanEndDate == 1)
@@ -491,6 +493,24 @@ exports.GanttChart = function (pDiv, pFormat) {
                         events_1.addListenerInputCell(vTmpCell, this_1.vEventsChange, callback, this_1.vTaskList[i_1], 'taskname', this_1.Draw.bind(this_1));
                         events_1.addListenerClickCell(vTmpCell, this_1.vEvents, this_1.vTaskList[i_1], 'taskname');
                     }
+					 if (this_1.vShowStartDate == 1) {
+                        vTmpCell = this_1.newNode(vTmpRow, 'td', null, 'gstartdate');
+                        var v = utils_1.formatDateStr(this_1.vTaskList[i_1].getStart(), this_1.vDateTaskTableDisplayFormat, this_1.vLangs[this_1.vLang]);
+                        var text = makeInput(v, this_1.vEditable, 'date', this_1.vTaskList[i_1].getStart());
+                        vTmpDiv = this_1.newNode(vTmpCell, 'div', null, null, text);
+                        var callback = function (task, e) { return task.setStart(e.target.value); };
+                        events_1.addListenerInputCell(vTmpCell, this_1.vEventsChange, callback, this_1.vTaskList[i_1], 'start', this_1.Draw.bind(this_1));
+                        events_1.addListenerClickCell(vTmpCell, this_1.vEvents, this_1.vTaskList[i_1], 'start');
+                    }
+                    if (this_1.vShowEndDate == 1) {
+                        vTmpCell = this_1.newNode(vTmpRow, 'td', null, 'genddate');
+                        var v = utils_1.formatDateStr(this_1.vTaskList[i_1].getEnd(), this_1.vDateTaskTableDisplayFormat, this_1.vLangs[this_1.vLang]);
+                        var text = makeInput(v, this_1.vEditable, 'date', this_1.vTaskList[i_1].getEnd());
+                        vTmpDiv = this_1.newNode(vTmpCell, 'div', null, null, text);
+                        var callback = function (task, e) { return task.setEnd(e.target.value); };
+                        events_1.addListenerInputCell(vTmpCell, this_1.vEventsChange, callback, this_1.vTaskList[i_1], 'end', this_1.Draw.bind(this_1));
+                        events_1.addListenerClickCell(vTmpCell, this_1.vEvents, this_1.vTaskList[i_1], 'end');
+                    }
                     if (this_1.vShowRes == 1) {
                         vTmpCell = this_1.newNode(vTmpRow, 'td', null, 'gresource');
                         var text = makeInput(this_1.vTaskList[i_1].getResource(), this_1.vEditable, 'resource', this_1.vTaskList[i_1].getResource(), this_1.vResources);
@@ -515,24 +535,7 @@ exports.GanttChart = function (pDiv, pFormat) {
                         events_1.addListenerInputCell(vTmpCell, this_1.vEventsChange, callback, this_1.vTaskList[i_1], 'comp', this_1.Draw.bind(this_1));
                         events_1.addListenerClickCell(vTmpCell, this_1.vEvents, this_1.vTaskList[i_1], 'comp');
                     }
-                    if (this_1.vShowStartDate == 1) {
-                        vTmpCell = this_1.newNode(vTmpRow, 'td', null, 'gstartdate');
-                        var v = utils_1.formatDateStr(this_1.vTaskList[i_1].getStart(), this_1.vDateTaskTableDisplayFormat, this_1.vLangs[this_1.vLang]);
-                        var text = makeInput(v, this_1.vEditable, 'date', this_1.vTaskList[i_1].getStart());
-                        vTmpDiv = this_1.newNode(vTmpCell, 'div', null, null, text);
-                        var callback = function (task, e) { return task.setStart(e.target.value); };
-                        events_1.addListenerInputCell(vTmpCell, this_1.vEventsChange, callback, this_1.vTaskList[i_1], 'start', this_1.Draw.bind(this_1));
-                        events_1.addListenerClickCell(vTmpCell, this_1.vEvents, this_1.vTaskList[i_1], 'start');
-                    }
-                    if (this_1.vShowEndDate == 1) {
-                        vTmpCell = this_1.newNode(vTmpRow, 'td', null, 'genddate');
-                        var v = utils_1.formatDateStr(this_1.vTaskList[i_1].getEnd(), this_1.vDateTaskTableDisplayFormat, this_1.vLangs[this_1.vLang]);
-                        var text = makeInput(v, this_1.vEditable, 'date', this_1.vTaskList[i_1].getEnd());
-                        vTmpDiv = this_1.newNode(vTmpCell, 'div', null, null, text);
-                        var callback = function (task, e) { return task.setEnd(e.target.value); };
-                        events_1.addListenerInputCell(vTmpCell, this_1.vEventsChange, callback, this_1.vTaskList[i_1], 'end', this_1.Draw.bind(this_1));
-                        events_1.addListenerClickCell(vTmpCell, this_1.vEvents, this_1.vTaskList[i_1], 'end');
-                    }
+                   
                     if (this_1.vShowPlanStartDate == 1) {
                         vTmpCell = this_1.newNode(vTmpRow, 'td', null, 'gplanstartdate');
                         var v = this_1.vTaskList[i_1].getPlanStart() ? utils_1.formatDateStr(this_1.vTaskList[i_1].getPlanStart(), this_1.vDateTaskTableDisplayFormat, this_1.vLangs[this_1.vLang]) : '';
@@ -790,6 +793,7 @@ exports.GanttChart = function (pDiv, pFormat) {
                 bd_1 = new Date();
                 console.log('before tasks loop', bd_1);
             }
+			//console.log(this.vTaskList.length);
             for (i = 0; i < this.vTaskList.length; i++) {
                 var curTaskStart = this.vTaskList[i].getStart() ? this.vTaskList[i].getStart() : this.vTaskList[i].getPlanStart();
                 var curTaskEnd = this.vTaskList[i].getEnd() ? this.vTaskList[i].getEnd() : this.vTaskList[i].getPlanEnd();
@@ -958,7 +962,7 @@ exports.GanttChart = function (pDiv, pFormat) {
                 vTmpTBody.appendChild(vDateRow.cloneNode(true));
             }
             else if (this.vFormat == 'day') {
-                vTmpTBody.appendChild(vTmpRow.cloneNode(true));
+                //vTmpTBody.appendChild(vTmpRow.cloneNode(true));
             }
             // MAIN VIEW: Appending all generated components to main view
             while (this.vDiv.hasChildNodes())

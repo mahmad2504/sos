@@ -404,7 +404,8 @@ span.gfoldercollapse {
 .gtaskgreencomplete,
 .gtaskyellowcomplete,
 .gtaskpurplecomplete,
-.gtaskpinkcomplete {
+.gtaskpinkcomplete,
+.gtaskopen {
   float: left;
   overflow: hidden;
   height: 5px;
@@ -858,7 +859,8 @@ td.gspanning div {
   .gtaskgreencomplete,
   .gtaskyellowcomplete,
   .gtaskpurplecomplete,
-  .gtaskpinkcomplete {
+  .gtaskpinkcomplete,
+  .gtaskopen  {
     height: 0px;
     filter: alpha(opacity=40);
     opacity: 0.4;
@@ -866,6 +868,8 @@ td.gspanning div {
     border-top: 5px solid;
     border-color: #000000;
   }
+  
+  
   .ggroupblackcomplete {
     height: 0px;
     filter: alpha(opacity=80);

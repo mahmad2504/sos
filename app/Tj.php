@@ -398,6 +398,13 @@ class Tj
 		foreach($this->projecttree->tasks as $task)
 		{
 			$extid = $task->extid;
+			
+			if(!array_key_exists($extid,$scheduled_data))
+			{
+				Utility::ConsoleLog(time(),'Error::'.$extid.' does not exit');	
+				//dd($scheduled_data);
+			}
+			
 			$task->sched_start = $scheduled_data[$extid]->Start;
 			$task->sched_end = $scheduled_data[$extid]->End;
 			$task->sched_assignee = $scheduled_data[$extid]->Resource;

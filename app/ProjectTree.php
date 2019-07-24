@@ -25,6 +25,7 @@ class Task
 		else
 			$this->extid = $this->pextid.".".$this->pos;
 		
+		$this->closedon = null;
 		$this->schedule_priority = 0;
 		$this->duplicate = 0;
 		$this->instancecount = 1;
@@ -62,10 +63,10 @@ class Task
 		if($issuetype=='Epic')
 			return 'EPIC';
 		
-		if(($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
+		if(($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
 		
-		Utility::ConsoleLog(time(),"Unmapped type=".$issuetype);
+		Utility::ConsoleLog(time(),"Error::Unmapped type=".$issuetype);
 		exit();
 		//
 	}
@@ -96,7 +97,7 @@ class Task
 			return;
 	      
 		Utility::ConsoleLog(time(),"Running Query ".$this->query);
-		$fields = 'description,summary,status,issuetype,priority,assignee,issuelinks,';
+		$fields = 'subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
 		
 		if($estimation_method == 1)
 			$tasks = Jira::Search($this->query,1000,$fields.$story_points.",".$sprint);
@@ -111,13 +112,27 @@ class Task
 		{
 			$ntask = new Task($this->parent,$this->level+1,$this->extid,$j++);
 			$ntask->key = $key;
+			
+			
+			
+			//dd($tree->tasks['MEIF-2090']);
+			
 			$ntask->id = $task->id;
 			$ntask->otatus = $task->fields->status->name;
+			if(isset($task->fields->resolutiondate))
+				$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
+			
 			$ntask->status = $this->MapStatus($task->fields->status->name);
+			
+			if(($ntask->status == 'RESOLVED') and ($ntask->closedon == null))
+				Utility::ConsoleLog(time(),"Error::"." Closedon date missing");
+			
+			
 			$ntask->summary = $task->fields->summary;
 			$ntask->oissuetype = $task->fields->issuetype->name;
 			$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name);
 			
+					
 			$sprintname = '';
 			$sprintstate = '';
 			$sprintid = '';
@@ -145,6 +160,8 @@ class Task
 				$ntask->sprintstate = $sprintstate;
 				$ntask->sprintid = $sprintid;
 			}
+			//if($key  == 'HMIP-1761')
+			//	dd($task->fields);
 			
 			if(isset($task->fields->assignee))
 			{
@@ -179,15 +196,19 @@ class Task
 				$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","implemented by")';
 			if($ntask->issuetype == 'EPIC')
 				$ntask->query = "'Epic Link'=".$ntask->key;
+			if(count($task->fields->subtasks)>0)
+				$ntask->query = "parent=".$ntask->key;
 			
 			if(isset($task->fields->$story_points))
 				$ntask->storypoints = $task->fields->$story_points;
 			
 			if(isset($task->fields->timeoriginalestimate))
 				$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);
+			
 			$ntask->estimate = $ntask->timeestimate;
 			if($ntask->storypoints>0)
 				$ntask->estimate = $ntask->storypoints;
+			
 			$ntask->priority = $task->fields->priority->id;
 			$ntask->dependson = [];
 			foreach($task->fields->issuelinks as $issuelink)
@@ -223,6 +244,8 @@ class Task
 			if($ntask->issuetype == 'TASK')
 				if($ntask->estimate == 0)
 					$unestimated_count++;
+			
+			
 			//for($i=0;$i<$ntask->level;$i++)
 			//	$buffer .= '      ';
 			//Utility::ConsoleLog(time(),$buffer." ".$ntask->extid." ".$ntask->priority." ".$ntask->key."  ".$ntask->estimate."/".$ntask->storypoints." ".$ntask->query." ".$ntask->status);
@@ -437,41 +460,29 @@ class ProjectTree
 			Utility::ConsoleLog(time(),'Rebuilding Project - '.$this->project->name);
 		else
 			Utility::ConsoleLog(time(),'Building Project - '.$this->project->name);
-		
 		Jira::Initialize($this->jiraconfig['uri'],$this->jiraconfig['username'],$this->jiraconfig['password'],$this->datapath,$rebuild);
-		
-		
 		$task = new Task($this,1,0,0,$this->project->name,$this->project->jiraquery);
 		$this->Populate($task);
 		$this->ComputeStatus($task);
 		$this->ComputeEstimate($task);
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
-		
 		$this->tasks = [];
 		$this->FindDuplicates($task);
-		
 		foreach($this->tasks as $stask)
 		{
 			if($stask->instancecount > 1)
 				Utility::ConsoleLog(time(),'Warning::'.$stask->key." Duplicate in plan");	
 		}
-			
-		
 		$this->UpdateDependencies($task);
 		$this->ComputeTotalCorrectedEstimates($task);
 		$this->tree = $task;
-		
-		
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
-		
 		foreach($allresources as $resource)
 		{
 			$resource->active = 0;
 			$resource->save();
 		}
-		
-			
 		// Update Resources Database 
 		foreach($this->resources as $res)
 		{
@@ -521,6 +532,9 @@ class ProjectTree
 			}
 		}
 		$this->presources = $this->project->resources()->get();
+		
+		
+		
 		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
 		
@@ -545,10 +559,10 @@ class ProjectTree
 		$totalestimate = 0;
 		$totaltimespent = 0;
 		
-		foreach($this->tasks as $task)
+		foreach($this->tasks as $stask)
 		{
-			$totalestimate += $task->estimate;
-			$totaltimespent += $task->timespent;
+			$totalestimate += $stask->estimate;
+			$totaltimespent += $stask->timespent;
 		}
 		$totalprogress  = 0;
 		if($totalestimate > 0)

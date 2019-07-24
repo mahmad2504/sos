@@ -11,8 +11,8 @@
 
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
 	<div class="loading">Loading&#8230;</div>
+	<button id="chart" type="button" class="float-right btn btn-outline-success btn-sm">Hide Chart</button>
 	<p id='description'>Description</p>
-	
 </div>
 
 <div style="position:relative" class="gantt" id="GanttChartDIV"></div>
@@ -25,6 +25,7 @@ var username = "{{$user->name}}";
 var userid = {{$user->id}};
 var projectid = {{$project->id}};
 var cur_row = null;
+var jiraurl =  null;
 function ShowGantt(data)
 {
 	var g = new JSGantt.GanttChart(document.getElementById('GanttChartDIV'), 'day');
@@ -38,6 +39,9 @@ function ShowGantt(data)
 	  vShowTaskInfoLink: 1, // Show link in tool tip (0/1)
 	  vShowEndWeekDate: 0,  // Show/Hide the date for the last day of the week in header for daily
 	  vAdditionalHeaders: { 
+		  pIndex: {
+			title: 'Index'
+		  },
 		  pStatus: {
 			title: 'Status'
 		  },
@@ -46,6 +50,9 @@ function ShowGantt(data)
 		  },
 		  pJira: {
 			title: 'Jira'
+		  },
+		  pClosedOn : {
+			title: 'Closed On'
 		  }
 		},
 	  vUseSingleCell: 100000, // Set the threshold cell per table row (Helps performance for large data.
@@ -60,7 +67,10 @@ function ShowGantt(data)
 	console.log(data);
 	for(var i=0;i<data.length;i++)
 	{
-		data[i].pGantt = g;
+		if(data[i].pJira.length > 0) 
+			data[i].pName = "<a href='"+jiraurl+"/browse/"+data[i].pJira+"'>"+data[i].pName+"</a>";
+		
+		
 		g.AddTaskItemObject(data[i]);
 	}
 		
@@ -82,10 +92,26 @@ function LoadProjectData(url,data,onsuccess,onfail)
 }
 function OnProjectDataReceived(response)
 {
-	console.log(response.description);
+	console.log(response);
+	jiraurl = response.jiraurl;
 	$('#description').text(response.description);
 }
-
+function OnChartChangeClick(event)
+{
+	console.log("ddd");
+	var val = $('.gmainleft').css("flex");
+	if(val == '0 0 100%')
+	{
+		$('.gmainleft').css('flex','0 0 30%');
+		$('#chart').text('Hide Chart');
+	}
+	else
+	{
+		$('.gmainleft').css('flex','0 0 100%');
+		$('#chart').text('Show Chart');
+	}
+	
+}
 $(document).ready(function()
 {
 	if(username != null)
@@ -93,6 +119,7 @@ $(document).ready(function()
 	
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	$('#chart').on('click',OnChartChangeClick);
 	LoadProjectData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
 	$.ajax(
 	{
