@@ -13,21 +13,19 @@ $unestimated_count = 0;
 class Jira
 {
 	static $url=null;
-	static $curl=null;
 	static $path=null;
 	static $rebuild=0;
+	static $user = null;
+	static $pass =  null;
 	public static function Initialize($url,$user,$pass,$path,$rebuild)
 	{
-		self::$curl = curl_init();
-		curl_setopt_array(self::$curl, array(
-			CURLOPT_USERPWD => $user.':'.$pass,
-			CURLOPT_RETURNTRANSFER => true
-		));
 		self::$path = $path;
-		self::$url = $url. '/rest/api/latest/';
+		self::$url = $url;
 		self::$rebuild = $rebuild;
+		self::$user = $user;
+		self::$pass = $pass;
 	}
-	public static function Search($query,$maxresults=1000,$fields=null)
+	public static function Search($query,$maxresults=1000,$fields=null,$order=null)
 	{
 		$filename = self::$path."/".md5($query);
 		$last_update_date = '';
@@ -37,11 +35,11 @@ class Jira
 			$tasks = json_decode(file_get_contents($filename));
 			$last_update_date = ' and updated>"'.date ("Y/m/d H:i" , filemtime($filename)).'"';
 		}
-		$query .= $last_update_date.' ORDER BY Rank ASC ';
+		$query .= $last_update_date.' '.$order;
 		
 		$query = str_replace(" ","%20",$query);
 		
-		$resource=self::$url."search?jql=".$query.'&maxResults='.$maxresults;
+		$resource=self::$url.'/rest/api/latest/'."search?jql=".$query.'&maxResults='.$maxresults;
 		
 		if($fields != null)
 			$resource.='&fields='.$fields;
@@ -56,15 +54,27 @@ class Jira
 		$tasks = json_decode(file_get_contents($filename));
 		return $tasks;
 	}
-	public static  function GetJiraResource($resource) 
+	public static  function GetJiraResource($resource,$data=null) 
 	{
-		$curl = self::$curl;
-		//echo $resource;
-		curl_setopt($curl, CURLOPT_URL,$resource);
+		$curl = curl_init();
+		//curl_reset($curl);
+		curl_setopt_array($curl, array(
+		CURLOPT_USERPWD => self::$user.':'.self::$pass,
+		CURLOPT_URL =>$resource,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_HTTPHEADER => array('Content-type: application/json')));	
+		
+		if($data != null)
+		{
+			curl_setopt_array($curl, array(
+				CURLOPT_POST => 1,
+				CURLOPT_POSTFIELDS => $data
+				));
+		}
 		$result = curl_exec($curl);
 		$ch_error = curl_error($curl); 
 		$code = curl_getinfo ($curl, CURLINFO_HTTP_CODE);
-	
+		
 		if ($ch_error)
 		{
 			Utility::ConsoleLog(time(),'Error::'.$ch_error);
@@ -75,7 +85,7 @@ class Jira
 		{
 			
 			$data = json_decode($result,true);
-			
+		
 			$tasks = array();
 			
 			if(isset($data["issues"]))
@@ -91,7 +101,11 @@ class Jira
 				}
 				return $tasks;
 			}
-			return $tasks;
+			else if(isset($data['forestUpdates']))
+			{
+				return $data['forestUpdates'][1]['formula'];
+			}
+			return $data;
 		}
 		else
 		{
@@ -103,6 +117,31 @@ class Jira
 		//$data = json_decode($result);
 		//var_dump($data);
 	}
+	static  function GetStructure($structid) 
+	{
+		$jdata = '{"forests":[{"spec":{"type":"clipboard"},"version":{"signature":898732744,"version":0}},{"spec":{"structureId":'.$structid.',"title":true},"version":{"signature":0,"version":0}}],"items":{"version":{"signature":-157412296,"version":43401}}}';
+		$resource=self::$url.'/rest/structure/2.0/poll';
+		$formula = self::GetJiraResource($resource,$jdata );
+		$formula_array = explode(",",$formula);
+		$objects = array();
+		foreach($formula_array as $formula)
+		{
+			$detail = explode(":",$formula);
+			$obj = new \StdClass();
+			
+			$obj->rwoid = $detail[0];
+			$obj->level = $detail[1];
+			$obj->taskid = $detail[2];
+			if(strpos($detail[2], "/")>0)
+			{}
+			else
+			{
+				$objects[$obj->taskid] = $obj;
+			}
+		}
+		return $objects;
+	}
+
 }
 
 ?>

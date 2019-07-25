@@ -101,6 +101,9 @@ class GanttController extends Controller
 				$row['pRes'] = $task->twin->sched_assignee;
 			else
 				$row['pRes'] = $task->sched_assignee;
+			
+			if(strlen(trim($row['pRes']))==0)
+				$row['pRes'] = $task->assignee;
 		}
 		else
 		{
