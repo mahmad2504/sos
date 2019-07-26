@@ -15,7 +15,7 @@ class Task
 	{
 		$this->summary = $summary;
 		$this->query = $query;
-		$this->key = '';
+		
 		$this->level = $level;
 		$this->pos = $pos;
 		$this->pextid = $pextid;
@@ -24,7 +24,7 @@ class Task
 			$this->extid = $level;
 		else
 			$this->extid = $this->pextid.".".$this->pos;
-		
+		$this->key = $this->extid;
 		$this->closedon = null;
 		$this->schedule_priority = 0;
 		$this->duplicate = 0;
@@ -230,11 +230,14 @@ class Task
 		
 		global $unestimated_count;
 		//Utility::ConsoleLog(time(),$this->level." ".$this->key);
+		
 		if($this->query == null)
-			return;
-		if(substr( $this->query, 0, 10 ) === "structure=")
+			return 1;
+		
+		else if(substr( $this->query, 0, 10 ) === "structure=")
 		{
 			$structure_id = explode('structure=',$this->query)[1];
+			Utility::ConsoleLog(time(),'Wait::Reading Structure '.$structure_id);
 			$objects = Jira::GetStructure($structure_id);
 			
 			$query = 'id in (' ;
@@ -688,7 +691,32 @@ class ProjectTree
 		else
 			Utility::ConsoleLog(time(),'Building Project - '.$this->project->name);
 		Jira::Initialize($this->jiraconfig['uri'],$this->jiraconfig['username'],$this->jiraconfig['password'],$this->datapath,$rebuild);
-		$task = new Task($this,1,0,0,$this->project->name,$this->project->jiraquery);
+		
+		$queries = preg_replace('~[\r\n]+~', ',', $this->project->jiraquery);
+		$queries = explode(',',$queries);
+		$queries = array_filter($queries);
+		
+		if(count($queries)>1)
+		{
+			$task = new Task($this,1,0,0,$this->project->name,null);
+			$pos = 0;
+			foreach($queries as $query)
+			{
+				$query = explode(":",$query);
+				$name = $query[0];
+				if(count($query)>1)
+				{
+					$name = $query[1];
+				}
+				$query = $query[0];
+				$ctask = new Task($this,$task->level+1,$task->extid,$pos++,$name,$query);
+				$task->AddChild($ctask);
+			}
+		}
+		else
+			$task = new Task($this,1,0,0,$this->project->name,$queries[0]);
+		
+		
 		$this->Populate($task);
 		$this->ComputeStatus($task);
 		$this->ComputeEstimate($task);
@@ -704,6 +732,8 @@ class ProjectTree
 		$this->UpdateDependencies($task);
 		$this->ComputeTotalCorrectedEstimates($task);
 		$this->tree = $task;
+		//dd($this->tree);
+		
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		foreach($allresources as $resource)
 		{
@@ -771,6 +801,7 @@ class ProjectTree
 	}
 	function Save()
 	{
+		//dd($this->tree);
 		$data = serialize($this->tree);
     	file_put_contents($this->treepath, $data);
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
@@ -785,11 +816,13 @@ class ProjectTree
 	{
 		$totalestimate = 0;
 		$totaltimespent = 0;
-		
 		foreach($this->tasks as $stask)
 		{
-			$totalestimate += $stask->estimate;
-			$totaltimespent += $stask->timespent;
+			if($stask->isparent ==0 )
+			{
+				$totalestimate += $stask->estimate;
+				$totaltimespent += $stask->timespent;
+			}
 		}
 		$totalprogress  = 0;
 		if($totalestimate > 0)

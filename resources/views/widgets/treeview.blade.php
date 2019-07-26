@@ -219,7 +219,10 @@ $(document).ready(function()
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
 			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
 			rowstr += id+" "+title+"</span></td>";
-			rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+			if(linktext == id)// Not a Jira Task 
+				rowstr += '<td></td>';
+			else
+				rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
 			rowstr += "<td class='blockers' style='font-size:.6rem;'>"+blockedtasksstr+"</td>";
 			rowstr += "<td class='dependencies' style='font-size:.6rem;'>"+dtasksstr+"</td>";
 			

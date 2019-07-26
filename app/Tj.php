@@ -383,7 +383,7 @@ class Tj
 	function Execute()
 	{
 		//." 2>&1"
-		Utility::ConsoleLog(time(),'Wait::Generating Scheudule ...');
+		Utility::ConsoleLog(time(),'Wait::Generating Schedule ...');
 		$cmd = "tj3 -o ".$this->datapath."  ".$this->planpath." 2>&1";
 		exec($cmd,$result);
 		$pos1 = strpos($result[0], 'Error');
