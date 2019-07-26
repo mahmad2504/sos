@@ -43,6 +43,51 @@ class Tj
 			$header = $header.'leaves holiday "holiday "'.$holiday."\n";
 		return $header;
 	}*/
+	function DependsHeader($task)
+	{
+		$header = "";
+		if(count($task->dependson) > 0)
+		{
+			
+			$del = "";
+			$count = count(explode(".",$task->extid));
+			$pre = "";;
+			while($count--)
+				$pre = $pre."!";
+			
+			foreach($task->dependson as $skey)
+			{
+				//depends !!!t1.t1a1.t1a1a1,!!!t1.t1a2.t1a2a1 
+				//echo $stask->ExtId." ";
+				$stask = $task->parent->tasks[$skey];
+				$post = "";
+				$codes = explode(".",$stask->extid);
+				$lastcode = "";
+				for($i=0;$i<count($codes);$i++)
+				{
+					if($i == 0)
+					{
+						$lastcode = "t".$codes[$i];
+						$post = $lastcode;
+					}
+					else
+					{
+						$lastcode = $lastcode."a".$codes[$i];
+						$post  =  $post.".".$lastcode;
+					}
+				}
+				$header = $header.$del.$pre.$post;
+				$del=",";
+				//echo $stask->ExtId." ";
+				//echo "[".$pre.$post."]";
+				//echo EOL;
+			}
+			return $header;
+		}
+		else
+			return null;
+		//echo $header.EOL;
+	}
 	function FlushTask($task)
 	{	
 		$tname = trim($task->extid)." ".substr($task->summary,0,10);
@@ -74,6 +119,11 @@ class Tj
 		
 		if($task->isparent == 0)
 			$header = $header.$spaces."   complete ".round($task->progress,0)."\n";
+		
+		$dheader = $this->DependsHeader($task);
+		
+		if($dheader != null)
+			$header = $header.$spaces."   depends ".$dheader."\n";
 		
 		if(isset($task->startconstraint))
 		{
@@ -410,6 +460,7 @@ class Tj
 			$task->sched_assignee = $scheduled_data[$extid]->Resource;
 			$task->sched_estimatates_month = $scheduled_data[$extid]->month;
 		}
+		//dd($this->projecttree->tasks);
 		//$this->projecttree->Save();
 		
 	}

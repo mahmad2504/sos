@@ -415,6 +415,17 @@ span.gfoldercollapse {
   margin-top: 4px;
 }
 
+.gtaskclosed {
+  float: left;
+  overflow: hidden;
+  height: 5px;
+  filter: alpha(opacity=40);
+  opacity: 0.4;
+  background-color: #ff0000;
+  margin-top: 4px;
+  width: 1px !important;
+}
+
 /*  END Task bar styles */
 
 .glinev {
@@ -861,6 +872,14 @@ td.gspanning div {
   .gtaskpurplecomplete,
   .gtaskpinkcomplete,
   .gtaskopen  {
+    height: 0px;
+    filter: alpha(opacity=40);
+    opacity: 0.4;
+    margin-top: -9px;
+    border-top: 5px solid;
+    border-color: #000000;
+  }
+  .gtaskclosed {
     height: 0px;
     filter: alpha(opacity=40);
     opacity: 0.4;

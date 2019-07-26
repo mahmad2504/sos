@@ -10,7 +10,7 @@ use App\Http\Controllers\ProjectController;
 class Task
 {
 	public $children = array();
-	private $parent = null;
+	public $parent = null;
 	function __construct($parent,$level,$pextid,$pos,$summary=null,$query=null)
 	{
 		$this->summary = $summary;
@@ -668,7 +668,10 @@ class ProjectTree
 						$head->dependencies_present = 1;
 				}
 				else
-					$head->dependencies_present = 1;
+				{
+					$del[] = $i;
+					Utility::ConsoleLog(time(),'Error::'.$task->key." dependency ".$key." not part of project");
+				}
 			}
 			foreach($del as $d)
 				unset($task->dependson[$d]);

@@ -78,41 +78,52 @@ class GanttController extends Controller
 		$row['pID'] = $task->extid;
 		$row['pIndex'] = $this->j++; 
 		$row['pName'] = $task->summary;
-		if($task->status != 'RESOLVED')
+		$row['pDepend'] = '';
+		if(count($task->dependson)>0)
 		{
-			if(!isset($task->sched_start))
+			 $del = "";
+			foreach($task->dependson as $key)
 			{
-				/*if(!isset($task->twin->sched_start))
-				{
-					echo $task->key;
-					exit();
-				}*/
-				$row['pStart'] = $task->twin->sched_start;
+			   //echo $task->key." depends on ".$key."\r\n";
+			   if(isset($task->parent->tasks[$key]))
+			   {
+					$predecessor = $task->parent->tasks[$key];
+					$row['pDepend'] =  $row['pDepend'].$del.$predecessor->extid;
+					$del = ",";
+			   }
 			}
-			else
-				$row['pStart'] = $task->sched_start;
-		
-			if(!isset($task->sched_end))
-				$row['pEnd'] = $task->twin->sched_end;
-			else
-				$row['pEnd'] = $task->sched_end;
-		
-			if(!isset($task->sched_assignee))
-				$row['pRes'] = $task->twin->sched_assignee;
-			else
-				$row['pRes'] = $task->sched_assignee;
-			
-			if(strlen(trim($row['pRes']))==0)
-				$row['pRes'] = $task->assignee;
+		}
+		//if($task->status != 'RESOLVED')
+		//{
+		if(!isset($task->sched_start))
+		{
+			/*if(!isset($task->twin->sched_start))
+			{
+				echo $task->key;
+				exit();
+			}*/
+			$row['pStart'] = $task->twin->sched_start;
 		}
 		else
-		{
-			$row['pStart'] = '';
-			$row['pEnd'] = '';
-			if(isset($task->closedon))
-				$row['pClosedOn'] = $task->closedon;
-			$row['pRes']  = '';
-		}
+			$row['pStart'] = $task->sched_start;
+	
+		if(!isset($task->sched_end))
+			$row['pEnd'] = $task->twin->sched_end;
+		else
+			$row['pEnd'] = $task->sched_end;
+	
+		if(!isset($task->sched_assignee))
+			$row['pRes'] = $task->twin->sched_assignee;
+		else
+			$row['pRes'] = $task->sched_assignee;
+		
+		if(strlen(trim($row['pRes']))==0)
+			$row['pRes'] = $task->assignee;
+		
+		
+		if(isset($task->closedon))
+			$row['pClosedOn'] = $task->closedon;
+			
 		$row['pPlanStart'] =  "";
 		$row['pPlanEnd'] =  "";
 		$row['pParent'] = $task->pextid;
@@ -123,8 +134,10 @@ class GanttController extends Controller
 		{
 			if($task->status == 'INPROGRESS')
 				$row['pClass'] = 'gtaskgreen';
-			else
+			else if($task->status == 'OPEN')
 				$row['pClass'] = 'gtaskopen';//'gtaskblue';
+			else
+				$row['pClass'] = 'gtaskclosed';//'gtaskblue';
 		}
 		
 		$row['pLink'] = '/browse/'.$task->key;
@@ -134,7 +147,7 @@ class GanttController extends Controller
 		$row['pOpen'] = 1;
 		if($task->status == 'RESOLVED')
 			$row['pOpen'] = 0;
-		$row['pDepend'] = '';
+		
 		$row['pCaption'] = 'FFFF';
 		$row['pNotes'] = 'Some Notes text';
 		
