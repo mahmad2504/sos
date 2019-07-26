@@ -186,11 +186,14 @@ class Task
 		$ntask->dependson = [];
 		foreach($task->fields->issuelinks as $issuelink)
 		{
-			if( strtolower($issuelink->type->name) == 'dependency')
+			if($this->parent->project->jira_dependencies==1)
 			{
-				if(isset($issuelink->outwardIssue))
+				if( strtolower($issuelink->type->name) == 'dependency')
 				{
-					$ntask->dependson[] = $issuelink->outwardIssue->key;
+					if(isset($issuelink->outwardIssue))
+					{
+						$ntask->dependson[] = $issuelink->outwardIssue->key;
+					}
 				}
 			}
 		}

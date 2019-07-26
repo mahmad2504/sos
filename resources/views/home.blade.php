@@ -362,12 +362,17 @@ function OnUpdateProject(event)
 	if(ValidateFormData(form.serializeArray())==-1)
 		return;
 	var serializedData = form.serialize();
-	
+	console.log("*****************");
+	console.log($('#psettings_jiradependencies').prop('checked'));
 	data = {};
 	$(form.serializeArray()).each(function(i, field)
 	{
 		data[field.name] = field.value;
 	});
+	data.jira_dependencies = 0;
+	if($('#psettings_jiradependencies').prop('checked'))
+		data.jira_dependencies = 1;
+	
 	data.jirauri =  $('#psettings_jirauri').val();
 	data.user_id = userid;
 	data._token = "{{ csrf_token() }}";
