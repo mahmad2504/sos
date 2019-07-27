@@ -213,7 +213,11 @@ class Task
 		
 		
 		if(isset($task->fields->duedate))
+		{
 			$ntask->duedate = $task->fields->duedate;
+			if($ntask->duedate < Utility::GetToday('Y-m-d'))
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a missed deadline");	
+		}
 		
 		
 		//echo $ntask->timespent;
