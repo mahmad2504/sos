@@ -295,6 +295,7 @@ span.gfoldercollapse {
 .gtaskgreen,
 .gtaskyellow,
 .gtaskpurple,
+.gtaskgreenunestimated,
 .gtaskpink {
   height: 13px;
   filter: alpha(opacity=90);
@@ -335,14 +336,14 @@ span.gfoldercollapse {
 }
 
 .ggroupblackcomplete {
-  float: left;
+  /*float: left;
   overflow: hidden;
   height: 3px;
   filter: alpha(opacity=80);
   opacity: 0.8;
   background-color: #777777;
   margin-top: 2px;
-  margin-bottom: 2px;
+  margin-bottom: 2px;*/
 }
 
 .gtaskblue {
@@ -371,7 +372,16 @@ span.gfoldercollapse {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#66ED4B', endColorstr='#50c13a', GradientType=0);
   /* IE6-9 */
 }
-
+.gtaskgreenunestimated {
+ background: rgb(80, 193, 58);
+  /* Old browsers */
+  background: linear-gradient(to bottom, rgba(80, 193, 58, 1) 0%, rgba(88, 209, 64, 1) 20%, rgba(102, 237, 75, 1) 40%, rgba(80, 193, 58, 1) 70%, rgba(53, 132, 37, 1) 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#66ED4B', endColorstr='#50c13a', GradientType=0);
+  /* IE6-9 */
+  width: 6px !important;
+}
+  
 .gtaskyellow {
   background: rgb(247, 228, 56);
   /* Old browsers */
@@ -404,15 +414,36 @@ span.gfoldercollapse {
 .gtaskgreencomplete,
 .gtaskyellowcomplete,
 .gtaskpurplecomplete,
-.gtaskpinkcomplete,
+.gtaskpinkcomplete {
+  /*float: left;
+  overflow: hidden;
+  height: 5px;
+  filter: alpha(opacity=40);
+  opacity: 0.4;
+  background-color: #000000;
+  margin-top: 4px;*/
+}
+
 .gtaskopen {
   float: left;
   overflow: hidden;
   height: 5px;
   filter: alpha(opacity=40);
   opacity: 0.4;
-  background-color: #000000;
+  background-color: rgb(58, 132, 195);
   margin-top: 4px;
+}
+
+
+.gtaskopenunestimated{
+  float: left;
+  overflow: hidden;
+  height: 5px;
+  filter: alpha(opacity=40);
+  opacity: 0.4;
+  background-color: rgb(58, 132, 195);
+  margin-top: 4px;
+  width: 6px !important;
 }
 
 .gtaskclosed {
@@ -421,9 +452,9 @@ span.gfoldercollapse {
   height: 5px;
   filter: alpha(opacity=40);
   opacity: 0.4;
-  background-color: #ff0000;
+  background-color: #000000;
   margin-top: 4px;
-  width: 1px !important;
+  width: 2px !important;
 }
 
 /*  END Task bar styles */
@@ -796,7 +827,7 @@ td.gspanning div {
 
 .gmainleft {
   overflow: hidden;
-  flex: 0 0 30%;
+  flex: 0 0 27%;
 }
 
 .gtasktableh tr,
@@ -850,6 +881,7 @@ td.gspanning div {
     border-top: 13px solid;
     border-color: rgb(80, 193, 58);
   }
+  
   .gtaskyellow {
     height: 0px;
     border-top: 13px solid;
@@ -887,7 +919,6 @@ td.gspanning div {
     border-top: 5px solid;
     border-color: #000000;
   }
-  
   
   .ggroupblackcomplete {
     height: 0px;

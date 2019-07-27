@@ -76,7 +76,6 @@ class GanttController extends Controller
 	private function FormatForGantt($task,$first=0)
     {
 		$row['pID'] = $task->extid;
-		$row['pIndex'] = $this->j++; 
 		$row['pName'] = $task->summary;
 		$row['pDepend'] = '';
 		if(count($task->dependson)>0)
@@ -133,27 +132,38 @@ class GanttController extends Controller
 		else
 		{
 			if($task->status == 'INPROGRESS')
+			{
 				$row['pClass'] = 'gtaskgreen';
+				if($task->estimate == 0)
+					$row['pClass'] = 'gtaskgreenunestimated';
+				
+				
+			}
 			else if($task->status == 'OPEN')
+			{
 				$row['pClass'] = 'gtaskopen';//'gtaskblue';
+				if($task->estimate == 0)
+					$row['pClass'] = 'gtaskopenunestimated';
+			}
 			else
 				$row['pClass'] = 'gtaskclosed';//'gtaskblue';
 		}
 		
 		$row['pLink'] = '/browse/'.$task->key;
 		$row['pMile'] = 0;
-		$row['pComp'] = 0;
+		$row['pComp'] = $task->progress;
 		$row['pGroup'] = $task->isparent;
 		$row['pOpen'] = 1;
 		if($task->status == 'RESOLVED')
 			$row['pOpen'] = 0;
 		
-		$row['pCaption'] = 'FFFF';
+		$row['pCaption'] = '';
 		$row['pNotes'] = 'Some Notes text';
 		
 		$row['pStatus'] = $task->status;
 		$row['pPrioriy'] = $task->schedule_priority;
 		$row['pJira'] = $task->key;
+		$row['deadline'] = $task->duedate;
 		//if(count($this->data)0==255)
 			
 		if(count($this->data)>250)

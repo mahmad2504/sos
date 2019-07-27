@@ -4,6 +4,13 @@
 @endsection
 @section('style')
 .progress {height: 10px;}
+.deadline-line {
+      position: absolute;
+      top: 0;
+      width: 3px;
+      height: 22px;
+      background: #ff0000;
+    }
 @endsection
 @section('content')
 
@@ -26,22 +33,35 @@ var userid = {{$user->id}};
 var projectid = {{$project->id}};
 var cur_row = null;
 var jiraurl =  null;
+function drawCustomElements(g) {
+  for (const item of g.getList()) {
+    if (item.getDataObject().deadline) {
+		console.log((item.getDataObject().deadline));
+		console.log((item.getDataObject().pJira));
+      const x = g.chartRowDateToX(new Date(item.getDataObject().deadline));
+      const td = item.getChildRow().querySelector('td');
+      td.style.position = 'relative';
+      const div = document.createElement('div');
+      div.style.left = `${x}px`;
+      div.classList.add('deadline-line');
+      td.appendChild(div);
+    }
+  }
+}
+
 function ShowGantt(data)
 {
 	var g = new JSGantt.GanttChart(document.getElementById('GanttChartDIV'), 'day');
 	g.setOptions({
-	  vCaptionType: 'Complete',  // Set to Show Caption : None,Caption,Resource,Duration,Complete,     
+	  vCaptionType: 'Caption',  // Set to Show Caption : None,Caption,Resource,Duration,Complete,     
 	  vQuarterColWidth: 36,
 	  vDateTaskDisplayFormat: 'day dd month yyyy', // Shown in tool tip box
 	  vDayMajorDateDisplayFormat: 'mon yyyy - Week ww',// Set format to dates in the "Major" header of the "Day" view
 	  vWeekMinorDateDisplayFormat: 'dd mon', // Set format to display dates in the "Minor" header of the "Week" view
 	  vLang: 'en',
-	  vShowTaskInfoLink: 1, // Show link in tool tip (0/1)
+	  vShowTaskInfoLink: 0, // Show link in tool tip (0/1)
 	  vShowEndWeekDate: 0,  // Show/Hide the date for the last day of the week in header for daily
 	  vAdditionalHeaders: { 
-		  pIndex: {
-			title: 'Index'
-		  },
 		  pStatus: {
 			title: 'Status'
 		  },
@@ -57,26 +77,44 @@ function ShowGantt(data)
 		},
 	  vUseSingleCell: 100000, // Set the threshold cell per table row (Helps performance for large data.
 	  vFormatArr: ['Day', 'Week', 'Month', 'Quarter'], // Even with setUseSingleCell using Hour format on such a large chart can cause issues in some browsers,  
+	  vEvents: {
+  
+        beforeDraw: () => console.log('before draw listener'),
+        afterDraw: () => {
+          console.log('after draw listener');
+		  drawCustomElements(g);
+        }
+      },	
+	
 	});
-	g.setShowDur(0);
-	//g.setShowStartDate(0);
-	g.setShowCost(1);
+	g.setShowDur(1);
+	
 	g.setDateInputFormat('yyyy-mm-dd'); 
 	g.setScrollTo('2018-07-02');
 	// Load from a Json url
-	console.log(data);
 	for(var i=0;i<data.length;i++)
 	{
 		if(data[i].pJira.length > 0) 
-			data[i].pName = "<a href='"+jiraurl+"/browse/"+data[i].pJira+"'>"+data[i].pName+"</a>";
-		
-		
+		{
+			var href=jiraurl+"/browse/"+data[i].pJira;
+			data[i].pName = "<a class='taskname' href='"+href+"'>"+data[i].pName+"</a>";
+			data[i].pCaption = "<a href='"+href+"'>"+data[i].pJira+"</a>";
+		}
 		g.AddTaskItemObject(data[i]);
 	}
 		
 	//JSGantt.parseJSONString(data, g);
 	
 	g.Draw();
+	
+	$(".taskname").hover(function() {
+        $(this).css('cursor','pointer').attr('title', $(this).text());
+    }, function() {
+        $(this).css('cursor','auto');
+    });
+	
+	
+
 }	
 
 function LoadProjectData(url,data,onsuccess,onfail)
@@ -92,25 +130,28 @@ function LoadProjectData(url,data,onsuccess,onfail)
 }
 function OnProjectDataReceived(response)
 {
-	console.log(response);
+	//console.log(response);
 	jiraurl = response.jiraurl;
 	$('#description').text(response.description);
 }
 function OnChartChangeClick(event)
 {
-	console.log("ddd");
-	var val = $('.gmainleft').css("flex");
-	if(val == '0 0 100%')
+	let style = $('.gmainleft')[0].getAttribute('style');
+	if(style == null)
 	{
-		$('.gmainleft').css('flex','0 0 30%');
-		$('#chart').text('Hide Chart');
-	}
-	else
-	{
-		$('.gmainleft').css('flex','0 0 100%');
+		$('.gmainleft')[0].setAttribute('style','flex: 0 0 100%');
 		$('#chart').text('Show Chart');
 	}
-	
+	else if(style == 'flex: 0 0 100%')
+	{
+		$('.gmainleft')[0].setAttribute('style','flex: 0 0 30%');
+		$('#chart').text('Hide Chart');
+	}
+	else if(style == 'flex: 0 0 30%')
+	{
+		$('.gmainleft')[0].setAttribute('style','flex: 0 0 100%');
+		$('#chart').text('Hide Chart');
+	}
 }
 $(document).ready(function()
 {

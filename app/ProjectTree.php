@@ -15,7 +15,7 @@ class Task
 	{
 		$this->summary = $summary;
 		$this->query = $query;
-		
+		$this->duedate = '';
 		$this->level = $level;
 		$this->pos = $pos;
 		$this->pextid = $pextid;
@@ -91,7 +91,7 @@ class Task
 		
 		
 		global $estimation_method;
-		$fields = 'id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
+		$fields = 'duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
 		if($estimation_method == 1)
 			$tasks = Jira::Search($query,1000,$fields.$story_points.",".$sprint,$order);
 		else if($estimation_method == 2)
@@ -210,6 +210,12 @@ class Task
 		//else	
 		if(isset($task->fields->aggregatetimespent))
 			$ntask->timespent =  round($task->fields->aggregatetimespent/(28800),1);
+		
+		
+		if(isset($task->fields->duedate))
+			$ntask->duedate = $task->fields->duedate;
+		
+		
 		//echo $ntask->timespent;
 		
 		$buffer = '';
