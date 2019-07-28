@@ -94,6 +94,7 @@ class ProjectController extends Controller
 			
 			$project['user_id'] = $request->user_id;
 			$project['name'] = $request->name;
+			$project['oaname'] = $request->oaname;
 			$project['description'] = $request->description;
 			$project['jiraquery'] = $request->jiraquery;
 			$project['last_synced'] = $request->last_synced;
@@ -119,6 +120,7 @@ class ProjectController extends Controller
 				}
 				$project['name'] = $request->name;
 			}
+			$project['oaname'] = $request->oaname;
 			if($request->jiraquery != null)
 				$project['jiraquery'] = $request->jiraquery;
 			if ($request->description!=null)

@@ -8,6 +8,7 @@ use App\Calendar;
 use App\Tj;
 use App\Project;
 use App\ProjectTree;
+use App\OA;
 use Redirect,Response;
 class TestController extends Controller
 {
@@ -28,5 +29,17 @@ class TestController extends Controller
 		//dd($projecttree ->tree);
 		$tj =  new Tj($projecttree);
 		$tj->Execute();
+	}
+	public function OATest($projectid)
+	{
+		$project = Project::where('id',$projectid)->first();
+		if($project == null)
+		{
+			echo "Project id=".$projectid." not found";
+			return;
+		}
+		$projecttree = new ProjectTree($project);
+		$oa = new OA($projecttree);
+		$oa->sync();
 	}
 }

@@ -700,7 +700,7 @@ class ProjectTree
 				break;
 		}
 	}
-	function Sync($rebuild=0)
+	function SyncJira($rebuild=0)
 	{
 		if($rebuild == 1)
 			Utility::ConsoleLog(time(),'Rebuilding Project - '.$this->project->name);
@@ -806,8 +806,6 @@ class ProjectTree
 		}
 		$this->presources = $this->project->resources()->get();
 		
-		
-		
 		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
 		
@@ -815,6 +813,8 @@ class ProjectTree
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
+	
+	
 	function Save()
 	{
 		//dd($this->tree);

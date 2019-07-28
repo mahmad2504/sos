@@ -31,8 +31,8 @@ Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  
 
 
 //// Sync //////
-Route::get('/sync', 'SyncController@sync')->name('syncproject');// arg project modal with project.id
-
+Route::get('/sync/jira', 'SyncController@syncjira')->name('syncjira');// arg project modal with project.id
+Route::get('/sync/oa', 'SyncController@syncoa')->name('syncoa');// arg project modal with project.id
 
 // Dashboard //
 Route::get('/dashboard/{user}/{project}','DashboardController@Show')->name('dashboard');
@@ -61,5 +61,6 @@ Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name(
 
 /// Test
 Route::get('/tjtest/{projectid}','TestController@TJTest'); // project id as input param
+Route::get('/test/oa/{projectid}','TestController@OATest'); // project id as input param
 
 

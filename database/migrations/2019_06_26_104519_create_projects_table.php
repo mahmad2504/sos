@@ -17,6 +17,7 @@ class CreateProjectsTable extends Migration
             $table->bigIncrements('id');
 			$table->integer('user_id');
 			$table->string('name');
+			$table->string('oaname')->nullable();
 			$table->string('description')->default('No Description Given');
 			$table->string('jiraquery');
 			$table->string('last_synced')->default("Never");

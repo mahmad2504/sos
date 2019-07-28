@@ -17,11 +17,53 @@ function closeConnection() {
 	logger.log('> Connection was closed');
 	$('#sync').prop('disabled', false);
 	$('#rebuild').prop('disabled', false);
+	$('#oasync').prop('disabled', false);
 	updateConnectionStatus('Disconnected', false);
 }
 function Rebuild()
 {
 	Sync(1);
+}
+function OASync()
+{
+	nextmsgid = 0;
+	firstmsgid = 0;
+	$('#log').empty();
+	console.log("Connecting with Open Air Server");
+	$('.info').empty();
+	$('#log').show();
+	var projectid = $('#oasync').attr('projectid');
+	source = new EventSource($('#oasync').attr('url')+'?projectid='+projectid);
+	console.log($('#oasync').attr('url')+'?projectid='+projectid);
+	source.addEventListener('message', function(event) {
+	var data = JSON.parse(event.data);
+	var d = new Date(data.id * 1e3);
+	var timeStr = [d.getHours(), d.getMinutes(), d.getSeconds()].join(':');
+	logger.log('' + timeStr+' '+data.msg);
+	}, false);
+
+	source.addEventListener('open', function(event) 
+	{
+		logger.log('> Connected');
+		$('#sync').prop('disabled', true);
+		$('#rebuild').prop('disabled', true);
+		$('#oasync').prop('disabled', true);
+		updateConnectionStatus('Connected', true);
+	}, false);
+
+	source.addEventListener('error', function(event) 
+	{
+		//console.log("Error");
+		//if (event.eventPhase == 2) 
+		{ //EventSource.CLOSED
+			logger.log('> Disconnected');
+			$('#sync').prop('disabled', false);
+			$('#rebuild').prop('disabled', false);
+			$('#oasync').prop('disabled', false);
+			updateConnectionStatus('Disconnected', false);
+			source.close();
+		}
+	}, false);
 }
 function Sync($rebuild=0) 
 {
@@ -54,6 +96,7 @@ function Sync($rebuild=0)
 		logger.log('> Connected');
 		$('#sync').prop('disabled', true);
 		$('#rebuild').prop('disabled', true);
+		$('#oasync').prop('disabled', true);
 		updateConnectionStatus('Connected', true);
 	}, false);
 
@@ -65,6 +108,7 @@ function Sync($rebuild=0)
 			logger.log('> Disconnected');
 			$('#sync').prop('disabled', false);
 			$('#rebuild').prop('disabled', false);
+			$('#oasync').prop('disabled', true);
 			updateConnectionStatus('Disconnected', false);
 			source.close();
 		}

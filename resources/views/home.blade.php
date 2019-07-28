@@ -46,10 +46,18 @@
 					<input id="psettings_jiradependencies" style="margin-top:10px;" class="" type="checkbox" name="jira_dependencies" value="0">Jira Dependencies</input>
 				</div>
 			</div>
+			
 			<div class="d-flex form-group">
 				<label style="padding:0;margin-top:3px;" for="name">Name&nbsp&nbsp&nbsp</label>
-				<input id="psettings_name" type="text" class="form-control-sm form-control" placeholder="Name" name="name">
+				<input style="" id="psettings_name" type="text" class="form-control-sm form-control" placeholder="Name" name="name">
+				<label style="padding:0;margin-top:3px;" for="name">&nbspOpenAir&nbsp&nbsp&nbsp</label>
+				<input id="psettings_oaname" type="text" class="form-control-sm form-control" placeholder="Open Air Project Name" name="oaname">
 			</div>
+			
+			
+			
+			
+			
 			<div class="form-group">
 				<label for="name">Description</label>
 				<textarea id="psettings_description" class="form-control-sm form-control" rows="2" placeholder="Enter description" name="description"></textarea>
@@ -99,14 +107,17 @@
 				<div class="d-flex">
 					<h3>Sync&nbsp&nbsp</h3>
 					<span style="margin-top:8px;" id="synctitle"></span>
+					
 					<button data-dismiss="modal" class="ml-auto close">×</button>
 				</div>
 				<hr>
-				<button style="margin-left:20px;" url='' projectid='' id="sync">Sync</button>
-				<button style="" id="rebuild">Rebuild</button>
-				<button style="margin-left:40px;" id="close">Disconnect</button>
-				<span style="float:right;margin-right:20px;margin-top:5px;" id="connection"></span>
+				<button style="margin-left:20px;display:none;" url='' projectid='' id="sync">Sync</button>
+				<button style="" id="rebuild">Sync Jira</button>
+				<button style="display:none;" url='' projectid='' id="oasync">Sync OA</button>
+				<button style="float:right;" id="close">Disconnect</button>
+				
 				<hr>
+				<span style="float:right;margin-top:5px;" id="connection"></span>
 				<div  style="display: block;margin-top: 20px;" id="log"></div>
 			</div>
 		</div>
@@ -143,6 +154,7 @@ function SetPsettingsModalFields(settings)
 	$('#psettings_id').val(settings.id);
 	$('#psettings_last_synced').val(settings.last_synced);
 	$('#psettings_name').val(settings.name);
+	$('#psettings_oaname').val(settings.oaname);
 	$('#psettings_description').val(settings.description);
 	$('#psettings_jiraquery').val(settings.jiraquery);
 	$('#psettings_error').text(settings.error);
@@ -226,6 +238,7 @@ function AddCard(project,row)
 	var col=$('<div class="col-sm-4">');
 	var card=$('<div  class="card bg-white rounded bg-white shadow">');
 	var progress=project.progress;
+	var oaname=project.oaname;
 	var progress = '<div class="shadow-lg progress position-relative" style=""><div class="progress-bar" role="progressbar" style="background-color:green !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			
 	
@@ -233,8 +246,13 @@ function AddCard(project,row)
 		headerstr +='<div class="d-flex">';
 		headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 		headerstr   +='<h5 rel="tooltip" title="Project Name" id="card-name-'+project.id+'">'+project.name+'</h5>';
-		headerstr +='</div>';
-		headerstr +='<small style="margin-top:-10px;margin-left:20px;float:left" rel="tooltip" title="Estimation Method" class="float-left text-muted">'+estimation+'</small></div>';
+		headerstr   +='</div>';
+		headerstr   +='<div class="d-flex">';
+			headerstr +='<small style="margin-top:-10px;margin-left:20px;float:left" rel="tooltip" title="Estimation Method" class="float-left text-muted">'+estimation+'</small>';
+			if(oaname != null)
+				headerstr +='<img src="/images/openair.png" style="margin-top:-8px;margin-left:5px;float:left;width:35px;height:13px;"></img>';
+		headerstr   +='</div>';
+		headerstr   +='</div>';
 		headerstr   +=progress;
 	var header = $(headerstr);
 	var body=$('<div class="card-body">');
@@ -302,6 +320,7 @@ function OnEdit(event) // when edit button is pressed on card to show edit dialo
 	settings.id = project.id;
 	settings.last_synced = project.last_synced;
 	settings.name = project.name;
+	settings.oaname = project.oaname;
 	settings.description = project.description;
 	settings.jiraquery = project.jiraquery;
 	settings.estimation = project.estimation;
@@ -319,10 +338,19 @@ function OnSync(event)
 	event.preventDefault(); 
 	$element  = $(event.target);
 	project  = FindProject($element.attr('projectid'));
+	if((project.oaname == null)||(project.oaname.length == 0))
+		$('#oasync').hide();
+	else
+		$('#oasync').show();
+
 	$('#synctitle').text(project.name);
 	console.log("Sync button pressed project#"+project.name);
 	$('#sync').attr('projectid', project.id);
-	$('#sync').attr('url', "{{route('syncproject')}}");
+	$('#sync').attr('url', "{{route('syncjira')}}");
+	
+	$('#oasync').attr('projectid', project.id);
+	$('#oasync').attr('url', "{{route('syncoa')}}");
+	
 	Clear();
 	$('#syncmodal').modal('show');	
 }
@@ -443,8 +471,6 @@ function OnCreateProject(event)
 	});
 	data.user_id = userid;
 	data._token = "{{ csrf_token() }}";
-	
-	
 	ShowLoading();
 	$.ajax(
 	{
@@ -469,6 +495,7 @@ function InitLoader()
 {
 	"use strict";
 	console.log("Loading Sync Module");
+	$("#oasync").click(OASync); 
 	$("#sync").click(Sync); 
 	$("#close").click(closeConnection);
 	$("#rebuild").click(Rebuild);
@@ -494,7 +521,4 @@ $(document).ready(function()
 	$('#syncmodal').on('hidden.bs.modal',OnSyncModalClosed);
 	InitLoader();
 });
-
-
-
 @endsection

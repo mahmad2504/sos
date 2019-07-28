@@ -76,4 +76,11 @@ class Utility
 	{
 		return config('calendar.coutryinfo')[0];
 	}
+	public static function GetOAConfig()
+	{
+		return config('openair');
+		
+	}
+	
+	
 }

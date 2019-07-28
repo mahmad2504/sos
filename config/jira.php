@@ -21,5 +21,4 @@ return
 		 'sprint' => 'customfield_11040'
 		]
 	]
-	
 ];

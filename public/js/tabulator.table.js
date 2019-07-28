@@ -190,7 +190,13 @@ function InitTabulator()
 					if((name == 'unassigned')||(active == 0))
 						return false;
 					return true; 
-				}
+				},
+				validator:function(cell, value, parameters)
+				{
+					if(value > 100)
+						return false;
+					return true;
+				}	
 			},
 			{resizable: false,title:"$/hr", sortable:false,field:"cost",width:"8%",editor:"number",
 				editorParams:{
