@@ -13,6 +13,17 @@ use Redirect,Response;
 class TestController extends Controller
 {
     //
+	public function ShowTree($projectid)
+	{
+		$project = Project::where('id',$projectid)->first();
+		if($project == null)
+		{
+			echo "Project id=".$projectid." not found";
+			return;
+		}
+		$projecttree = new ProjectTree($project);
+		dd($projecttree);
+	}
 	public function Test($task)
 	{
 		if(isset($task->twin))

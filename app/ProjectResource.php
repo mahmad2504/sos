@@ -8,7 +8,7 @@ class ProjectResource extends Model
 {
     //
 	protected $fillable = [
-        'project_id', 'resource_id','efficiency', 'cost','team','cc','active'
+        'project_id', 'resource_id','efficiency', 'cost','team','cc','active','oaid'
     ];
     //
 	public function __construct()

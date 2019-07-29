@@ -8,9 +8,6 @@
 .progress {height: 10px;}
 @endsection
 @section('content')
-
-
-
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:none" class="center">
 
 	<div class="loading">Loading&#8230;</div>

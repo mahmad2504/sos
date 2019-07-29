@@ -147,8 +147,13 @@
 </div>
 
 
-<div style="width:80%; margin-left: auto; margin-right: auto; text-align:center;color:grey" class="center">
-	<div id="table">
+<div style="width:80%; margin-left: auto; margin-right: auto; color:grey" class="center">
+	<h3>Jira Resources</h3>
+	<div id="table"></div><br>
+	
+	<div id="openairtags" style="display:none">
+		<h3 >Open Air Resources</h3>
+		<div id="openair"></div>
 	</div>
 </div>
 
@@ -203,7 +208,52 @@ async function OnSaveCalendar(data)
 		error: OnCalendarSaveFailed
 	});
 }
-
+var openair_users = [];
+function OnOpenAirResourceReceived(users)
+{
+	var i=0;
+	for (var key in users) 
+	{
+		if (users.hasOwnProperty(key)) 
+		{
+			openair_users[i++] = [key,users[key]];
+			console.log(key + " -> " + users[key]);
+		}
+	}
+	
+	
+	var number_of_rows = openair_users.length;
+	var number_of_cols = 2;
+	var table_body = '<table border="1">';
+	
+	table_body+='<tr>';
+		table_body +='<td>';
+		table_body +='&nbsp&nbsp&nbspID&nbsp&nbsp&nbsp';
+		table_body +='</td>';
+		
+		table_body +='<td>';
+		table_body +='&nbsp&nbsp&nbspName';
+		table_body +='</td>';
+	table_body+='</tr>';
+	
+	
+	for(var i=0;i<number_of_rows;i++)
+	{
+		table_body+='<tr>';
+		for(var j=0;j<number_of_cols;j++)
+		{
+			table_body +='<td>';
+			table_body +=openair_users[i][j];
+			table_body +='</td>';
+		}
+		table_body+='</tr>';
+	}
+	table_body+='</table>';
+	$('#openair').html(table_body);
+	
+	if(openair_users.length > 0)
+		$('#openairtags').show();
+}
 $(document).ready(function()
 {
 	console.log("Loading Resource Page");
@@ -213,5 +263,13 @@ $(document).ready(function()
 	table = new Tabulator("#table", InitTabulator());
 	InitCalendar();
 	
+	$.ajax({
+		type:"GET",
+		url:'{{route('getopenairresources',[$project->id])}}',
+		cache: false,
+		data:1,
+		success: OnOpenAirResourceReceived,
+		error: null
+	});
 })
 @endsection

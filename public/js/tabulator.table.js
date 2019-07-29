@@ -122,7 +122,6 @@ function InitTabulator()
 	var settings = 
 	{
 		tooltips:true,
-		
 		index:"id",
 		layout:"fitDataFill",
 		//pagination:'local', //enable local pagination.
@@ -145,9 +144,9 @@ function InitTabulator()
 		columns:
 		[
 			{resizable: false,title:"",formatter:"rownum", align:"center", width:"3%", headerSort:false},
-			{resizable: false,title:"Full Name",field:"profile.displayname", headerFilter:false, width:"15%"},
+			{resizable: false,title:"Full Name",field:"profile.displayname", headerFilter:false, width:"12%"},
 			{resizable: false,title:"User Name",field:"profile.name", headerFilter:false, width:"10%"},
-			{resizable: false,title:"Email",field:"profile.email", headerFilter:false, width:"15%"},
+			{resizable: false,title:"Email",field:"profile.email", headerFilter:false, width:"13%"},
 			{resizable: false,title:"Country",field:"cc", headerFilter:false, width:"10%",editor:"select",
 				editorParams:function(cell)
 				{
@@ -224,7 +223,53 @@ function InitTabulator()
 				}
 			
 			},
-			{resizable: false,title:"Team", sortable:false,field:"team",width:"20%",editor:"input",validator:
+			{resizable: false,title:"OA-ID", sortable:true,field:"oaid",width:"7%",editor:"input",validator:
+				function(cell, value, parameters){
+					
+					if(lastdata == value)
+						return;
+					lastdata =  value;
+					for(var i=0;i<openair_users.length;i++)
+					{
+						if(value == openair_users[i][0])
+							return true;
+					}
+					return false;
+					//cell - the cell component for the edited cell
+					//value - the new input value of the cell
+					//parameters - the parameters passed in with the validator
+					//setTimeout(function(){ alert("Hello"); }, 3000);
+					//mscAlert("Error","ddd");
+					var names = value.split(',');
+					data = table.getData();
+					console.log(data);
+					
+					for(var i=0;i<names.length;i++)
+					{
+						for(var j=0;j<data.length;j++)
+						{
+							
+							if(data[j].profile.name == 'unassigned')
+								data[j].profile.name = '';
+								
+							if(data[j].profile.name == names[i])
+							{
+								data[j].profile.name = '';
+								break;
+							}
+						}
+						if(j==data.length)
+						{
+							mscAlert("Error","Resource "+names[i]);
+							return false;
+						}
+						
+					}
+					lastdata = null;
+					return true;
+				}	
+			},
+			{resizable: false,title:"Team", sortable:false,field:"team",width:"18%",editor:"input",validator:
 				function(cell, value, parameters){
 					if(lastdata == value)
 						return;

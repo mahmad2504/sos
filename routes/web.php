@@ -54,13 +54,20 @@ Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->na
 Route::delete('/projectresource/{id}', 'ProjectResourceController@deleteprojectresource')->name('deleteprojectresource'); // arg project resource id
 Route::put('/projectresource/{id}', 'ProjectResourceController@updateprojectresource')->name('updateprojectresource'); // arg project resource id
 
+//// Open Air Resources /////
+Route::get('/openair/resources/{project_id}','OpenAirController@GetResources')->name('getopenairresources'); // project id as input param
+
+
 //// 
 //Route::calendar('/calendar/{resource_id}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::get('/calendar/{resource_name}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name('savecalendar'); // project id as input param
 
+////
+
 /// Test
-Route::get('/tjtest/{projectid}','TestController@TJTest'); // project id as input param
+Route::get('/test/tj/{projectid}','TestController@TJTest'); // project id as input param
 Route::get('/test/oa/{projectid}','TestController@OATest'); // project id as input param
+Route::get('/test/showtree/{projectid}','TestController@ShowTree'); // project id as input param
 
 

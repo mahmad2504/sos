@@ -17,6 +17,7 @@ class CreateProjectResourcesTable extends Migration
             $table->bigIncrements('id');
 			$table->integer('project_id');
 			$table->integer('resource_id');
+			$table->string('oaid')->nullable();
 			$table->float('efficiency')->default(1.0);
 			$table->float('cost')->default(1.0);
 			$table->string('team')->nullable();

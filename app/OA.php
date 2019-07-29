@@ -12,18 +12,21 @@ class OA
 	public $submitted_hours= 0;
 	public $worklogs = [];
 	public $users = [];
-	public $projecttree = null;
+	public $tree = null;
+	public $name = null;
 	public function __construct(ProjectTree $projecttree)
 	{
-		if(isset($projecttree->oa))
+		$tree = $projecttree->tree;
+		if(isset($tree->oa))
 		{
-			$this->planned_hours = $projecttree->oa->planned_hours;
-			$this->approved_hours =  $projecttree->oa->approved_hours;
-			$this->submitted_hours =  $projecttree->oa->submitted_hours;
-			$this->worklogs = $projecttree->oa->worklogs;
-			$this->users = $projecttree->oa->users;
+			$this->planned_hours = $tree->oa->planned_hours;
+			$this->approved_hours =  $tree->oa->approved_hours;
+			$this->submitted_hours =  $tree->oa->submitted_hours;
+			$this->worklogs = $tree->oa->worklogs;
+			$this->users = $tree->oa->users;
 		}
-		$this->projecttree = $projecttree;
+		$this->name  = $projecttree->project->oaname;
+		$this->tree = $tree;
 	}
 	public function Sync()
 	{
@@ -38,7 +41,7 @@ class OA
 		//$name = '7061|MEL,MEHV,Nucleus for ECU';
 		//$name = '6753|AUTOSAR for OBC';
 		//$id='7102';
-		$name  = $this->projecttree->project->oaname;
+		$name  = $this->name;
 		
 		if(($name == null) || (strlen(trim($name))==0))
 		{
@@ -109,8 +112,9 @@ class OA
 		$data->approved_hours =  $this->approved_hours;
 		$data->submitted_hours =  $this->submitted_hours;
 		$data->worklogs = $this->worklogs;
+		$data->users = $this->users;
 		
-		$this->projecttree->oa = $data;
+		$this->tree->oa = $data;
 		//dd($this->worklogs);
 		//dd($this->approved_hours);
 		//dd($this->submitted_hours);

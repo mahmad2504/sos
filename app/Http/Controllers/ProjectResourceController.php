@@ -22,6 +22,7 @@ class ProjectResourceController extends Controller
 		if($presource == null)
 			return Utility::Error('Project Resource Not Found');
 		$presource->Modify($request->all());
+		
 		$presource->save();
 		return $presource;
 	}

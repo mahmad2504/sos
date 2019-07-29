@@ -85,6 +85,7 @@ class SyncController extends Controller
 		$tree  =  new ProjectTree($project);
 		$oa = new OA($tree);
 		$oa->sync();
+		//dd($tree);
 		$tree->Save();
 		Utility::ConsoleLog(time(),"Success::OpenAir Sync Completed");
 		
