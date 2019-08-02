@@ -63,11 +63,15 @@ Route::get('/openair/resources/{project_id}','OpenAirController@GetResources')->
 Route::get('/calendar/{resource_name}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name('savecalendar'); // project id as input param
 
-////
+////Milestones
+Route::get('/milestones/{projectid}','MilestoneController@Show'); // project id as input param
+
 
 /// Test
 Route::get('/test/tj/{projectid}','TestController@TJTest'); // project id as input param
 Route::get('/test/oa/{projectid}','TestController@OATest'); // project id as input param
+Route::get('/test/jira/worklogs/{projectid}/{jira_key}','TestController@JiraWorklogs'); // project id as input param
+
 Route::get('/test/showtree/{projectid}','TestController@ShowTree'); // project id as input param
 
 

@@ -123,7 +123,8 @@ function InitTabulator()
 	{
 		tooltips:true,
 		index:"id",
-		layout:"fitDataFill",
+		//layout:"fitDataFill",
+		layout:"fitColumns",
 		//pagination:'local', //enable local pagination.
         //paginationSize:15, // this option can take any positive integer value (default = 10)
 		columnVertAlign:"bottom", 
@@ -143,11 +144,11 @@ function InitTabulator()
 		//},
 		columns:
 		[
-			{resizable: false,title:"",formatter:"rownum", align:"center", width:"3%", headerSort:false},
-			{resizable: false,title:"Full Name",field:"profile.displayname", headerFilter:false, width:"12%"},
-			{resizable: false,title:"User Name",field:"profile.name", headerFilter:false, width:"10%"},
-			{resizable: false,title:"Email",field:"profile.email", headerFilter:false, width:"13%"},
-			{resizable: false,title:"Country",field:"cc", headerFilter:false, width:"10%",editor:"select",
+			{widthGrow:.5,resizable: false,title:"",formatter:"rownum", align:"center", headerSort:false},
+			{widthGrow:2,resizable: false,title:"Full Name",field:"profile.displayname", headerFilter:false},
+			{widthGrow:1.5,resizable: false,title:"User Name",field:"profile.name", headerFilter:false},
+			{widthGrow:1,resizable: false,title:"Email",field:"profile.email", headerFilter:false},
+			{widthGrow:1.5,resizable: false,title:"Country",field:"cc", headerFilter:false,editor:"select",
 				editorParams:function(cell)
 				{
 					return {"values":countryinfo};
@@ -169,7 +170,7 @@ function InitTabulator()
 					return true; 
 				}
 			},
-			{resizable: false,title:"Available", sortable:false,field:"efficiency",width:"8%",editor:"number",
+			{widthGrow:1.5,resizable: false,title:"Available", sortable:false,field:"efficiency",editor:"number",
 				editorParams:{
 					min:0,
 					max:100,
@@ -197,7 +198,7 @@ function InitTabulator()
 					return true;
 				}	
 			},
-			{resizable: false,title:"$/hr", sortable:false,field:"cost",width:"8%",editor:"number",
+			{widthGrow:1,resizable: false,title:"$/hr", sortable:false,field:"cost",editor:"number",
 				editorParams:{
 					min:0,
 					max:1000,
@@ -223,53 +224,14 @@ function InitTabulator()
 				}
 			
 			},
-			{resizable: false,title:"OA-ID", sortable:true,field:"oaid",width:"7%",editor:"input",validator:
-				function(cell, value, parameters){
-					
-					if(lastdata == value)
-						return;
-					lastdata =  value;
-					for(var i=0;i<openair_users.length;i++)
-					{
-						if(value == openair_users[i][0])
-							return true;
-					}
-					return false;
-					//cell - the cell component for the edited cell
-					//value - the new input value of the cell
-					//parameters - the parameters passed in with the validator
-					//setTimeout(function(){ alert("Hello"); }, 3000);
-					//mscAlert("Error","ddd");
-					var names = value.split(',');
-					data = table.getData();
-					console.log(data);
-					
-					for(var i=0;i<names.length;i++)
-					{
-						for(var j=0;j<data.length;j++)
-						{
-							
-							if(data[j].profile.name == 'unassigned')
-								data[j].profile.name = '';
-								
-							if(data[j].profile.name == names[i])
-							{
-								data[j].profile.name = '';
-								break;
-							}
-						}
-						if(j==data.length)
-						{
-							mscAlert("Error","Resource "+names[i]);
-							return false;
-						}
-						
-					}
-					lastdata = null;
-					return true;
-				}	
+			{widthGrow:1,resizable: false,title:"OA-ID", sortable:true,field:"oaid",editor:"select",
+				editorParams:function(cell)
+				{
+					return {"values":oaids};
+				}			
 			},
-			{resizable: false,title:"Team", sortable:false,field:"team",width:"18%",editor:"input",validator:
+			{resizable: false,title:"Calendar", sortable:false, formatter:openIcon,headerTooltip:'Calendar'},
+			{widthGrow:2.5,resizable: false,title:"Team", sortable:false,field:"team",editor:"input",validator:
 				function(cell, value, parameters){
 					if(lastdata == value)
 						return;
@@ -308,8 +270,7 @@ function InitTabulator()
 					return true;
 				}	
 			},
-			{resizable: false,title:"C", sortable:false, width:"5%",formatter:openIcon,headerTooltip:'Calendar'},
-			{resizable: false,title:"D",field:"active",width:"5%", sortable:false,headerTooltip:'Delete',
+			{widthGrow:.5,resizable: false,title:"",field:"active", sortable:false,headerTooltip:'Delete',
 				formatter:function(cell, formatterParams, onRendered){
 					//cell - the cell component
 					//formatterParams - parameters set for the column

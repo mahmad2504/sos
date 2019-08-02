@@ -79,33 +79,26 @@ class OA
 		}
 		$this->users = $users;
 		Utility::ConsoleLog(time(),'Wait::Getting worklogs');
-		$this->worklogs = $oa->ReadWorkLogsByProjectId($project[0]['id'],true);
+		$worklogs_approved = $oa->ReadWorkLogsByProjectId($project[0]['id'],true);
 		$worklogs_submitted = $oa->ReadWorkLogsByProjectId($project[0]['id'],false);
+		if(count($worklogs_submitted)>0)
+			$this->worklogs = array_merge($worklogs_approved,$worklogs_submitted);
+		else
+			$this->worklogs = $worklogs_approved;
+		//dd($worklogs_submitted );
+		//dd($this->worklogs);
 		
-		for($i=0;$i<count($this->worklogs);$i++)
-		{
-			$this->worklogs[$i]['approved'] = 1;
-			$this->worklogs[$i]['username'] = $users[$this->worklogs[$i]['userid']];
-		}
-		foreach($worklogs_submitted as &$worklog_submitted)
-		{
-			$worklog_submitted['approved'] = 0;
-			$worklog_submitted['username'] = $users[$worklog_submitted['userid']];
-			$this->worklogs[] = $worklog_submitted;
-		}
 		$this->approved_hours = 0;
 		$this->submitted_hours = 0;
 		
-		foreach($this->worklogs as $worklog)
+		foreach($this->worklogs as $userid=>$date)
 		{
-			if($worklog['nonbillable'] == 1)
+			foreach($date as $worklog)
 			{
-				$msg = "OA worklogs by ".$worklog['username']." is non billable";
-				Utility::ConsoleLog(time(),'Warning::'.$msg);
+				$this->submitted_hours += $worklog['decimal_hours'];
+				if($worklog['approved'] == 1)		
+					$this->approved_hours += $worklog['decimal_hours'];
 			}
-			$this->submitted_hours += $worklog['decimal_hours'];
-			if($worklog['approved'] == 1)		
-				$this->approved_hours += $worklog['decimal_hours'];
 		}
 		$data = new \StdClass();
 		$data->planned_hours = $this->planned_hours;

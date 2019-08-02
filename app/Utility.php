@@ -51,11 +51,12 @@ class Utility
 	}
 	public static function GetJiraURL(Project $project)
 	{
-		return Self::GetJiraConfig($project->jirauri)['uri'];
+		return Self::GetJiraConfig($project)['uri'];
 		
 	}
-	public static function GetJiraConfig($slot)
+	public static function GetJiraConfig(Project $project)
 	{
+		$slot = $project->jirauri;
 		return config('jira.servers')[$slot];
 	}
 	public static function GetCountryInfo($timezone)

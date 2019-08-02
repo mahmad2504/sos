@@ -867,11 +867,14 @@ class OpenAir
 		$h2 = $this->ReadWorkLogsByProjectTaskId($approved,$h1,'id');
 		$this->Execute();
 		//$h2->toString('projecttaskid','date','userid','decimal_hours');
-		$worklogs = $h2->Data('projecttaskid','id','date','userid','decimal_hours');
+		//$worklogs = $h2->Data('projecttaskid','id','date','userid','decimal_hours');
+		$worklogs = $h2->Data('projecttaskid','date','userid','decimal_hours');
 		$newlist = array();
+		//dd($worklogs);
 		foreach($worklogs as $worklog)
 		{
 			$worklog['nonbillable'] = 0;
+			$worklog['approved'] = $approved;
 			foreach($nonbillabletaskids as $nbtid)
 			{
 				//echo $nbtid." ".$worklog['projecttaskid']."<br>";
@@ -879,10 +882,23 @@ class OpenAir
 					$worklog['nonbillable'] = 1;
 			}
 			if($worklog['nonbillable'] == 0)
+			{
+				$nworklog = [];				
+				$nworklog["decimal_hours"] = $worklog["decimal_hours"];
+				$nworklog["approved"] = $worklog["approved"];
+	  
+				if(isset($newlist[$worklog['userid']]))
 				{
-				$newlist[] = $worklog;
+					$newlist[$worklog['userid']][$worklog['date']] = $nworklog;
+				}
+				else
+				{
+					$newlist[$worklog['userid']] = array();
+					$newlist[$worklog['userid']][$worklog['date']] = $nworklog;
+				}
 			}
 		}
+		//dd($newlist);
 		return $newlist;
 	}
 	public function ReadProjectId($projectname)

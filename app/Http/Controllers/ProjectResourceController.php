@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Utility;
 use App\ProjectResource;
 use App\Project;
+use App\ProjectTree;
 use Auth;
 use Redirect,Response;
 
@@ -60,7 +61,11 @@ class ProjectResourceController extends Controller
 			{
 				$countryinfo[$value[0]]=$value[1];
 			}
-			return view('presources',compact('project','user','presources','countryinfo'));
+			$projecttree = new ProjectTree($project);
+			$oa_users = [];
+			if(isset($projecttree->tree->oa))
+				$oa_users =  $projecttree->tree->oa->users;
+			return view('presources',compact('project','user','presources','countryinfo','oa_users'));
 		}
 		else
 			abort(403, 'Unauthorized');

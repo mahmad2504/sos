@@ -13,7 +13,7 @@ class SyncController extends Controller
 {
 	public function __construct()
 	{
-		set_time_limit(300);
+		set_time_limit(1000);
 	}
 	public function SyncJira(Request $request)
 	{

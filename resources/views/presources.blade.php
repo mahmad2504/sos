@@ -174,6 +174,7 @@ var _token = "{{ csrf_token() }}";
 var table = null;
 
 var countryinfo = @json($countryinfo);
+var oaids = @json($oa_users);
 
 function OnCalendarSaved(data)
 {

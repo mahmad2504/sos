@@ -17,8 +17,12 @@ class Jira
 	static $rebuild=0;
 	static $user = null;
 	static $pass =  null;
-	public static function Initialize($url,$user,$pass,$path,$rebuild)
+	public static function Initialize($jiraconfig,$path,$rebuild=0)
 	{
+		$url = $jiraconfig['uri'];
+		$user = $jiraconfig['username'];
+		$pass = $jiraconfig['password'];
+		
 		self::$path = $path;
 		self::$url = $url;
 		self::$rebuild = $rebuild;
@@ -56,6 +60,7 @@ class Jira
 	}
 	public static  function GetJiraResource($resource,$data=null) 
 	{
+		//echo $resource."<br>";
 		$curl = curl_init();
 		//curl_reset($curl);
 		curl_setopt_array($curl, array(
@@ -87,7 +92,10 @@ class Jira
 			$data = json_decode($result,true);
 		
 			$tasks = array();
-			
+			if(isset($data["worklogs"]))
+			{
+				return $data["worklogs"];
+			}
 			if(isset($data["issues"]))
 			{
 				if(count($data["issues"])==0)
@@ -109,6 +117,7 @@ class Jira
 		}
 		else
 		{
+			//dd($result);
 			Utility::ConsoleLog(time(),"Error::Code - ".$code);
 			Utility::ConsoleLog(time(),"Check Jira Query");
 			exit();
@@ -116,6 +125,35 @@ class Jira
 		}
 		//$data = json_decode($result);
 		//var_dump($data);
+	}
+	static  function GetWorkLogs($key)
+	{
+		//echo "Getting worklogs of ".$key."<br>";
+		$resource=self::$url.'/rest/api/latest/issue/'.$key.'/worklog'; 
+		$worklogs = self::GetJiraResource($resource);
+		$data = [];
+		foreach($worklogs as $worklog)
+		{
+			//dd($worklog);
+			$obj =  new \StdClass();
+			$date = explode('T', $worklog['started'])[0];
+			$hours =  $worklog['timeSpentSeconds']/(60*60);
+			$author = $worklog['author']['name'];
+			if(isset($data[$date][$author]))
+			{
+				$data[$date][$author]->hours += $hours;
+			}
+			else
+			{
+				$data[$date][$author] =  new \StdClass();
+				$data[$date][$author]->hours = $hours;
+				$data[$date][$author]->name = $worklog['author']['name'];
+				$data[$date][$author]->displayname =  $worklog['author']['displayName'];
+				$data[$date][$author]->email =  $worklog['author']['emailAddress'];
+				$data[$date][$author]->timeZone =  $worklog['author']['timeZone'];
+			}
+		}
+		return $data;
 	}
 	static  function GetStructure($structid) 
 	{

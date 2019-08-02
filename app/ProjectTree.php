@@ -33,6 +33,8 @@ class Task
 		$this->estimate = 0;
 		$this->timeestimate = 0;
 		$this->timespent = 0;
+		$this->updated = 0;
+		$this->otimespent = 0;
 		$this->isparent = 0;
 		$this->priority = 0;
 		$this->ostatus ='';
@@ -91,13 +93,13 @@ class Task
 		
 		
 		global $estimation_method;
-		$fields = 'duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
+		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
 		if($estimation_method == 1)
 			$tasks = Jira::Search($query,1000,$fields.$story_points.",".$sprint,$order);
 		else if($estimation_method == 2)
-			$tasks = Jira::Search($query,1000,$fields.'timeoriginalestimate,aggregatetimespent,'.$sprint,$order);
+			$tasks = Jira::Search($query,1000,$fields.'timeoriginalestimate,timespent,'.$sprint,$order);
 		else
-			$tasks = Jira::Search($query,1000,'timeoriginalestimate,aggregatetimespent,'.$fields.$story_points.",".$sprint,$order);
+			$tasks = Jira::Search($query,1000,'timeoriginalestimate,timespent,'.$fields.$story_points.",".$sprint,$order);
 		
 		return $tasks;
 	}
@@ -118,6 +120,7 @@ class Task
 			Utility::ConsoleLog(time(),"Error::"." Closedon date missing");
 		$ntask->summary = $task->fields->summary;
 		$ntask->oissuetype = $task->fields->issuetype->name;
+		$ntask->updated = $task->fields->updated;
 		$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name);
 		$sprintname = '';
 		$sprintstate = '';
@@ -208,9 +211,12 @@ class Task
 		//if($ntask->status == 'RESOLVED')
 		//	$ntask->timespent = $ntask->estimate;
 		//else	
-		if(isset($task->fields->aggregatetimespent))
-			$ntask->timespent =  round($task->fields->aggregatetimespent/(28800),1);
-		
+		if(isset($task->fields->timespent))
+		{
+			//echo $ntask->key." ".$task->fields->timespent."<br>";
+			$ntask->timespent =  round($task->fields->timespent/(28800),1);
+			$ntask->otimespent = $ntask->timespent;
+		}
 		
 		if(isset($task->fields->duedate))
 		{
@@ -319,12 +325,14 @@ class ProjectTree
 		$this->user = $user;
 		$this->project  = $project;
 		
-		$this->jiraconfig = Utility::GetJiraConfig($project->jirauri);
+		$this->jiraconfig = Utility::GetJiraConfig($project);
+		$project->jiraurl = Utility::GetJiraURL($project);
 		if(file_exists($this->treepath))
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));
 			$this->FindDuplicates($this->tree);
 		}
+		
 	}
 	public function __get($property) 
 	{
@@ -510,7 +518,7 @@ class ProjectTree
 			Utility::ConsoleLog(time(),'Rebuilding Project - '.$this->project->name);
 		else
 			Utility::ConsoleLog(time(),'Building Project - '.$this->project->name);
-		Jira::Initialize($this->jiraconfig['uri'],$this->jiraconfig['username'],$this->jiraconfig['password'],$this->datapath,$rebuild);
+		Jira::Initialize($this->jiraconfig,$this->datapath,$rebuild);
 		
 		$queries = preg_replace('~[\r\n]+~', ',', $this->project->jiraquery);
 		$queries = explode(',',$queries);
@@ -542,6 +550,8 @@ class ProjectTree
 		$this->ComputeEstimate($task);
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
+		$otasks = $this->tasks;
+		//dd($otasks);
 		$this->tasks = [];
 		$this->FindDuplicates($task);
 		foreach($this->tasks as $stask)
@@ -552,7 +562,45 @@ class ProjectTree
 		$this->UpdateDependencies($task);
 		$this->ComputeTotalCorrectedEstimates($task);
 		$this->tree = $task;
-		//dd($this->tree);
+		
+		
+		foreach($this->tasks as $t) 
+		{
+			//echo $t->key." ".$t->otimespent."<br>";
+			if($t->otimespent > 0) // All tasks with worklog
+			{
+				if(isset($otasks[$t->key]))
+				{
+					$otask = $otasks[$t->key];
+					if($otask->updated != $t->updated)
+					{
+						Utility::ConsoleLog(time(),'Wait::Reading worklogs of '.$t->key);
+						$t->worklogs =  Jira::GetWorkLogs($t->key);
+					}
+					else
+						$t->worklogs = $otasks[$t->key]->worklogs;
+				}
+				else
+				{
+					Utility::ConsoleLog(time(),'Wait::Reading worklogs of '.$t->key);
+					$t->worklogs = Jira::GetWorkLogs($t->key);
+				}
+				foreach($t->worklogs as $date=>$userdata)
+				{
+					foreach($userdata as $user=>$data)
+					{
+						if(!isset($this->resources[$user]))
+						{
+							$resource =  new Resource;
+							$resource->name = $data->name;
+							$resource->displayname =$data->displayname;
+							$resource->email = $data->email;
+							$resource->timeZone = $data->timeZone;
+						}
+					}
+				}
+			}
+		}
 		
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		foreach($allresources as $resource)
@@ -611,6 +659,7 @@ class ProjectTree
 		}
 		$this->presources = $this->project->resources()->get();
 		
+		//dd($this);
 		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
 		
