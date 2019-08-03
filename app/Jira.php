@@ -139,9 +139,11 @@ class Jira
 			$date = explode('T', $worklog['started'])[0];
 			$hours =  $worklog['timeSpentSeconds']/(60*60);
 			$author = $worklog['author']['name'];
+			$comment = $worklog['comment'];
 			if(isset($data[$date][$author]))
 			{
 				$data[$date][$author]->hours += $hours;
+				$data[$date][$author]->comment = '#$&@'.$comment;
 			}
 			else
 			{
@@ -151,6 +153,7 @@ class Jira
 				$data[$date][$author]->displayname =  $worklog['author']['displayName'];
 				$data[$date][$author]->email =  $worklog['author']['emailAddress'];
 				$data[$date][$author]->timeZone =  $worklog['author']['timeZone'];
+				$data[$date][$author]->comment = $comment;
 			}
 		}
 		return $data;

@@ -512,7 +512,7 @@ class ProjectTree
 				break;
 		}
 	}
-	function SyncJira($rebuild=0)
+	function SyncJira($rebuild=0,$rebuild_worklogs=0)
 	{
 		if($rebuild == 1)
 			Utility::ConsoleLog(time(),'Rebuilding Project - '.$this->project->name);
@@ -564,7 +564,7 @@ class ProjectTree
 		$this->tree = $task;
 		
 		
-		foreach($this->tasks as $t) 
+		foreach($this->tasks as $t)
 		{
 			//echo $t->key." ".$t->otimespent."<br>";
 			if($t->otimespent > 0) // All tasks with worklog
@@ -572,7 +572,7 @@ class ProjectTree
 				if(isset($otasks[$t->key]))
 				{
 					$otask = $otasks[$t->key];
-					if($otask->updated != $t->updated)
+					if(($otask->updated != $t->updated)||($rebuild_worklogs==1))
 					{
 						Utility::ConsoleLog(time(),'Wait::Reading worklogs of '.$t->key);
 						$t->worklogs =  Jira::GetWorkLogs($t->key);
@@ -596,6 +596,7 @@ class ProjectTree
 							$resource->displayname =$data->displayname;
 							$resource->email = $data->email;
 							$resource->timeZone = $data->timeZone;
+							$this->resources[$user]	= $resource;	
 						}
 					}
 				}
@@ -700,5 +701,9 @@ class ProjectTree
 		$task->progress = $totalprogress;
 		$task->estimate = $totalestimate;
 		$task->timespent = $totaltimespent;
+	}
+	function GetTimeLog()
+	{
+		
 	}
 }

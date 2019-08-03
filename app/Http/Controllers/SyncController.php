@@ -37,6 +37,11 @@ class SyncController extends Controller
 		else 
 			$request->rebuild = 1;
 		
+		if($request->worklogs == null)
+			$request->worklogs = 0;
+		else 
+			$request->worklogs = 1;
+		
 		//Utility::ConsoleLog(time(),$request->projectid);
 		$project = Project::where('id',$request->projectid)->first();
 		if($project == null)
@@ -47,7 +52,7 @@ class SyncController extends Controller
 		//$user = User::where('id',$project->user_id)->first();
 		
 		$tree  =  new ProjectTree($project);
-		$tree->SyncJira($request->rebuild);
+		$tree->SyncJira($request->rebuild,$request->worklogs);
 		
 		
 		//$project = Project::where('id',$projectid)->first();

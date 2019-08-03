@@ -45,7 +45,10 @@ figure figcaption {
 			</figure>
 		</div>
 		<div class="col-3">
-			
+			<figure class="item">
+				<a href="{{route('showtimechart',[$user->name,$project->name])}}"><img src="/images/timechart.jpg"></img></a>
+				<figcaption styleclass="caption">Time Chart</figcaption>
+			</figure>
 		</div>
 		<div class="col-3">
 			

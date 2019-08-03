@@ -4,6 +4,18 @@
 @endsection
 @section('style')
 .progress {height: 5px;}
+label {
+  display: block;
+  padding-left: 15px;
+  text-indent: -15px;
+}
+input {
+  padding: 0;
+  margin:0;
+  vertical-align: bottom;
+  position: relative;
+  *overflow: hidden;
+}
 @endsection
 @section('content')
 
@@ -114,9 +126,13 @@
 				<button style="margin-left:20px;display:none;" url='' projectid='' id="sync">Sync</button>
 				<button style="" id="rebuild">Sync Jira</button>
 				<button style="display:none;" url='' projectid='' id="oasync">Sync OA</button>
-				<button style="float:right;" id="close">Disconnect</button>
-				
+				<button style="float:right;" id="close">Disconnect</button><br>
 				<hr>
+				<div class="d-flex" style="margin-top:-10px;">
+					<label style="font-size:10px;"><input id="cb_worklog" type="checkbox" />Rebuild worklogs</label>&nbsp
+					<label style="font-size:10px;"><input id="cb_baseline" type="checkbox" />Create Baseline </label>
+				</div>
+				<hr style="margin-top:-5px;">
 				<span style="float:right;margin-top:5px;" id="connection"></span>
 				<div  style="display: block;margin-top: 20px;" id="log"></div>
 			</div>
@@ -352,7 +368,8 @@ function OnSync(event)
 	
 	$('#oasync').attr('projectid', project.id);
 	$('#oasync').attr('url', "{{route('syncoa')}}");
-	
+	$( "#cb_worklog" ).prop( "checked", false );
+	$( "#cb_baseline" ).prop( "checked", false );
 	Clear();
 	$('#syncmodal').modal('show');	
 }

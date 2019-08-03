@@ -22,7 +22,8 @@ function closeConnection() {
 }
 function Rebuild()
 {
-	Sync(1);
+	//console.log($('#cb_worklog').is(":checked"))
+	Sync(1,$('#cb_worklog').is(":checked"));
 }
 function OASync()
 {
@@ -65,7 +66,7 @@ function OASync()
 		}
 	}, false);
 }
-function Sync($rebuild=0) 
+function Sync($rebuild=0,$rebuild_worklogs=0) 
 {
 	nextmsgid = 0;
 	firstmsgid = 0;
@@ -79,10 +80,14 @@ function Sync($rebuild=0)
 	$('.info').empty();
 	$('#log').show();
 	//source = new EventSource($(this).attr('url'));
-	if($rebuild == 1)
-		source = new EventSource($('#sync').attr('url')+'?projectid='+projectid+'&rebuild=1');
-	else
-		source = new EventSource($('#sync').attr('url')+'?projectid='+projectid);
+	var url = $('#sync').attr('url')+'?projectid='+projectid;
+	if($rebuild_worklogs)
+		url = url+'&worklogs=1';
+	
+	if($rebuild)
+		url = url+'&rebuild=1';
+	
+	source = new EventSource(url);
 	
 	source.addEventListener('message', function(event) {
 	var data = JSON.parse(event.data);

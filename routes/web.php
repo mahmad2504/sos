@@ -48,6 +48,13 @@ Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetData')->n
 Route::get('/widget/gantt/{user}/{project}','Widgets\GanttController@Show')->name('showgantt');
 Route::get('/widget/data/gantt/{id}','Widgets\GanttController@GetData')->name('getganttdata');// project id
 
+Route::get('/widget/timechart/{user}/{project}','Widgets\TimeChartController@Show')->name('showtimechart');
+Route::get('/widget/data/timechart/daily/{projectid}','Widgets\TimeChartController@GetDailyData')->name('getdailytimechartdata');// project id
+Route::get('/widget/data/timechart/weekly/{projectid}','Widgets\TimeChartController@GetWeeklyData')->name('getweeklytimechartdata');// project id
+Route::get('/widget/data/timechart/monthly/{projectid}','Widgets\TimeChartController@GetMonthlyData')->name('getmonthlytimechartdata');// project id
+
+
+
 
 //// Project Resource //////
 Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->name('showprojectresources'); // project id as input param

@@ -11,6 +11,7 @@ return
 		 'Africa/Cairo'=>['EG','Egypt'],
 		 'Europe/London'=>['UK','United Kingdom'],
 		 'Asia/Kolkata'=>['IN','India'],
+		 'Europe/Vienna'=>['AU','Austria'],
 		 'X' => ['-','Unknown']
 		],
 	]
