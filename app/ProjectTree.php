@@ -50,48 +50,48 @@ class Task
 		$this->blockers_present = 0; // valid only for head
 		$this->dependson = [];
 	}
-	
+
 	function MapIssueType($issuetype)
 	{
 		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
-		
+
 		if(($issuetype=='Workpackage')||($issuetype=='Project'))
 			return 'WORKPACKAGE';
-		
+
 		if($issuetype=='Bug')
 			return 'DEFECT';
-		
+
 		if($issuetype=='Epic')
 			return 'EPIC';
-		
+
 		if(($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
-		
-		Utility::ConsoleLog(time(),"Error::Unmapped type=".$issuetype);
-		exit();
+
+		Utility::ConsoleLog(time(),"Error::Unmapped type=[".$issuetype."]");
+		return 'TASK';
 		//
 	}
 	function MapStatus($status)
 	{
-		if(($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
+		if( ($status=='To Do')||($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
 			return 'OPEN';
 		if(($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
-		
+
 		if(($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
 			return 'INPROGRESS';
 		Utility::ConsoleLog(time(),"Unmapped status=".$status);
-		exit();
+		return 'OPEN';
 	}
-	
+
 	private function SearchInJira($query,$jiraconf,$order=null)
 	{
 		//echo $query."<br>";
 		$story_points = $jiraconf['storypoints']; // custom field
 		$sprint = $jiraconf['sprint']; // custom field
-		
-		
+
+
 		global $estimation_method;
 		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
 		if($estimation_method == 1)
@@ -100,7 +100,7 @@ class Task
 			$tasks = Jira::Search($query,1000,$fields.'timeoriginalestimate,timespent,'.$sprint,$order);
 		else
 			$tasks = Jira::Search($query,1000,'timeoriginalestimate,timespent,'.$fields.$story_points.",".$sprint,$order);
-		
+
 		return $tasks;
 	}
 	public function CreateTask($jiraconf,$task,$level,$pextid,$pos)
@@ -108,7 +108,7 @@ class Task
 		global $unestimated_count;
 		$story_points = $jiraconf['storypoints']; // custom field
 		$sprint = $jiraconf['sprint']; // custom field
-		
+
 		$ntask = new Task($this->parent,$level,$pextid,$pos);
 		$ntask->key = $task->key;;
 		$ntask->id = $task->id;
@@ -156,8 +156,8 @@ class Task
 			$resource->displayname = $task->fields->assignee->displayName;
 			$resource->email = $task->fields->assignee->emailAddress;
 			$resource->timeZone = $task->fields->assignee->timeZone;
-		
-			$this->parent->resources[$task->fields->assignee->name]	= $resource;				
+
+			$this->parent->resources[$task->fields->assignee->name]	= $resource;
 			$ntask->assignee = $task->fields->assignee->name;
 		}
 		else
@@ -167,8 +167,8 @@ class Task
 			$resource->displayname = 'unassigned';
 			$resource->email = '';
 			$resource->timeZone = '';
-			
-			$this->parent->resources['unassigned']	= $resource;	
+
+			$this->parent->resources['unassigned']	= $resource;
 			$ntask->assignee = 'unassigned';
 		}
 		$ntask->query = null;
@@ -181,7 +181,7 @@ class Task
 		if(isset($task->fields->$story_points))
 			$ntask->storypoints = $task->fields->$story_points;
 		if(isset($task->fields->timeoriginalestimate))
-			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);	
+			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);
 		$ntask->estimate = $ntask->timeestimate;
 		if($ntask->storypoints>0)
 			$ntask->estimate = $ntask->storypoints;
@@ -202,7 +202,7 @@ class Task
 		}
 		//var_dump($ntask->dependson);
 		$ntask->timespent =  0;
-		//Utility::ConsoleLog(time(),"Estimate is ".$ntask->estimate);	
+		//Utility::ConsoleLog(time(),"Estimate is ".$ntask->estimate);
 		if($ntask->timespent > 0)
 		{
 			if($ntask->status == 'OPEN')
@@ -210,35 +210,35 @@ class Task
 		}
 		//if($ntask->status == 'RESOLVED')
 		//	$ntask->timespent = $ntask->estimate;
-		//else	
+		//else
 		if(isset($task->fields->timespent))
 		{
 			//echo $ntask->key." ".$task->fields->timespent."<br>";
 			$ntask->timespent =  round($task->fields->timespent/(28800),1);
 			$ntask->otimespent = $ntask->timespent;
 		}
-		
+
 		if(isset($task->fields->duedate))
 		{
 			$ntask->duedate = $task->fields->duedate;
 			if($ntask->duedate < Utility::GetToday('Y-m-d'))
-				Utility::ConsoleLog(time(),'Error::'.$task->key." has a missed deadline");	
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a missed deadline");
 		}
-		
-		
+
+
 		//echo $ntask->timespent;
-		
+
 		$buffer = '';
 		if($ntask->issuetype == 'TASK')
 			if($ntask->estimate == 0)
 				$unestimated_count++;
-			
+
 		return $ntask;
-		
+
 		//$ntask->key = $jiratask->key;
 	}
 	public function AddChild(Task $task)
-	{	
+	{
 		$this->children[] = $task;
 		$this->isparent = 1;
 	}
@@ -246,22 +246,22 @@ class Task
 	{
 		$story_points = $jiraconf['storypoints']; // custom field
 		$sprint = $jiraconf['sprint']; // custom field
-		
+
 		global $unestimated_count;
 		//Utility::ConsoleLog(time(),$this->level." ".$this->key);
-		
+
 		if($this->query == null)
 			return 1;
-		
+
 		else if(substr( $this->query, 0, 10 ) === "structure=")
 		{
 			$structure_id = explode('structure=',$this->query)[1];
 			Utility::ConsoleLog(time(),'Wait::Reading Structure '.$structure_id);
 			$objects = Jira::GetStructure($structure_id);
-			
+
 			$query = 'id in (' ;
 			$del = "";
-			
+
 			foreach($objects as $object)
 			{
 				$query = $query.$del.$object->taskid;
@@ -281,8 +281,8 @@ class Task
 				//echo $level." Parent is ".$parent->key."<br>";
 				$ntask = $this->CreateTask($jiraconf,$object->data,$level,$parent->extid,count($parent->children));
 				$parent->AddChild($ntask);
-				
-			
+
+
 				//echo $ntask->key."  ".$level."<br>";
 				$taskatlevel[$level] = $ntask;
 			}
@@ -324,17 +324,18 @@ class ProjectTree
 		$this->treepath = $this->datapath."/tree";
 		$this->user = $user;
 		$this->project  = $project;
-		
+
 		$this->jiraconfig = Utility::GetJiraConfig($project);
 		$project->jiraurl = Utility::GetJiraURL($project);
 		if(file_exists($this->treepath))
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));
 			$this->FindDuplicates($this->tree);
+			//echo "ff";
+			//dd($this->tree->oa);
 		}
-		
 	}
-	public function __get($property) 
+	public function __get($property)
 	{
 		switch($property)
 		{
@@ -344,7 +345,7 @@ class ProjectTree
 				return $this->project->end;
 			case 'name':
 				return $this->project->name;
-			
+
 		}
 		if (property_exists($this, $property)) {
 		return $this->$property;
@@ -369,7 +370,7 @@ class ProjectTree
 			if($task->status == 'OPEN')
 				if($task->timespent > 0)
 					$task->status = 'INPROGRESS';
-				
+
 			return $task->status;
 		}
 		$children = $task->children;
@@ -378,14 +379,14 @@ class ProjectTree
 			$status = $this->ComputeStatus($child);
 			$status_array[$status] = 1;
 		}
-		
+
 		if (array_key_exists("INPROGRESS",$status_array))
 			$task->status = "INPROGRESS";
 		else if (array_key_exists("OPEN",$status_array))
 			$task->status = "OPEN";
 		else if (array_key_exists("RESOLVED",$status_array))
 			$task->status = "RESOLVED";
-		
+
 		return $task->status;
 	}
 	function ComputeEstimate($task)
@@ -396,7 +397,7 @@ class ProjectTree
 		$acc = 0;
 		foreach($task->children as $child)
 			$acc += $this->ComputeEstimate($child);
-		
+
 		$task->estimate = $acc;
 		return $task->estimate;
 	}
@@ -412,11 +413,11 @@ class ProjectTree
 		$acc = 0;
 		foreach($task->children as $child)
 			$acc += $this->ComputeTimeSpent($child);
-		
+
 		$task->timespent = $acc;
 		if($task->status == 'RESOLVED')
 			$task->timespent = $task->estimate;
-		
+
 		return $task->timespent;
 	}
 	function ComputeProgress($task)
@@ -424,12 +425,12 @@ class ProjectTree
 		$estimate = $task->estimate;
 		if($estimate == 0)
 			$estimate = 1;
-				
+
 		$task->progress = round($task->timespent/$estimate*100,1);
 		//echo $task->progress." ".$task->timespent." ".$estimate."\r\n";
 		if($task->progress > 100)
 			$task->progress = 100;
-		
+
 		if($task->status == 'RESOLVED')
 			$task->progress = 100;
 		$children = $task->children;
@@ -472,12 +473,12 @@ class ProjectTree
 					$schedule_priority--;
 				}
 			}
-			
-					
+
+
 			//Utility::ConsoleLog(time(),'********'.count($task->dependson));
 			if(($task->priority == 1)&&($task->status != 'RESOLVED'))
 				$head->blockers_present = 1;
-			
+
 			$del = [];
 			for($i=0;$i<count($task->dependson);$i++)
 			{
@@ -519,11 +520,11 @@ class ProjectTree
 		else
 			Utility::ConsoleLog(time(),'Building Project - '.$this->project->name);
 		Jira::Initialize($this->jiraconfig,$this->datapath,$rebuild);
-		
+
 		$queries = preg_replace('~[\r\n]+~', ',', $this->project->jiraquery);
 		$queries = explode(',',$queries);
 		$queries = array_filter($queries);
-		
+
 		if(count($queries)>1)
 		{
 			$task = new Task($this,1,0,0,$this->project->name,null);
@@ -543,8 +544,8 @@ class ProjectTree
 		}
 		else
 			$task = new Task($this,1,0,0,$this->project->name,$queries[0]);
-		
-		
+
+
 		$this->Populate($task);
 		$this->ComputeStatus($task);
 		$this->ComputeEstimate($task);
@@ -557,13 +558,18 @@ class ProjectTree
 		foreach($this->tasks as $stask)
 		{
 			if($stask->instancecount > 1)
-				Utility::ConsoleLog(time(),'Warning::'.$stask->key." Duplicate in plan");	
+				Utility::ConsoleLog(time(),'Warning::'.$stask->key." Duplicate in plan");
 		}
 		$this->UpdateDependencies($task);
 		$this->ComputeTotalCorrectedEstimates($task);
+
+		// Read Any old value from treepath
+		$oa = null;
+		if(isset($this->tree->oa))
+			$oa = $this->tree->oa;
 		$this->tree = $task;
-		
-		
+		$this->tree->oa = $oa;
+dd(	$this->tree->oa);
 		foreach($this->tasks as $t)
 		{
 			//echo $t->key." ".$t->otimespent."<br>";
@@ -596,27 +602,27 @@ class ProjectTree
 							$resource->displayname =$data->displayname;
 							$resource->email = $data->email;
 							$resource->timeZone = $data->timeZone;
-							$this->resources[$user]	= $resource;	
+							$this->resources[$user]	= $resource;
 						}
 					}
 				}
 			}
 		}
-		
+
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		foreach($allresources as $resource)
 		{
 			$resource->active = 0;
 			$resource->save();
 		}
-		// Update Resources Database 
+		// Update Resources Database
 		foreach($this->resources as $res)
 		{
 			$resource = Resource::where('name',$res->name)->first();
 			if($resource != null)
 			{
 				$resource->Modify($res);
-				
+
 			}
 			else // new resource
 			{
@@ -633,7 +639,7 @@ class ProjectTree
 			}
 			$cc = $info[0];
 			$cn = $info[1];
-			
+
 			$projectresource = ProjectResource::where('resource_id',$resource->id)->where('project_id',$this->project->id)->first();
 			if($projectresource !=  null)
 			{
@@ -659,17 +665,17 @@ class ProjectTree
 			}
 		}
 		$this->presources = $this->project->resources()->get();
-		
+
 		//dd($this);
 		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
-		
+
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
-	
-	
+
+
 	function Save()
 	{
 		//dd($this->tree);
@@ -682,7 +688,7 @@ class ProjectTree
 	{
 		return $this->tree;
 	}
-	
+
 	function ComputeTotalCorrectedEstimates($task) // Removes Duplicates
 	{
 		$totalestimate = 0;
@@ -704,6 +710,68 @@ class ProjectTree
 	}
 	function GetTimeLog()
 	{
-		
+		$data = [];
+		//dd( $this->tree->oa);
+		//dd($this->presources);
+		foreach($this->presources as $presource)
+		{
+				if($presource->active)
+				{
+					$resource = $presource->resource()->get();
+					$resource = $resource[0];
+					$obj = new \StdClass();
+					$obj->name = $resource->displayname;
+					$obj->oaid = $presource->oaid;
+					$obj->jira = null;
+					$obj->oa = null;
+					if(array_key_exists($obj->oaid, $this->tree->oa->worklogs))
+					{
+				  	$obj->oa = $this->tree->oa->worklogs[$obj->oaid];
+					}
+					$data[$resource->name] = $obj;
+
+				}
+		}
+
+
+		foreach($this->tasks as $task)
+		{
+			  if(isset($task->worklogs))
+				{
+					foreach($task->worklogs as $date=>$worklogdata)
+					{
+						foreach($worklogdata as $resource=>$worklog)
+						{
+							/*if($resource == 'amhamza')
+							{
+									echo $resource." ".$date." ".$worklog->hours."\r\n";
+									if(isset($data[$resource]->jira[$date]->decimal_hours))
+									{
+									     echo ($data[$resource]->jira[$date]->decimal_hours);
+											 echo "\r\n";
+									}
+							}*/
+							if(isset($data[$resource]->jira[$date]->decimal_hours))
+							{
+									$data[$resource]->jira[$date]->decimal_hours += $worklog->hours;
+							}
+							else
+							{
+								$d = new \StdClass();
+								$d->approved = true;
+							  $d->decimal_hours = $worklog->hours;
+								$data[$resource]->jira[$date] = $d;
+							}
+						}
+					}
+				}
+		}
+		foreach($data as $user=>$userdata)
+		{
+				if(($userdata->oa == null)&&($userdata->jira == null))
+					unset($data[$user]);
+
+		}
+		return $data;
 	}
 }

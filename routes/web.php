@@ -17,8 +17,8 @@ Route::get('/', function () {
 
 Auth::routes();
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
-Route::get('/', 'HomeController@index');   // View 
-Route::get('/home', 'HomeController@index')->name('home');   // View 
+Route::get('/', 'HomeController@index');   // View
+Route::get('/home', 'HomeController@index')->name('home');   // View
 Route::get('/changePassword','HomeController@showChangePasswordForm')->name('showchangepassword'); // View
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
 
@@ -65,7 +65,7 @@ Route::put('/projectresource/{id}', 'ProjectResourceController@updateprojectreso
 Route::get('/openair/resources/{project_id}','OpenAirController@GetResources')->name('getopenairresources'); // project id as input param
 
 
-//// 
+////
 //Route::calendar('/calendar/{resource_id}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::get('/calendar/{resource_name}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name('savecalendar'); // project id as input param
@@ -76,9 +76,9 @@ Route::get('/milestones/{projectid}','MilestoneController@Show'); // project id 
 
 /// Test
 Route::get('/test/tj/{projectid}','TestController@TJTest'); // project id as input param
-Route::get('/test/oa/{projectid}','TestController@OATest'); // project id as input param
-Route::get('/test/jira/worklogs/{projectid}/{jira_key}','TestController@JiraWorklogs'); // project id as input param
-
-Route::get('/test/showtree/{projectid}','TestController@ShowTree'); // project id as input param
-
-
+Route::get('/test/sync/oa/{projectid}','TestController@OASync'); // project id as input param
+Route::get('/test/worklogs/jira/{projectid}','TestController@GetJiraWorklogs'); // project id as input param
+Route::get('/test/worklogs/oa/{projectid}','TestController@OAWorklogs'); // project id as input param
+Route::get('/test/resource/timelogs/{projectid}/','TestController@ResourceTimeLogs');
+Route::get('/test/tree/show/{projectid}','TestController@ShowTree'); // project id as input param
+Route::get('/test/resource/worklogs/{projectid}','TestController@ResourceTimeLogs'); // project id as input param

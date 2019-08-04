@@ -870,12 +870,12 @@
                                 .append($('<button type="button" class="nav-link nav-zoomIn"/>')
                                     .html('&#43;')
                                     .click(function () {
-                                        core.zoomInOut(element, -1);
+                                        //core.zoomInOut(element, -1);
                                     }))
                                 .append($('<button type="button" class="nav-link nav-zoomOut"/>')
                                     .html('&#45;')
                                     .click(function () {
-                                        core.zoomInOut(element, 1);
+                                        //core.zoomInOut(element, 1);
                                     }))
                                     )
                                 );
@@ -936,12 +936,12 @@
                         .append($('<button type="button" class="nav-link nav-zoomIn"/>')
                             .html('&#43;')
                             .click(function () {
-                                core.zoomInOut(element, -1);
+                                //core.zoomInOut(element, -1);
                             }))
                         .append($('<button type="button" class="nav-link nav-zoomOut"/>')
                             .html('&#45;')
                             .click(function () {
-                                core.zoomInOut(element, 1);
+                                //core.zoomInOut(element, 1);
                             }));
                 }
                 return $('<div class="bottom"></div>').append(ganttNavigate);

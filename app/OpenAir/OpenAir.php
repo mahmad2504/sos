@@ -8,16 +8,16 @@ https://opensource.org/licenses/NPOSL-3.0
 */
 
 /**
- *  OpenAir class to communicate with OpenAir Netsuite server 
- *  This class implements functions to communicate with OpenAir via Rest XML 
- *  A PHP App must create the instance of this class. 	
+ *  OpenAir class to communicate with OpenAir Netsuite server
+ *  This class implements functions to communicate with OpenAir via Rest XML
+ *  A PHP App must create the instance of this class.
  */
 namespace App\OpenAir;
 use App\Utility;
 class Response
 {
 	private $cmd = array();
-	function __construct($cmd) 
+	function __construct($cmd)
 	{
 		if(is_array($cmd))
 		{
@@ -85,7 +85,7 @@ class Response
 					else if(strtolower($args[$j]) == 'non_billable')
 					{
 						$returndata[$i][$args[$j]]=$this->ParseBillable($data[$j][$i]);
-						
+
 					}
 					else
 						$returndata[$i][$args[$j]]=$data[$j][$i];
@@ -109,9 +109,9 @@ class Response
 	{
 		$args = func_get_args();
 		return $this->PrepareOutput($args,0);
-	
+
 	}
-	
+
 }
 
 class  ReadCommand
@@ -123,7 +123,7 @@ class  ReadCommand
 	public $result;
 	public $cmdtype = 'oa_read_command';//constant
 
-	function __construct() 
+	function __construct()
 	{
 	}
 	public function __get($name)
@@ -143,7 +143,7 @@ class  ReadCommand
 				{
 					if( array_key_exists($name,$result) )
 						$data[] =  $result[$name];
-				}	
+				}
 			}
 		}
 		else
@@ -158,27 +158,27 @@ class  ReadCommand
 	}
 	function _buildDefaults($dom)
 	{
-		$read = $dom->createElement('Read');	
+		$read = $dom->createElement('Read');
 		$type = $dom->createAttribute('type');
         $type->value = $this->type;
-		
+
 		$method = $dom->createAttribute('method');
 		$method->value = $this->method;
-		
+
 		$limit = $dom->createAttribute('limit');
         $limit->value = $this->limit;
-		
+
 		$read->appendChild($type);
 		$read->appendChild($method);
 		$read->appendChild($limit);
-		
+
 		if($this->filter != null)
 		{
 			$filter = $dom->createAttribute('filter');
 			$filter->value = $this->filter;
 			$read->appendChild($filter);
 		}
-		
+
 		return $read;
 	}
 	function _setResults($array)
@@ -198,11 +198,11 @@ class  ReadCommand
 			return -1;
 	    }
 	    return 0;
-	}	
+	}
 }
 class Command_ReadAssignedUsersByProjectTaskId extends ReadCommand
 {
-	function __construct($projecttaskid,$limit=10) 
+	function __construct($projecttaskid,$limit=10)
 	{
 		$this->type = 'Projecttaskassign';
 		$this->method = 'equal to';
@@ -214,27 +214,27 @@ class Command_ReadAssignedUsersByProjectTaskId extends ReadCommand
 		$read = parent::_buildDefaults($dom);
 		$project = $dom->createElement('Projecttaskassign');
 		$id = $dom->createElement('projecttaskid',$this->_projecttaskid);
-		
+
 		$project->appendChild($id);
 		$read->appendChild($project);
-		
+
 		return $read;
     }
 	function toString()
 	{
 		if(parent::toString()==-1)
 			return;
-		echo "---------------Assigned Users (projectaskid=$this->_projecttaskid, limit=$this->limit) --------------".EOL;	
+		echo "---------------Assigned Users (projectaskid=$this->_projecttaskid, limit=$this->limit) --------------".EOL;
 		$userids = $this->userid;
 		for($i=0;$i<count($userids);$i++)
 		{
 			echo $userids[$i].EOL;
 		}
 	}
-}	
+}
 class Command_ReadWorklogsByProjectTaskId extends ReadCommand
 {
-	function __construct($approved,$projecttaskid,$limit=1000) 
+	function __construct($approved,$projecttaskid,$limit=1000)
 	{
 		$this->type = 'Task';
 		$this->method = 'equal to';
@@ -251,7 +251,7 @@ class Command_ReadWorklogsByProjectTaskId extends ReadCommand
 		$read = parent::_buildDefaults($dom);
 		$project = $dom->createElement('Task');
 		$id = $dom->createElement('projecttaskid',$this->_projecttaskid);
-		
+
 		$project->appendChild($id);
 		$read->appendChild($project);
 		return $read;
@@ -267,10 +267,10 @@ class Command_ReadWorklogsByProjectTaskId extends ReadCommand
 		for($i=0;$i<count($userid);$i++)
 			echo $i."  (date)".$date[$i]['Date']['month']."-".$date[$i]['Date']['day']."-".$date[$i]['Date']['year']."  (userid)".$userid[$i]." (decimal_hours)".$decimal_hours[$i].EOL;
 	}
-}	
+}
 class Command_ReadUserById extends ReadCommand
 {
-	function __construct($id) 
+	function __construct($id)
 	{
 		$this->type = 'User';
 		$this->method = 'equal to';
@@ -282,7 +282,7 @@ class Command_ReadUserById extends ReadCommand
 		$read = parent::_buildDefaults($dom);
 		$user_element = $dom->createElement('User');
 		$id_element = $dom->createElement('id',$this->_id);
-		
+
 		$user_element->appendChild($id_element);
 		$read->appendChild($user_element);
 		return $read;
@@ -297,13 +297,13 @@ class Command_ReadUserById extends ReadCommand
 		$names = $this->name;
 		for($i=0;$i<count($ids);$i++)
 			echo "(id)".$ids[$i]." (name)".$names[$i].EOL;
-		
-		
+
+
 	}
 }
 class Command_ReadTasks extends ReadCommand
 {
-	function __construct($limit=1) 
+	function __construct($limit=1)
 	{
 		$this->type = 'Projecttask';
 		$this->method = 'all';
@@ -328,7 +328,7 @@ class Command_ReadTasks extends ReadCommand
 
 class Command_ReadTasksByProjectId extends ReadCommand
 {
-	function __construct($projectid,$limit=1) 
+	function __construct($projectid,$limit=1)
 	{
 		$this->type = 'Projecttask';
 		$this->method = 'equal to';
@@ -338,10 +338,10 @@ class Command_ReadTasksByProjectId extends ReadCommand
 	function _buildRequest($dom)
 	{
 		$read = parent::_buildDefaults($dom);
-	
+
 		$project = $dom->createElement('Projecttask');
 		$id = $dom->createElement('projectid',$this->_projectid);
-		
+
 		$project->appendChild($id);
 		$read->appendChild($project);
 		return $read;
@@ -351,36 +351,36 @@ class Command_ReadTasksByProjectId extends ReadCommand
 		if(parent::toString()==-1)
 			return;
 		echo "---------------Project Tasks (projectid=$this->_projectid, limit=$this->limit) --------------".EOL;
-		
+
 		$ids = $this->id;
 		$pids = $this->projectid;
 		$names = $this->name;
 
 		for($i=0;$i<count($ids);$i++)
 			echo "id=".$ids[$i]." pid=".$pids[$i]." task=".$names[$i].EOL;
-		
+
 	}
 }
 class Command_ReadProjectByName extends ReadCommand
 {
-	function __construct($name) 
+	function __construct($name)
 	{
 		$this->_name = $name;
 		$this->type = 'Project';
 		$this->method = 'equal to';
 		$this->limit = 1;
 	}
-	
+
 	function _buildRequest($dom)
 	{
 		$read = parent::_buildDefaults($dom);
-	
+
 		$project = $dom->createElement('Project');
 		$name = $dom->createElement('name',$this->_name);
-		
+
 		$project->appendChild($name);
 		$read->appendChild($project);
-		
+
 		return $read;
     }
 	function toString()
@@ -388,7 +388,7 @@ class Command_ReadProjectByName extends ReadCommand
 		if(parent::toString()==-1)
 			return;
 		echo "---------------Project (name=$this->_name, limit=$this->limit) --------------".EOL;
-		
+
 		$ids = $this->id;
 		$names = $this->name;
 		for($i=0;$i<count($ids);$i++)
@@ -398,7 +398,7 @@ class Command_ReadProjectByName extends ReadCommand
 }
 class Command_ReadProjects extends ReadCommand
 {
-	function __construct($limit=1) 
+	function __construct($limit=1)
 	{
 		$this->type = 'Project';
 		$this->method = 'all';
@@ -414,9 +414,9 @@ class Command_ReadProjects extends ReadCommand
 	{
 		if(parent::toString()==-1)
 			return;
-		
+
 		echo "---------------Project (all, limit=$this->limit) --------------".EOL;
-		
+
 		$ids = $this->id;
 		$names = $this->name;
 		for($i=0;$i<count($ids);$i++)
@@ -425,33 +425,33 @@ class Command_ReadProjects extends ReadCommand
 }
 class Command_ReadProjectById extends ReadCommand
 {
-	function __construct($id) 
+	function __construct($id)
 	{
 		$this->_id = $id;
 		$this->type = 'Project';
 		$this->method = 'equal to';
 		$this->limit = 1;
-		
+
 	}
 	function _buildRequest($dom)
 	{
 		$read = parent::_buildDefaults($dom);
-	
+
 		$project = $dom->createElement('Project');
 		$id = $dom->createElement('id',$this->_id);
-		
+
 		$project->appendChild($id);
 		$read->appendChild($project);
-		
+
 		return $read;
     }
 	function toString()
 	{
 		if(parent::toString()==-1)
 			return;
-		
+
 		echo "---------------Project (id=$this->_id, limit=$this->limit) --------------".EOL;
-		
+
 		$ids = $this->id;
 		$names = $this->name;
 		for($i=0;$i<count($ids);$i++)
@@ -472,7 +472,7 @@ class OpenAir
     private $debug = false;
 	private $auth=null;
 	private $read_commands = [];
-	
+
 	/*!
     Constructor of OpenAir Class
 	Contact the OpenAir Support Department or your account representative to request API access. See
@@ -480,7 +480,7 @@ class OpenAir
 	key. These are the two pieces of information required for API access in addition to your regular OpenAir
 	login credentials.
 
-    @param[in] $key         Open Air api key. Talk with service provider for API access key 
+    @param[in] $key         Open Air api key. Talk with service provider for API access key
     @param[in] $namespace   Open Air api namepace. Default namespace is 'default'
     @param[in] $api_ver     Open Air api version. Default is = '1.0'
 	@param[in] $client      Client name
@@ -495,7 +495,7 @@ class OpenAir
         $this->client = $client;
         $this->client_ver = $client_ver;
 		$this->url = $url;
-	}	
+	}
 	/*!
     Executes all the added commands
     @param[in] $reset_on_success  If set to 1, all added Comands will be removed after execution. If 0, these commands will be retained
@@ -523,21 +523,21 @@ class OpenAir
         if($httpcode === 200)
 		{
 			$xml = simplexml_load_string($result,"SimpleXMLElement", LIBXML_NOCDATA);
-			if ($xml === false) 
+			if ($xml === false)
 			{
-				die('Error parsing XML');   
+				die('Error parsing XML');
 			}
 			$json = json_encode($xml);
 			$array = json_decode($json,TRUE);
-			
-         
+
+
 			if($this->debug)
 				echo "Auth status = ".$array['Auth']['@attributes']['status'].'<br>';
 			if(count($this->read_commands) == 1)
 			{
 				if($this->debug)
 					echo "Read status = ".$array['Read']['@attributes']['status'].'<br>';
-				
+
 				$command = $this->read_commands[0];
 				if($array['Read']['@attributes']['status'] == 0)
 				{
@@ -553,7 +553,7 @@ class OpenAir
 				{
 					if($this->debug)
 						echo "Read status = ".$array['Read'][$i]['@attributes']['status'].'<br>';
-					
+
 					if($array['Read'][$i]['@attributes']['status'] == 0)
 						$command->_setResults($array['Read'][$i][$command->type]);
 					else
@@ -575,7 +575,7 @@ class OpenAir
 			return -1;
         }
     }
-	
+
 	private function _buildRequest()
 	{
 		$dom = new \DOMDocument;
@@ -606,7 +606,7 @@ class OpenAir
         $key = $dom->createAttribute('key');
         $key->value = $this->key;
         $request->appendChild($key);
-		
+
 		if($this->auth != null)
 		{
 			$request->appendChild($this->auth->_buildRequest($dom));
@@ -616,7 +616,7 @@ class OpenAir
 			die("Authentication Information not added");
 
 		}
-		
+
 		foreach($this->read_commands as $command)
 		{
 			$request->appendChild($command->_buildRequest($dom));
@@ -625,7 +625,7 @@ class OpenAir
         $this->xml = $dom->saveXML();
         return $this->xml;
     }
-	
+
 	function AddAuth($auth)
 	{
 		$this->auth = $auth;
@@ -636,7 +636,7 @@ class OpenAir
 	*/
 	public function AddCommand($command)
 	{
-		if (!is_a($command, 'App\OpenAir\ReadCommand')) 
+		if (!is_a($command, 'App\OpenAir\ReadCommand'))
 		{
 			echo "command is not of type ReadCommand";
 			return;
@@ -647,9 +647,9 @@ class OpenAir
 			echo "Cmd type is not 'oa_read_command' , not implemented yet";
 	}
 	/*!
-    Adds command on stack to read Project data 
+    Adds command on stack to read Project data
     @param[in] $name string, project name  e.g 'ABC Project'
-	@returns object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function 
+	@returns object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function
 	*/
 	public function ReadProjectByName($name) //Returns object of type ReadCommand
 	{
@@ -658,7 +658,7 @@ class OpenAir
 		$response = new Response($cprojects);
 		return $response;
 	}
-	
+
 	private function _ReadProjectById($id) //Returns object of type ReadCommand
 	{
 		$cprojects = new Command_ReadProjectById($id);
@@ -667,16 +667,16 @@ class OpenAir
 		return $response;
 	}
 	/*!
-    Adds command on stack to read Project data 
+    Adds command on stack to read Project data
     @param[in] $ids integer, project id  e.g 354
 	@param[in] $ids Comma delimited string for multiple project ids  e.g '354,254'
-    @returns array of object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function 
+    @returns array of object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function
 	*/
 	public function ReadProjectById($in,$field='id') // comma delimited ids as input. Returns array of objects of type ReadCommand
 	{
 		$ids = array();
 		$handles = array();
-		if (is_a($in, 'App\OpenAir\Response')) 
+		if (is_a($in, 'App\OpenAir\Response'))
 		{
 			foreach($in->$field as $f)
 				$ids[$f] = $f;
@@ -699,16 +699,16 @@ class OpenAir
 		return $ctask;
 	}
 	/*!
-    Adds command on stack to read project data 
+    Adds command on stack to read project data
     @param[in] $projectids can be integer user id e.g 456
 	@param[in] $projectids can be comma delimited string containing project id  e.g '456,233'
-    @returns  array of objects of type ReadCommand. For results, access result member of this object. result is filled by  Execute function 
+    @returns  array of objects of type ReadCommand. For results, access result member of this object. result is filled by  Execute function
 	*/
 	public function ReadTasksByProjectId($in,$field='id')
 	{
 		$ids = array();
 		$handles = array();
-		if (is_a($in, 'App\OpenAir\Response')) 
+		if (is_a($in, 'App\OpenAir\Response'))
 		{
 			foreach($in->$field as $f)
 				$ids[$f] = $f;
@@ -724,7 +724,7 @@ class OpenAir
 		$response = new Response($handles);
 		return $response;
 	}
-	
+
 	private function _ReadAssignedUsersByProjectTaskId($projecttaskid)
 	{
 		$cusers = new Command_ReadAssignedUsersByProjectTaskId($projecttaskid,100);
@@ -732,17 +732,17 @@ class OpenAir
 		$response = new Response($cusers);
 		return $response;
 	}
-	
+
 	/*!
     Adds command on stack to read users assigned to a particuler project task
     @param[in] $projecttaskid integer user id e.g 456
-    @returns   object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function 
+    @returns   object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function
 	*/
 	public function ReadAssignedUsersByProjectTaskId($in,$field='id')
 	{
 		$ids = array();
 		$handles = array();
-		if (is_a($in, 'App\OpenAir\Response')) 
+		if (is_a($in, 'App\OpenAir\Response'))
 		{
 			foreach($in->$field as $f)
 				$ids[$f] = $f;
@@ -765,18 +765,18 @@ class OpenAir
 		return $cuser;
 	}
 	/*!
-    Adds command on stack to read  users data. 
+    Adds command on stack to read  users data.
     @param[in] $in integer user id e.g 456
 	@param[in] $in comma delimited string. e,g '24,35,46'
 	@param[in] $in object of ReadCommand with $result populated from some previous read command
-	@param[in] $field This parameter is valid only if $in is object of ReadCommand. 
-    @returns array of  objects of type ReadCommand. For results, access result member of this object. result is filled by  Execute function 
+	@param[in] $field This parameter is valid only if $in is object of ReadCommand.
+    @returns array of  objects of type ReadCommand. For results, access result member of this object. result is filled by  Execute function
     */
-	public function ReadUserById($in,$field='userid') 
+	public function ReadUserById($in,$field='userid')
 	{
 		$ids = array();
 		$handles = array();
-		if (is_a($in, 'App\OpenAir\Response')) 
+		if (is_a($in, 'App\OpenAir\Response'))
 		{
 			foreach($in->$field as $f)
 				$ids[$f] = $f;
@@ -795,7 +795,7 @@ class OpenAir
 	/*!
     Adds command on stack to read all worklogs logged on a particular project task
     @param[in] $projecttaskid id of the project task
-    @returns   object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function 
+    @returns   object of type ReadCommand. For results, access result member of this object. result is filled by  Execute function
 	*/
 	function _ReadWorkLogsByProjectTaskId($approved,$projecttaskid)
 	{
@@ -803,11 +803,11 @@ class OpenAir
 		$this->AddCommand($cworklogs);
 		return $cworklogs;
 	}
-	public function ReadWorkLogsByProjectTaskId($approved,$in,$field='userid') 
+	public function ReadWorkLogsByProjectTaskId($approved,$in,$field='userid')
 	{
 		$ids = array();
 		$handles = array();
-		if (is_a($in, 'App\OpenAir\Response')) 
+		if (is_a($in, 'App\OpenAir\Response'))
 		{
 			foreach($in->$field as $f)
 				$ids[$f] = $f;
@@ -833,15 +833,15 @@ class OpenAir
 		{
 			//if($task['non_billable'] == 1)
 			//	var_dump($task);
-			
+
 			if($task['is_a_phase'] == 1)
 				continue;
-			
+
 			if($include_non_billable)
 			{
 				$planned_hours += $task['planned_hours'];
 			}
-			else 
+			else
 			{
 				if($task['non_billable'] == 0)
 				{
@@ -851,7 +851,7 @@ class OpenAir
 		}
 		return $planned_hours;
 	}
-	
+
 	public function ReadWorkLogsByProjectId($projectid,$approved=false)
 	{
 		$nonbillabletaskids = array();
@@ -861,7 +861,7 @@ class OpenAir
 		foreach($tasks as $task)
 		{
 			if($task['non_billable'] == 1)
-				$nonbillabletaskids[] = $task['id']; 
+				$nonbillabletaskids[] = $task['id'];
 		}
 		//var_dump($nonbillabletaskids);
 		$h2 = $this->ReadWorkLogsByProjectTaskId($approved,$h1,'id');
@@ -883,19 +883,26 @@ class OpenAir
 			}
 			if($worklog['nonbillable'] == 0)
 			{
-				$nworklog = [];				
+				$nworklog = [];
 				$nworklog["decimal_hours"] = $worklog["decimal_hours"];
 				$nworklog["approved"] = $worklog["approved"];
-	  
-				if(isset($newlist[$worklog['userid']]))
+				$user = $worklog['userid'];
+				$date = $worklog['date'];
+				if(array_key_exists($user,$newlist))
 				{
-					$newlist[$worklog['userid']][$worklog['date']] = $nworklog;
+							if(array_key_exists($date,$newlist[$user]))
+							{
+									$newlist[$user][$date]["decimal_hours"] += $nworklog["decimal_hours"];
+							}
+							else {
+									$newlist[$user][$date] = $nworklog;
+
+							}
 				}
-				else
-				{
-					$newlist[$worklog['userid']] = array();
-					$newlist[$worklog['userid']][$worklog['date']] = $nworklog;
+				else {
+					$newlist[$user][$date] = $nworklog;
 				}
+
 			}
 		}
 		//dd($newlist);
@@ -909,7 +916,7 @@ class OpenAir
 	}
 	public function ReadProjectName($projectid)
 	{
-	
+
 		$h1 = $this->ReadProjectById($projectid);
 		$this->Execute();
 		return $h1->Data('id','name');
@@ -937,7 +944,7 @@ class OpenAir
 		$h3 = $this->ReadUserById($h2,'userid');
 		$this->Execute();
 		$data = $h3->Data('id','name','currency');
-		
+
 		//Utility::ConsoleLog(time(),'OA users list');
 		//foreach($data as $d)
 		//{

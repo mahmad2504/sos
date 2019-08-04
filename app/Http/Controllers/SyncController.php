@@ -17,7 +17,7 @@ class SyncController extends Controller
 	}
 	public function SyncJira(Request $request)
 	{
-		/*Input Params 
+		/*Input Params
 		$request->projectid
 		$request->rebuild
 		*/
@@ -26,7 +26,7 @@ class SyncController extends Controller
 			header('Content-Type: text/event-stream');
 			header('Cache-Control: no-cache');
 		}
-		
+
 		if($request->projectid == null)
 		{
 			Utility::ConsoleLog(time(),'Params:Project Id Missing');
@@ -34,14 +34,14 @@ class SyncController extends Controller
 		}
 		if($request->rebuild == null)
 			$request->rebuild = 0;
-		else 
+		else
 			$request->rebuild = 1;
-		
+
 		if($request->worklogs == null)
 			$request->worklogs = 0;
-		else 
+		else
 			$request->worklogs = 1;
-		
+
 		//Utility::ConsoleLog(time(),$request->projectid);
 		$project = Project::where('id',$request->projectid)->first();
 		if($project == null)
@@ -50,22 +50,22 @@ class SyncController extends Controller
 			exit();
     	}
 		//$user = User::where('id',$project->user_id)->first();
-		
+
 		$tree  =  new ProjectTree($project);
 		$tree->SyncJira($request->rebuild,$request->worklogs);
-		
-		
+
+
 		//$project = Project::where('id',$projectid)->first();
 		//$projecttree = new ProjectTree($project);
-		
-		
+
+
 		$tj =  new Tj($tree);
 		$tj->Execute();
-		
+
 		$tree->Save();
-		
+
 		//dd(Utility::GetJiraConfig($project->jirauri));
-		
+
 		Utility::ConsoleLog(time(),"Success::Jira Sync Completed");
 	}
 	public function SyncOA(Request $request)
@@ -75,7 +75,7 @@ class SyncController extends Controller
 			header('Content-Type: text/event-stream');
 			header('Cache-Control: no-cache');
 		}
-		
+
 		if($request->projectid == null)
 		{
 			Utility::ConsoleLog(time(),'Params:Project Id Missing');
@@ -87,13 +87,10 @@ class SyncController extends Controller
     		Utility::ConsoleLog(time(),'Project does not exist');
 			exit();
     	}
-		$tree  =  new ProjectTree($project);
-		$oa = new OA($tree);
+		$projecttree  =  new ProjectTree($project);
+		$oa = new OA($projecttree);
 		$oa->sync();
-		//dd($tree);
-		$tree->Save();
-		Utility::ConsoleLog(time(),"Success::OpenAir Sync Completed");
-		
+		$projecttree->Save();
+	  Utility::ConsoleLog(time(),"Success::OpenAir Sync Completed");
 	}
-   
 }

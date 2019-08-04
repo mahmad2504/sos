@@ -22,7 +22,7 @@ class Jira
 		$url = $jiraconfig['uri'];
 		$user = $jiraconfig['username'];
 		$pass = $jiraconfig['password'];
-		
+
 		self::$path = $path;
 		self::$url = $url;
 		self::$rebuild = $rebuild;
@@ -40,25 +40,25 @@ class Jira
 			$last_update_date = ' and updated>"'.date ("Y/m/d H:i" , filemtime($filename)).'"';
 		}
 		$query .= $last_update_date.' '.$order;
-		
+
 		$query = str_replace(" ","%20",$query);
-		
+
 		$resource=self::$url.'/rest/api/latest/'."search?jql=".$query.'&maxResults='.$maxresults;
-		
+
 		if($fields != null)
 			$resource.='&fields='.$fields;
-		
+
 		$utasks =  self::GetJiraResource($resource);
 		//print_r($tasks);
-		
+
 		foreach($utasks as $key=>$utask)
 			$tasks->$key = $utask;
-		
+
 		file_put_contents( $filename, json_encode( $tasks ) );
 		$tasks = json_decode(file_get_contents($filename));
 		return $tasks;
 	}
-	public static  function GetJiraResource($resource,$data=null) 
+	public static  function GetJiraResource($resource,$data=null)
 	{
 		//echo $resource."<br>";
 		$curl = curl_init();
@@ -67,8 +67,8 @@ class Jira
 		CURLOPT_USERPWD => self::$user.':'.self::$pass,
 		CURLOPT_URL =>$resource,
 		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_HTTPHEADER => array('Content-type: application/json')));	
-		
+		CURLOPT_HTTPHEADER => array('Content-type: application/json')));
+
 		if($data != null)
 		{
 			curl_setopt_array($curl, array(
@@ -77,9 +77,9 @@ class Jira
 				));
 		}
 		$result = curl_exec($curl);
-		$ch_error = curl_error($curl); 
+		$ch_error = curl_error($curl);
 		$code = curl_getinfo ($curl, CURLINFO_HTTP_CODE);
-		
+
 		if ($ch_error)
 		{
 			Utility::ConsoleLog(time(),'Error::'.$ch_error);
@@ -88,9 +88,9 @@ class Jira
 		}
 		else if($code == 200)
 		{
-			
+
 			$data = json_decode($result,true);
-		
+
 			$tasks = array();
 			if(isset($data["worklogs"]))
 			{
@@ -102,7 +102,7 @@ class Jira
 				{
 					return $tasks;
 				}
-				
+
 				foreach($data["issues"] as $task)
 				{
 					$tasks[$task['key']] = $task;
@@ -129,7 +129,7 @@ class Jira
 	static  function GetWorkLogs($key)
 	{
 		//echo "Getting worklogs of ".$key."<br>";
-		$resource=self::$url.'/rest/api/latest/issue/'.$key.'/worklog'; 
+		$resource=self::$url.'/rest/api/latest/issue/'.$key.'/worklog';
 		$worklogs = self::GetJiraResource($resource);
 		$data = [];
 		foreach($worklogs as $worklog)
@@ -137,7 +137,7 @@ class Jira
 			//dd($worklog);
 			$obj =  new \StdClass();
 			$date = explode('T', $worklog['started'])[0];
-			$hours =  $worklog['timeSpentSeconds']/(60*60);
+			$hours =  round($worklog['timeSpentSeconds']/(60*60),1);
 			$author = $worklog['author']['name'];
 			$comment = $worklog['comment'];
 			if(isset($data[$date][$author]))
@@ -158,7 +158,7 @@ class Jira
 		}
 		return $data;
 	}
-	static  function GetStructure($structid) 
+	static  function GetStructure($structid)
 	{
 		$jdata = '{"forests":[{"spec":{"type":"clipboard"},"version":{"signature":898732744,"version":0}},{"spec":{"structureId":'.$structid.',"title":true},"version":{"signature":0,"version":0}}],"items":{"version":{"signature":-157412296,"version":43401}}}';
 		$resource=self::$url.'/rest/structure/2.0/poll';
@@ -169,7 +169,7 @@ class Jira
 		{
 			$detail = explode(":",$formula);
 			$obj = new \StdClass();
-			
+
 			$obj->rwoid = $detail[0];
 			$obj->level = $detail[1];
 			$obj->taskid = $detail[2];

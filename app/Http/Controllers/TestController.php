@@ -44,7 +44,7 @@ class TestController extends Controller
 		$tj =  new Tj($projecttree);
 		$tj->Execute();
 	}
-	public function OATest($projectid)
+	public function OASync($projectid)
 	{
 		$project = Project::where('id',$projectid)->first();
 		if($project == null)
@@ -53,11 +53,25 @@ class TestController extends Controller
 			return;
 		}
 		$projecttree = new ProjectTree($project);
-		
+
 		$oa = new OA($projecttree);
 		$oa->sync();
+		dd(	$projecttree->tree->oa);
 	}
-	public function JiraWorklogs($projectid,$jira_key)
+	public function OAWorklogs($projectid)
+	{
+		$project = Project::where('id',$projectid)->first();
+		if($project == null)
+		{
+			echo "Project id=".$projectid." not found";
+			return;
+		}
+		$projecttree = new ProjectTree($project);
+		if(isset($projecttree->tree->oa))
+			dd($projecttree->tree->oa);
+		dd("OA Worklogs not found");
+	}
+	public function GetJiraWorklogs($projectid,$jira_key)
 	{
 		echo $jira_key."<br>";
 		$project = Project::where('id',$projectid)->first();
@@ -79,5 +93,17 @@ class TestController extends Controller
 		//$project = Project::where('id',$projectid)->first();
 		//$projecttree = new ProjectTree($project);
 		//dd($projecttree);
+	}
+	public function ResourceTimeLogs($projectid)
+	{
+		$project = Project::where('id',$projectid)->first();
+		if($project == null)
+		{
+			echo "Project id=".$projectid." not found";
+			return;
+		}
+		$projecttree = new ProjectTree($project);
+
+		return $projecttree->GetTimeLog();
 	}
 }

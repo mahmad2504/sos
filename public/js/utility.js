@@ -47,7 +47,7 @@ var dates = {
         //   a date object: returned without modification
         //  an array      : Interpreted as [year,month,day]. NOTE: month is 0-11.
         //   a number     : Interpreted as number of milliseconds
-        //                  since 1 Jan 1970 (a timestamp) 
+        //                  since 1 Jan 1970 (a timestamp)
         //   a string     : Any format supported by the javascript engine, like
         //                  "YYYY/MM/DD", "MM/DD/YYYY", "Jan 31 2009" etc.
         //  an object     : Interpreted as an object with year, month and date
@@ -91,4 +91,16 @@ var dates = {
             NaN
         );
     }
+}
+function removeTrailingZeros(value) {
+    value = value.toString();
+
+    if (value.indexOf('.') === -1) {
+        return value;
+    }
+
+    while((value.slice(-1) === '0' || value.slice(-1) === '.') && value.indexOf('.') !== -1) {
+        value = value.substr(0, value.length - 1);
+    }
+    return value;
 }
