@@ -7,14 +7,12 @@
 @section('style')
 @endsection
 @section('content')
-<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
+<div id="container" style="width:100%; margin-left: auto; margin-right: auto; display:block" class="center">
 	 <div class="gantt"></div>
 </div>
 <script src="{{ asset('js/utility.js') }}" ></script>
-<script src="{{ asset('js/bootstrap.3.3.7.min.js') }}" ></script>
 <script src="{{ asset('js/jquery.fn.gantt.js') }}" ></script>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
-
 @endsection
 @section('script')
 var username = "{{$user->name}}";
@@ -104,7 +102,7 @@ function ModifyData(data,datemodifer)
 			//console.log(weekdata);
 			for(var date in data[user][type])
 			{
-					console.log(date);
+					//console.log(date);
 					var weekenddate = datemodifer(new Date(date));
 
 					if(weekdata[user] === undefined)
@@ -144,16 +142,17 @@ function FormatDataForGantt(data)
 			// you can get the value like this: myObject[propertyName]
 			//console.log(worklog);
 			var obj = {};
-			obj.name = worklog['name'];
-			obj.desc = 'Jira';
+			obj.name = '<span style="color:green;font-size:13px;">'+worklog['name']+'</span>';
+			obj.desc = '<span style="color:green;font-size:10px;">Jira';
 			obj.values = [];
 			var j=0;
+			var sum=0;
 			for(var date in worklog['jira'])
 			{
 					var value = {};
 					value.from = new Date(date).getTime();
 					value.to = new Date(date).getTime();
-					Math.ceil()
+					sum += worklog['jira'][date]['decimal_hours'];
 					if(worklog['jira'][date]['decimal_hours'] > 99)
 							worklog['jira'][date]['decimal_hours'] = Math.ceil( worklog['jira'][date]['decimal_hours']);
 					else
@@ -162,19 +161,22 @@ function FormatDataForGantt(data)
 					value.customClass =  "ganttBlue";
 					obj.values[j++] = value;
 			}
+			obj.desc += "<span style='color:orange;'>"+" "+Math.ceil(sum)+" "+"hrs</span></span>";
 			datasource[i++] = obj;
 
 			var obj = {};
 			obj.name = '';
-			obj.desc = 'OpenAir';
+			obj.desc = '<span style="color:green;font-size:10px;">OA';
 			obj.values = [];
 			var j=0;
 			//console.log(worklog['oa']);
+			sum=0;
 			for(var date in worklog['oa'])
 			{
 					var value = {};
 					value.from = new Date(date).getTime();
 					value.to = new Date(date).getTime();
+					sum += parseFloat(worklog['oa'][date]['decimal_hours']);
 					if(worklog['oa'][date]['decimal_hours'] > 99)
 						worklog['oa'][date]['decimal_hours'] = Math.ceil( worklog['oa'][date]['decimal_hours']);
 					else
@@ -188,7 +190,8 @@ function FormatDataForGantt(data)
 						value.customClass =  "ganttLightBlue";
 					obj.values[j++] = value;
 			}
-			if(obj.values.length > 0)
+			obj.desc += "<span style='color:orange;'>"+" "+Math.ceil(sum)+" "+"hrs</span></span>";
+			if((obj.values.length > 0)||(worklog['oaid'] > 0))
 					 datasource[i++] = obj;
 	}
 	return datasource;
@@ -208,12 +211,12 @@ function FormatDataForGantt(data)
         scale: scale,
         maxScale: "months",
         minScale: "days",
-        itemsPerPage: 100,
+        itemsPerPage: 50,
         scrollToToday: true,
-        useCookie: true,
-        onItemClick: function(data) {
+        useCookie: false,
+        /*onItemClick: function(data) {
             alert(data);
-        },
+        },*/
         onAddClick: function(dt, rowId) {
             alert("Empty space clicked - add an item!");
         },
