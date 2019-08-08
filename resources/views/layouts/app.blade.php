@@ -43,6 +43,9 @@
 				<a id="dashboard_menuitem" style="display:none" class="navbar-brand" href="{{ url('/') }}">
                     Dashboard
                 </a>
+				<a id="calendar_menuitem" style="display:none" class="navbar-brand" href="{{ url('/calendars') }}">
+                    Calendars
+                </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -98,6 +101,10 @@
         </main>
     </div>
 	<script>
+		function ShowCalendarMenuItem()
+		{
+			$('#calendar_menuitem').show();	
+		}
 		function ShowLoading()
 		{
 			$('.loading').show();	
@@ -187,6 +194,63 @@
 					NaN
 				);
 			}
+		}
+		function MakeDate(day,month,year)
+		{
+			//var now = new Date();
+			var day = ("0" + day).slice(-2);
+			var month = ("0" + month).slice(-2);
+			var today = year+"-"+(month)+"-"+(day) ;
+			return today;
+		}
+		function sleep(ms) {
+		  return new Promise(resolve => setTimeout(resolve, ms));
+		}
+
+		function GetDay()
+		{
+			var today = new Date();
+			return today.getDate();
+		}
+		function GetMonth()
+		{
+			var today = new Date();
+			return today.getMonth();
+		}
+		function GetYear()
+		{
+			var today = new Date();
+			return today.getFullYear();
+		}
+
+		function removeTrailingZeros(value) {
+			value = value.toString();
+
+			if (value.indexOf('.') === -1) {
+				return value;
+			}
+
+			while((value.slice(-1) === '0' || value.slice(-1) === '.') && value.indexOf('.') !== -1) {
+				value = value.substr(0, value.length - 1);
+			}
+			return value;
+		}
+		function endOfMonth(date)
+		{
+			var ndate = new Date(date.getFullYear(), date.getMonth()+1, 0);
+			var year = ndate.getFullYear();
+			var month = ndate.getMonth();
+			var day = ndate.getDate();
+			return year+"-"+("0" + (month + 1)).slice(-2)+"-"+day;
+		}
+		function endOfWeek(date)
+		{
+			var lastday = date.getDate() - (date.getDay() - 1) + 6;
+			var ndate = new Date(date.setDate(lastday));
+				var year = ndate.getFullYear();
+				var month = ndate.getMonth();
+				var day = ndate.getDate();
+				return year+"-"+("0" + (month + 1)).slice(-2)+"-"+day;
 		}
 		@yield('script')
 		</script>

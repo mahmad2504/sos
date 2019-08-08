@@ -36,4 +36,10 @@ class AdminController extends Controller
 		$admin = 1;
 		return view('home',compact('projects','user','admin'));
 	}
+	public function CreateCountryCalendars()
+	{
+		dd(Utility::GetAllCountryInfo());
+
+
+	}
 }

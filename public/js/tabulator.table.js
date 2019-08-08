@@ -77,7 +77,8 @@ var dataSource = [
 function OnCalendarShowClick(element)
 {
 	var username = $(element).data('username');
-	ShowCalendar(username);
+	var displayname = $(element).data('displayname');
+	ShowCalendar(username,displayname);
 }
 function OnProjectResourceDeleted(id)
 {
@@ -112,13 +113,12 @@ function InitTabulator()
 	var openIcon = function(cell, formatterParams, onRendered){ //plain text value
 		//return '<i class="fas fa-calendar-alt" data-toggle="modal" data-target="#calendar-modal" ></i>';
 		var username = cell.getRow().getData().profile.name;
+		var displayname = cell.getRow().getData().profile.displayname;
 		var active = cell.getRow().getData().active;
 		if((username != 'unassigned')&&(active  == 1))
-			return '<span onclick="OnCalendarShowClick(this)" data-username="'+username+'" data-toggle="modal" data-backdrop="static" data-target="#calendar-modal" data-keyboard="false">&nbsp<i class="fas fa-calendar-alt"></i></span>';
+			return '<span onclick="OnCalendarShowClick(this)" data-displayname="'+displayname+'" data-username="'+username+'" data-toggle="modal" data-backdrop="static" data-target="#calendar-modal" data-keyboard="false">&nbsp<i class="fas fa-calendar-alt"></i></span>';
 	};
 	//define custom formatter
-
-
 	var settings = 
 	{
 		tooltips:true,

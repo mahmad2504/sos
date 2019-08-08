@@ -23,7 +23,6 @@
 </div>
 
 <div style="position:relative" class="gantt" id="GanttChartDIV"></div>
-<script src="{{ asset('js/utility.js') }}" ></script>
 <script src="{{ asset('js/jsgantt.js') }}" ></script>
 @endsection
 @section('script')

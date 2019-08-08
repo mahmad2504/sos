@@ -69,7 +69,6 @@ figure figcaption {
 </div>
 @endsection
 @section('script')
-
 var username = "{{$user->name}}";
 var userid = "{{$user->id}}";
 var projectid = {{$project->id}};

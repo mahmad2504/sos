@@ -6,6 +6,7 @@ use App\Resource;
 use App\Calendar;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\CalendarController;
 
 class Task
 {
@@ -90,8 +91,6 @@ class Task
 		//echo $query."<br>";
 		$story_points = $jiraconf['storypoints']; // custom field
 		$sprint = $jiraconf['sprint']; // custom field
-
-
 		global $estimation_method;
 		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
 		if($estimation_method == 1)
@@ -713,12 +712,17 @@ dd(	$this->tree->oa);
 		$data = [];
 		//dd( $this->tree->oa);
 		//dd($this->presources);
+
 		foreach($this->presources as $presource)
 		{
 				if($presource->active)
 				{
 					$resource = $presource->resource()->get();
+					//$cal = $resource->calendar();
 					$resource = $resource[0];
+					$cal = CalendarController::GetcalenarData($resource->name);
+					//	if($cal == null)
+					//	dd($resource->name);
 					$obj = new \StdClass();
 					$obj->name = $resource->displayname;
 					$obj->oaid = $presource->oaid;
@@ -729,11 +733,43 @@ dd(	$this->tree->oa);
 				  	$obj->oa = $this->tree->oa->worklogs[$obj->oaid];
 					}
 					$data[$resource->name] = $obj;
+					$caldata = json_decode($cal->data);
+					foreach($caldata as $holiday)
+					{
+						$d = new \StdClass();
+						$d->approved = true;
 
+						$d->enddate = $holiday->endDate;
+						$earlier = new \DateTime($holiday->startDate);
+						$later = new \DateTime($holiday->endDate);
+						$diff = $later->diff($earlier)->format("%a");
+
+						$d->decimal_hours = ($diff+1)*8;
+						$data[$resource->name]->cal[$holiday->startDate] = $d;
+					}
+					/////////////////////// Country Calendar ////////////////
+					$cc =  $presource->cc;
+					if($cc != '-')
+					{
+						$ccal = CalendarController::GetcalenarData($cc);
+						$ccaldata = json_decode($ccal->data);
+						foreach($ccaldata as $holiday)
+						{
+							$d = new \StdClass();
+							$d->approved = true;
+
+							$d->enddate = $holiday->endDate;
+							$earlier = new \DateTime($holiday->startDate);
+							$later = new \DateTime($holiday->endDate);
+							$diff = $later->diff($earlier)->format("%a");
+							$d->decimal_hours = ($diff+1)*8;
+							$data[$resource->name]->ccal[$holiday->startDate] = $d;
+
+						}
+					}
+					//$data[$resource->name]->cal = $cal->data;
 				}
 		}
-
-
 		foreach($this->tasks as $task)
 		{
 			  if(isset($task->worklogs))

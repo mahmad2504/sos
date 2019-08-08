@@ -1,6 +1,5 @@
 @extends('layouts.app')
 @section('csslinks')
-
 @endsection
 @section('style')
 .progress {height: 10px;}

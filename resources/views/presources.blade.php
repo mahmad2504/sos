@@ -71,16 +71,15 @@
   <div class="modal-dialog-calendar modal-dialog modal-lg"  role="document">
     <div class="modal-content-calendar modal-content">
       <div class="modal-header">
-        <button id="save_calendar" type="button" class="btn btn-primary">Save changes</button>
+				<button id="save_calendar" type="button" class="btn btn-primary">Save changes</button>
+				<p style="font-size:20px;margin-top:5px;margin-left:10px;" id="calendar_title"></p>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body-calendar modal-body">
-		
         <div style="width:100%;" id="calendar">Loading</div>
-		<div style="display:none" class="loading"></div>
-		
+		    <div style="display:none" class="loading"></div>
       </div>
       <!-- <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -156,8 +155,6 @@
 		<div id="openair"></div>
 	</div>
 </div>
-
-
 <script src="{{ asset('js/bootstrap-datepicker.min.js') }}" ></script>
 <script src="{{ asset('js/bootstrap-year-calendar.min.js') }}" ></script>
 <script src="{{ asset('js/tabulator.table.js') }}" ></script>
@@ -168,6 +165,7 @@
 @section('script')
 var userid = {{$user->id}};
 var username =  "{{$user->name}}";
+var displayname = 'mumtaz';
 var projectname =  "{{$project->name}}";
 var resources = @json($presources);
 var _token = "{{ csrf_token() }}";

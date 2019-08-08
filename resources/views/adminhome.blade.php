@@ -5,7 +5,9 @@
 @endsection
 @section('content')
 	<div class="container">
+		<a href="/admin/">Calendars</a>
 		<ul class="list-group">
+		
 		@foreach($users as $user)
 			@if($user->name != 'admin')
 				<li class="list-group-item">
@@ -20,6 +22,7 @@ $(document).ready(function()
 {
 	console.log("Loading admin Home Page");
 	ShowNavBar();
+	ShowCalendarMenuItem();
 	
 });
 @endsection

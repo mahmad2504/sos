@@ -10,7 +10,6 @@
 <div id="container" style="width:100%; margin-left: auto; margin-right: auto; display:block" class="center">
 	 <div class="gantt"></div>
 </div>
-<script src="{{ asset('js/utility.js') }}" ></script>
 <script src="{{ asset('js/jquery.fn.gantt.js') }}" ></script>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
 @endsection
@@ -32,7 +31,7 @@ $(function() {
 	$.ajax(
 	{
 		type:"GET",
-		url:"{{ route('getdailytimechartdata',[$project->id]) }}",
+		url:"{{ route('gettimechartdata',[$project->id]) }}",
 		data:null,
 		success: function(response)
 		{
@@ -48,23 +47,6 @@ $(function() {
 	});
 });
 
-function endOfMonth(date)
-{
-	var ndate = new Date(date.getFullYear(), date.getMonth()+1, 0);
-	var year = ndate.getFullYear();
-	var month = ndate.getMonth();
-	var day = ndate.getDate();
-	return year+"-"+("0" + (month + 1)).slice(-2)+"-"+day;
-}
-function endOfWeek(date)
-{
-    var lastday = date.getDate() - (date.getDay() - 1) + 6;
-    var ndate = new Date(date.setDate(lastday));
-		var year = ndate.getFullYear();
-		var month = ndate.getMonth();
-		var day = ndate.getDate();
-		return year+"-"+("0" + (month + 1)).slice(-2)+"-"+day;
-}
 var weekdatasource = [];
 var daydatasource = [];
 var yeardatasource = [];
@@ -146,7 +128,31 @@ function FormatDataForGantt(data)
 			obj.desc = '<span style="color:green;font-size:10px;">Jira';
 			obj.values = [];
 			var j=0;
-			var sum=0;
+			
+			for(var date in worklog['ccal'])
+			{
+				var value = {};
+				var end = worklog['ccal'][date]['enddate'];
+				value.from = new Date(date).getTime();
+				value.to = new Date(end).getTime();
+				//value.label =  removeTrailingZeros(worklog['ccal'][date]['decimal_hours']);
+				value.customClass =  "ganttBlue";
+				obj.values[j++] = value;
+
+			}
+
+			for(var date in worklog['cal'])
+			{
+				var value = {};
+				var end = worklog['cal'][date]['enddate'];
+				value.from = new Date(date).getTime();
+				value.to = new Date(end).getTime();
+				//value.label =  removeTrailingZeros(worklog['cal'][date]['decimal_hours']);
+				value.customClass =  "ganttGreen";
+				obj.values[j++] = value;
+
+			}
+      var sum=0; 
 			for(var date in worklog['jira'])
 			{
 					var value = {};
@@ -161,7 +167,8 @@ function FormatDataForGantt(data)
 					value.customClass =  "ganttBlue";
 					obj.values[j++] = value;
 			}
-			obj.desc += "<span style='color:orange;'>"+" "+Math.ceil(sum)+" "+"hrs</span></span>";
+
+			obj.desc += "<span style='margin-right:10px;float:right;color:orange;'>"+" "+Math.ceil(sum)+" "+"hrs</span></span>";
 			datasource[i++] = obj;
 
 			var obj = {};
@@ -190,7 +197,7 @@ function FormatDataForGantt(data)
 						value.customClass =  "ganttLightBlue";
 					obj.values[j++] = value;
 			}
-			obj.desc += "<span style='color:orange;'>"+" "+Math.ceil(sum)+" "+"hrs</span></span>";
+			obj.desc += "<span style='margin-right:10px;float:right;color:orange;'>"+" "+Math.ceil(sum)+" "+"hrs</span></span>";
 			if((obj.values.length > 0)||(worklog['oaid'] > 0))
 					 datasource[i++] = obj;
 	}

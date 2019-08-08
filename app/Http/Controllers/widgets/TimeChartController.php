@@ -44,8 +44,8 @@ class TimeChartController extends Controller
 		return View('widgets.timechart',compact('user','project','isloggedin'));
 
     }
-	public function GetDailyData($project_id)
-	{	
+	public function GetData($project_id)
+	{
 		$projects = Project::where('id',$project_id)->get();
 		if(count($projects)==0)
     {
@@ -59,13 +59,5 @@ class TimeChartController extends Controller
 		$project = $projects[0];
 		$projecttree = new ProjectTree($project);
 		return $projecttree->GetTimeLog();
-	}
-	public function GetWeeklyData(Request $request)
-	{
-		echo "weekly";
-	}
-	public function GetMonthlyData(Request $request)
-	{
-		echo "monthly";
 	}
 }

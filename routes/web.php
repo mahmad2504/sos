@@ -49,11 +49,7 @@ Route::get('/widget/gantt/{user}/{project}','Widgets\GanttController@Show')->nam
 Route::get('/widget/data/gantt/{id}','Widgets\GanttController@GetData')->name('getganttdata');// project id
 
 Route::get('/widget/timechart/{user}/{project}','Widgets\TimeChartController@Show')->name('showtimechart');
-Route::get('/widget/data/timechart/daily/{projectid}','Widgets\TimeChartController@GetDailyData')->name('getdailytimechartdata');// project id
-Route::get('/widget/data/timechart/weekly/{projectid}','Widgets\TimeChartController@GetWeeklyData')->name('getweeklytimechartdata');// project id
-Route::get('/widget/data/timechart/monthly/{projectid}','Widgets\TimeChartController@GetMonthlyData')->name('getmonthlytimechartdata');// project id
-
-
+Route::get('/widget/data/timechart/{projectid}','Widgets\TimeChartController@GetData')->name('gettimechartdata');// project id
 
 
 //// Project Resource //////
@@ -82,3 +78,7 @@ Route::get('/test/worklogs/oa/{projectid}','TestController@OAWorklogs'); // proj
 Route::get('/test/resource/timelogs/{projectid}/','TestController@ResourceTimeLogs');
 Route::get('/test/tree/show/{projectid}','TestController@ShowTree'); // project id as input param
 Route::get('/test/resource/worklogs/{projectid}','TestController@ResourceTimeLogs'); // project id as input param
+
+/// Calendar
+Route::get('/calendars','CalendarController@ShowCountryCalendarList'); // View all country calendar links (only admin can see)
+

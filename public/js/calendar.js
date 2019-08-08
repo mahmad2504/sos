@@ -71,9 +71,12 @@ function saveEvent() {
 async function OnCalendarDataLoad(data)
 {
 	//await sleep(5000);
-	
-	calendar = data;
-	dataSource = JSON.parse(calendar.data);
+	console.log(data);
+    calendar = data;
+    dataSource = JSON.parse(calendar.data);
+    
+    if(dataSource == null)
+        dataSource = [];
 	for(var i=0;i<dataSource.length;i++)
 	{
 		dataSource[i].startDate = new Date(dataSource[i].startDate);
@@ -96,12 +99,13 @@ function OnCalendarDataLoadFail()
 	
 
 }
-function ShowCalendar(username)
+function ShowCalendar(username,displayname='')
 {
 	dataSource = null;
 	resourcename = username;
 	$('.loading').show();
-	$('#calendar').hide();
+    $('#calendar').hide();
+    $('#calendar_title').text(displayname);
 	//$('#calendar-modal').hide();
 	$("#delete_button").on( "click", function() {
 		console.log("Hiding");
