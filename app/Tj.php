@@ -7,6 +7,7 @@ use App\ProjectTree;
 use App\Calendar;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\CalendarController;
 
 class Tj
 {
@@ -199,8 +200,15 @@ class Tj
 		{
 			$calendar = $presource->calendar;
 			$calendar = json_decode($presource->calendar);
+			$ccaldata = [];
 			if(strlen($presource->cc) < 2)
 				$presource->cc = 'na';
+			else
+			{
+				$cc =  $presource->cc;
+				$ccal = CalendarController::GetcalenarData($cc);
+				$ccaldata = json_decode($ccal->data);
+			}
 			$header = $header.'    resource '.$presource->name.' "'.$presource->name.'_'.$presource->cc.'" {'."\n";
 			
 			foreach($calendar as $obj)
@@ -208,6 +216,12 @@ class Tj
 				$days = Utility::DateDiffInDays($obj->startDate,$obj->endDate)+1;
 				$header = $header.'       leaves annual '.$obj->startDate." +".$days."d\n"; 
 			}
+			foreach($ccaldata as $obj)
+			{
+				$days = Utility::DateDiffInDays($obj->startDate,$obj->endDate)+1;
+				$header = $header.'       leaves annual '.$obj->startDate." +".$days."d\n"; 
+			}
+
 			$presource->efficiency = round($presource->efficiency/100,1);
 			$header = $header.'       efficiency '.$presource->efficiency."\n"; 			
 			$header = $header.'    }'."\n";

@@ -66,8 +66,10 @@ Route::get('/openair/resources/{project_id}','OpenAirController@GetResources')->
 Route::get('/calendar/{resource_name}','CalendarController@getcalendar')->name('getcalendar'); // project id as input param
 Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name('savecalendar'); // project id as input param
 
-////Milestones
-Route::get('/milestones/{projectid}','MilestoneController@Show'); // project id as input param
+////TaskPropertyController
+Route::get('/taskproperty/{projectid}','TaskPropertyController@Show'); // project id as input param
+Route::get('/taskproperty/data/{projectid}','TaskPropertyController@GetTreeData')->name('gettreedata');// project id
+Route::put('/taskproperty/{projectid}','TaskPropertyController@Save'); // project id as input param
 
 
 /// Test

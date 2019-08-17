@@ -296,11 +296,8 @@ function InitTabulator()
 		},
 		dataEdited:function(data){
 			//data - the updated table data
-			
-			
 			if(cur_row != null)
 			{
-				
 				//params.id = cur_row._row.data.id;
 				//console.log(params.publish);
 				//GetResource(0,resource,'data=updatevul',params,cur_row._row.data,successcb) ;

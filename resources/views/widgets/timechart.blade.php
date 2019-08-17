@@ -136,7 +136,7 @@ function FormatDataForGantt(data)
 				value.from = new Date(date).getTime();
 				value.to = new Date(end).getTime();
 				//value.label =  removeTrailingZeros(worklog['ccal'][date]['decimal_hours']);
-				value.customClass =  "ganttBlue";
+				value.customClass =  "ganttGreen2";
 				obj.values[j++] = value;
 
 			}

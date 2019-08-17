@@ -1,0 +1,280 @@
+@extends('layouts.app')
+@section('csslinks')
+<link rel="stylesheet" href="{{ asset('css/jquery.treetable.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/jquery.treetable.theme.default.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
+@endsection
+@section('style')
+.progress {height: 10px;}
+.unsaved{color:red;}
+.saved{color:green;}
+@endsection
+@section('content')
+<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:none" class="center">
+	<div class="loading">Loading&#8230;</div>
+	<p id='description'>Description</p>
+	<table id="treetable" style="display:none;" class="table">
+		<caption style="caption-side:top;text-align: center">
+		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
+		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
+		</caption>
+		<col style="width:40%;border-right:1pt solid lightgrey;"> <!--Title  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Alternate Title  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Deadline  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Milestone  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
+		<col style="width:5%;border-right:1pt solid lightgrey;"> <!--Save  --> 
+		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
+		  <tr>
+			<th>Title</th>
+			<th>Alternate Title</th>
+			<th>Jira</th>
+			<th>Deadline</th>
+			<th id='milestone'>Milestone</th>
+			<th>Progress</th>
+			<th>Save</th>
+		  </tr>
+		</thead>
+		<tbody id="tablebody">
+		</tbody>
+		
+	</table>
+	<div id="legend">
+		<span>Project<span style="margin-top:20px;padding:5px;" class="PROJECT">&nbsp&nbsp&nbsp</span></span>
+		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Requirement<span style="margin-top:20px;padding:5px;" class="REQUIREMENT">&nbsp&nbsp&nbsp</span></span>
+		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Epic<span style="margin-top:20px;padding:5px;" class="EPIC">&nbsp&nbsp&nbsp</span></span>
+		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Task<span style="margin-top:20px;padding:5px;" class="TASK">&nbsp&nbsp&nbsp</span></span>
+		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Defect<span style="margin-top:20px;padding:5px;" class="DEFECT">&nbsp&nbsp&nbsp</span></span>
+		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Workpackage<span style="margin-top:20px;padding:5px;" class="WORKPACKAGE">&nbsp&nbsp&nbsp</span></span>
+	</div>
+</div>
+<script src="{{ asset('js/jquery.treetable.js') }}" ></script>
+<script src="{{ asset('js/msc-script.js') }}" ></script>
+@endsection
+@section('script')
+
+var username = "{{$user->name}}";
+var userid = {{$user->id}};
+var projectid = {{$project->id}};
+var _token = "{{ csrf_token() }}";
+var cur_row = null;
+var data = null;
+function LoadProjectData(url,data,onsuccess,onfail)
+{
+	$.ajax({
+		type:"GET",
+		url:url,
+		cache: false,
+		data:data,
+		success: onsuccess,
+		error: onfail
+	});
+}
+function OnProjectDataReceived(response)
+{
+	console.log(response.description);
+	$('#description').append(response.description);
+	if(response.estimation == 1)
+		header = 'Story Points';
+	if(response.estimation == 2)
+		header = 'Time Estimates';
+	if(response.estimation == 0)
+		header = 'Estimates';
+	$('#estimatecolumn').append(header);
+}
+
+$(document).ready(function()
+{
+	if(username != null)
+		$('.navbar').removeClass('d-none');
+	
+	$('#dashboard_menuitem').show();
+	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	LoadProjectData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
+	$.ajax(
+	{
+		type:"GET",
+		url:"{{ route('gettreedata',[$project->id]) }}",
+		data:null,
+		success: function(response)
+		{
+			$('.loading').hide();
+			ShowTree(JSON.parse(response)) ;
+		},
+		error: function (error) 
+		{
+			$('.loading').hide();
+			console.log(error);  
+			mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){window.location.href = "/";})
+		}
+	});
+	function round(value, precision) 
+	{
+		var multiplier = Math.pow(10, precision || 0);
+		return Math.round(value * multiplier) / multiplier;
+	}
+	function ShowTree(response)
+	{
+		console.log(response);
+		data = response;
+		var dependencies = 0;
+		var blockers = 0;
+		var sprints = 0;
+		var configuredtasks = [];
+		for (var exitid in data)
+		{
+			var row = data[exitid];
+			var id = row['extid'];
+
+			var mid = (id+"").replace(/\./g, '-');
+			console.log(mid);
+			var pid = row['pextid'];
+			var ismilestone = row['ismilestone'];
+			var atext = row['atext'];
+			var _class =row['issuetype'];
+			var title=row['summary'];
+			var link=row['jiraurl'];
+			var linktext=row['key'];
+			var estimate=round(row['estimate'],1);
+			var progress=round(row['progress'],1);
+			var status=row['status'];
+			var priority=row['priority'];
+			var duedate=row['duedate'];
+			
+			var progressbar_animation_class = 'progress-bar-striped progress-bar-animated';
+			
+			if(_class == 'TASK')
+			{
+				if(status == 'OPEN')
+					_class = 'TASK_OPEN';
+				if(status == 'RESOLVED')
+				{
+					_class = 'TASK_RESOLVED';
+				}
+			}
+			color = '';
+			progressbar_color = 'green';
+			if(status == 'RESOLVED')
+			{
+				progressbar_animation_class = '';
+				progressbar_color = 'darkgreen';
+			}
+			else
+			{
+				if(priority == 1)
+					color = 'red';
+				if(priority == 2)
+					color = 'orange';
+			}
+			var rowstr = '<tr ';
+			rowstr += "data-tt-id='"+id+"' ";
+
+			if(pid != '')
+				rowstr += "data-tt-parent-id='"+pid+"'";
+			
+
+			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
+			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			rowstr += id+" "+title+"</span></td>";
+			// ALTERNATE TEXT
+			rowstr += '<td><input class="atext input_field" control="atext" data_id="'+id+'" id="at_'+mid+'" type="text" value="'+atext+'"></td>';  
+			
+			if(linktext == id)// Not a Jira Task 
+				rowstr += '<td></td>';
+			else
+				rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+			
+			if(duedate != "")
+			{
+				rowstr += '<td><input class="deadline input_field" control="deadline" data_id="'+id+'" id="date_'+mid+'" type="date" value="'+duedate+'" > </td>'; // DEADLINE
+				configuredtasks.push(row);
+			}
+			else
+			{
+				rowstr += '<td><input class="deadline input_field" control="deadline" data_id="'+id+'" id="date_'+mid+'" type="date"  > </td>'; // DEADLINE
+			}
+			if(ismilestone == "true")
+			{
+				rowstr += '<td><input class="cb_milestone input_field" control="cb" data_id="'+id+'" id="cb_'+mid+'" type="checkbox" checked> Milestone</td>'; // CHECK BOX
+				configuredtasks.push(row);
+			}
+			else
+			{
+				rowstr += '<td><input class="cb_milestone input_field" control="cb" data_id="'+id+'" id="cb_'+mid+'" type="checkbox"> Milestone</td>'; // CHECK BOX
+			}
+			
+
+
+			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
+			rowstr += "<td>"+str+"</td>";
+
+			rowstr += '<td><i data_id="'+id+'" id="save_'+mid+'"  class="save far fa-save"></i></td>'; // Save
+			
+			rowstr += "</tr>";
+			//console.log(rowstr);
+			$('#tablebody').append(rowstr);
+		}
+		$('#container').css('display','block');
+		$("#treetable").treetable({ expandable: true });
+		$("#treetable").show();
+		$("#legend").show();
+		//$("#treetable").treetable("expandNode", "1");
+		for (i = 0; i < configuredtasks.length; i++) 
+		{ 
+			var task = configuredtasks[i];
+			console.log(task);
+			$("#treetable").treetable("expandNode", task.extid);
+		}
+		$(".input_field").click(function(e)
+		{ 
+			var extid = $(this).attr("data_id");
+			var selector = '#save_'+extid.replace(/\./g, '-');
+			$(selector).removeClass("saved");
+			$(selector).addClass("unsaved");
+		});
+		$(".input_field").focusout(function(e) {
+			var extid = $(this).attr("data_id");
+			var record=data[extid];
+			var control = $(this).attr("control");
+			switch(control)
+			{
+				case "cb":
+					record.ismilestone = $(this).is(':checked');
+					break;
+				case "atext":
+					record.atext = $(this).val();
+					console.log(record.atext);
+					break;
+			}
+			
+		});
+		$(".save").click(function(e) {
+			e.preventDefault();
+			var extid = $(this).attr("data_id");
+			console.log(data[extid]);
+			var selector = '#save_'+extid.replace(/\./g, '-');
+			$(selector).removeClass("unsaved");
+			$(selector).addClass("saved");
+			
+			console.log("Saving ",data[extid]);
+			data[extid]._token = "{{ csrf_token() }}";
+			
+			$.ajax({
+				type:"PUT",
+				url:'/taskproperty/'+projectid,
+				cache: false,
+				data:data[extid],
+				success: null,
+				error: null
+			});
+			
+		});
+	}
+})
+@endsection

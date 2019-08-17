@@ -12,11 +12,42 @@ class Task
 {
 	public $children = array();
 	public $parent = null;
+	public function __get($field) 
+	{
+		switch($field)
+		{
+			case '_summary':
+				if(($this->isconfigured == "true")||($this->isconfigured == 1))
+				{
+					if(strlen(trim($this->atext)) > 0)
+						return $this->atext;
+					else
+						return $this->summary;
+				}
+				return $this->summary;
+				break;
+			case '_duedate':
+				if(($this->isconfigured == "true")||($this->isconfigured == 1))
+				{
+					if(strlen(trim($this->tend)) > 0)
+						return $this->tend;
+					else
+						return $this->duedate;
+				}
+				return $this->duedate;
+				break;
+		}
+	}
 	function __construct($parent,$level,$pextid,$pos,$summary=null,$query=null)
 	{
+		$this->isconfigured = false;
+		$this->ismilestone = false;
+		$this->atext = '';
 		$this->summary = $summary;
 		$this->query = $query;
 		$this->duedate = '';
+		$this->tstart = '';
+		$this->tend = '';
 		$this->level = $level;
 		$this->pos = $pos;
 		$this->pextid = $pextid;
@@ -439,6 +470,10 @@ class ProjectTree
 	function FindDuplicates($task)
 	{
 		//if($task->isparent == 0)
+		//echo $task->key." ".$task->isconfigured."\r\n";
+		//echo $task->summary." ".$task->isconfigured."\r\n";
+		
+		//echo $task->summary."\r\n";
 		{
 			if(array_key_exists($task->key,$this->tasks))
 			{
@@ -551,7 +586,7 @@ class ProjectTree
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
 		$otasks = $this->tasks;
-		//dd($otasks);
+		
 		$this->tasks = [];
 		$this->FindDuplicates($task);
 		foreach($this->tasks as $stask)
@@ -564,19 +599,49 @@ class ProjectTree
 
 		// Read Any old value from treepath
 		$oa = null;
+		
 		if(isset($this->tree->oa))
 			$oa = $this->tree->oa;
+
+		/////////////////////////////////////////////////////////////////////
 		$this->tree = $task;
 		$this->tree->oa = $oa;
-dd(	$this->tree->oa);
+
 		foreach($this->tasks as $t)
 		{
 			//echo $t->key." ".$t->otimespent."<br>";
+			// RETRIEVE OLD VALUES
+			if(isset($otasks[$t->key]))
+			{
+				$otask = $otasks[$t->key];
+				$isconfigured  = 0;
+				if(isset($otask->isconfigured))
+					$isconfigured = $otask->isconfigured;
+
+				if($isconfigured)
+				{
+					$t->isconfigured = $otask->isconfigured;
+					$t->ismilestone  = $otask->ismilestone;
+					$t->atext  = $otask->atext;
+					$t->tend =  $otask->tend;
+					$t->tstart = $otask->tstart;
+				}
+				else
+				{
+					$t->isconfigured = false;
+					$t->ismilestone  = false;
+					$t->atext  = "";
+					$t->tend = '';
+					$t->tstart = '';
+				}
+			}
 			if($t->otimespent > 0) // All tasks with worklog
 			{
 				if(isset($otasks[$t->key]))
 				{
 					$otask = $otasks[$t->key];
+					
+					//dd($otask);
 					if(($otask->updated != $t->updated)||($rebuild_worklogs==1))
 					{
 						Utility::ConsoleLog(time(),'Wait::Reading worklogs of '.$t->key);
@@ -728,9 +793,12 @@ dd(	$this->tree->oa);
 					$obj->oaid = $presource->oaid;
 					$obj->jira = null;
 					$obj->oa = null;
-					if(array_key_exists($obj->oaid, $this->tree->oa->worklogs))
+					if($this->tree->oa != null)
 					{
-				  	$obj->oa = $this->tree->oa->worklogs[$obj->oaid];
+						if(array_key_exists($obj->oaid, $this->tree->oa->worklogs))
+						{
+				  			$obj->oa = $this->tree->oa->worklogs[$obj->oaid];
+						}
 					}
 					$data[$resource->name] = $obj;
 					$caldata = json_decode($cal->data);
@@ -749,7 +817,7 @@ dd(	$this->tree->oa);
 					}
 					/////////////////////// Country Calendar ////////////////
 					$cc =  $presource->cc;
-					if($cc != '-')
+					if(strlen($cc) > 1)
 					{
 						$ccal = CalendarController::GetcalenarData($cc);
 						$ccaldata = json_decode($ccal->data);

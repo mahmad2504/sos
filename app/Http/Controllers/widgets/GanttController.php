@@ -14,69 +14,70 @@ use App\ProjectTree;
 
 class GanttController extends Controller
 {
-	private $treedata = []; 
-	private $blockedtasks = [];
-	private $jiraurl = null;
-	private $data = [];
-	private $j=1;
+		private $treedata = []; 
+		private $blockedtasks = [];
+		private $jiraurl = null;
+		private $data = [];
+		private $j=1;
     public function Show(Request $request)
     {
-		if($request->user == null || $request->project==null)
-			abort(403, 'Some Missing Parameters ShowTreeView(project id/name)');
-		$user = $request->user;
-		$project = $request->project;
+			if($request->user == null || $request->project==null)
+				abort(403, 'Some Missing Parameters ShowTreeView(project id/name)');
+			$user = $request->user;
+			$project = $request->project;
 		
     	$user = User::where('name',$user)->first();
     	if($user==null)
     	{
     		abort(403, 'Account Not Found');
     	}
-		$project = $user->projects()->where('name',$project)->first();
-		if($project==null)
-    	{
-    		abort(403, 'Project Not Found');
-    	}
-		if($project==null)
-    	{
-    		abort(403, 'Project Not Found');
-    	}
-    	
-		return View('widgets.gantt',compact('user','project'));
+			$project = $user->projects()->where('name',$project)->first();
+			if($project==null)
+				{
+					abort(403, 'Project Not Found');
+				}
+			if($project==null)
+				{
+					abort(403, 'Project Not Found');
+				}
+				
+			return View('widgets.gantt',compact('user','project'));
 
-    }
-	public function GetData(Request $request)
-	{
-		//return file_get_contents('data.json');
-		
-		if($request->id==null)
+			}
+		public function GetData(Request $request)
 		{
-			$returnData = array(
-				'status' => 'error',
-				'message' => 'No record found'
-			);
-			return Response::json($returnData, 500);
-		}
-		$projects = Project::where('id',$request->id)->get();
-    	if(count($projects)==0)
-    	{
-    		$returnData = array(
-				'status' => 'error',
-				'message' => 'Project Not Found'
-			);
-			return Response::json($returnData, 500);
-    	}
-		$project = $projects[0];
-		$projecttree = new ProjectTree($project);
-		
-		$head = $projecttree->GetHead();
-		//dd($projecttree->tasks);
-		$this->FormatForGantt($head,1);
-		return $this->data;
+			//return file_get_contents('data.json');
+			
+			if($request->id==null)
+			{
+				$returnData = array(
+					'status' => 'error',
+					'message' => 'No record found'
+				);
+				return Response::json($returnData, 500);
+			}
+			$projects = Project::where('id',$request->id)->get();
+				if(count($projects)==0)
+				{
+					$returnData = array(
+					'status' => 'error',
+					'message' => 'Project Not Found'
+				);
+				return Response::json($returnData, 500);
+				}
+			$project = $projects[0];
+			$projecttree = new ProjectTree($project);
+			
+			$head = $projecttree->GetHead();
+			//dd($projecttree->tasks);
+			$this->FormatForGantt($head,1);
+			return $this->data;
 	}
 	private function FormatForGantt($task,$first=0)
     {
 		$row['pID'] = $task->extid;
-		$row['pName'] = $task->summary;
+		$row['pName'] = $task->_summary;
+
 		$row['pDepend'] = '';
 		if(count($task->dependson)>0)
 		{
@@ -163,7 +164,9 @@ class GanttController extends Controller
 		$row['pStatus'] = $task->status;
 		$row['pPrioriy'] = $task->schedule_priority;
 		$row['pJira'] = $task->key;
-		$row['deadline'] = $task->duedate;
+		$row['deadline'] = $task->_duedate;
+		if($row['deadline'] == null)
+			$row['deadline'] = '';
 		//if(count($this->data)0==255)
 			
 		if(count($this->data)>250)

@@ -31,6 +31,7 @@
       this.expander = $(this.settings.expanderTemplate);
       this.indenter = $(this.settings.indenterTemplate);
       this.cell = $(this.settings.cellTemplate);
+      $('.indenter',this.treeCell).remove(); // Fix for reinit
       this.children = [];
       this.initialized = false;
       this.treeCell.prepend(this.indenter);

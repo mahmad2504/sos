@@ -6,13 +6,14 @@ use Illuminate\Http\Request;
 use App\Project;
 use App\User;
 use App\Utility;
+use App\ProjectTree;
 use Auth;
 use Redirect,Response;
 
 class ProjectController extends Controller
 {
 	public function GetProject(Request $request) // $request->name input paramter
-    {
+  {
 		if(($request->id == null)&&($request->name == null))
 		{
 			$returnData = array(
@@ -42,9 +43,9 @@ class ProjectController extends Controller
 			);
 			return Response::json($returnData, 500);
 		}
-    }
+  }
 	private static function ValidateRequest($request)
-    {
+  {
 		$project = null;
 		
 		if($request->id != null)		
@@ -141,14 +142,21 @@ class ProjectController extends Controller
 		}
 		$project['dirty'] = 1;
 		return $project;
-    }
+  }
 	public function Create(Request $request)
 	{
 		$project = self::ValidateRequest($request);
 		if (!$project instanceof Project) 
 			return Response::json(Utility::Error($project), 500);
-		
+
+			//$project->user()->name;
+		//dd($project->user());
 		$project->save();
+		$tree = new ProjectTree($project);
+		if(file_exists($tree->datapath))
+		   rmdir($tree->datapath);
+		//dd($tree);
+
 		return Response::json($project);
 	}
 	

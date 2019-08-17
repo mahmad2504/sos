@@ -281,7 +281,7 @@ function AddCard(project,row)
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Dashboard" class="icon fas fa-chart-line float-right"></i></a>';
 	footerstr+='<a class="float-right" href='+'"/projectresource/'+project.id+'">';
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Resources" class="icon fas fa-user-circle float-right"></i></a>';
-	footerstr+='<a class="float-right" href='+'"/milestones/'+project.id+'">';
+	footerstr+='<a class="float-right" href='+'"/taskproperty/'+project.id+'">';
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Milestones" style="margin-right:5px;" class="icon fas fa-flag-checkered float-right"></i></a>';
 	footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Last sync '+project.last_synced+'</p></div>';
 	var footer = $(footerstr);

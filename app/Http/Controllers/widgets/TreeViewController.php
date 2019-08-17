@@ -104,31 +104,29 @@ class TreeViewController extends Controller
 		
 	}
 	private function FormatForTreeView($task,$first=0)
-    {
+  {
     	$row = [];
-		if(($task->priority == 1)&&($task->status != 'RESOLVED'))
-			$this->blockedtasks[$task->key] = $task;
-		$row['extid'] = $task->extid;
+			if(($task->priority == 1)&&($task->status != 'RESOLVED'))
+				$this->blockedtasks[$task->key] = $task;
+			$row['extid'] = $task->extid;
     	$row['pextid'] = $task->pextid;
     	$row['issuetype'] = $task->issuetype;
-    	$row['summary'] = $task->summary;
+    	$row['summary'] = $task->_summary;
     	$row['jiraurl'] = $this->jiraurl;
     	$row['key'] = $task->key;
     	$row['estimate'] = $task->estimate;
     	$row['progress'] = $task->progress;
-		$row['status'] = $task->status;
-		$row['priority'] = $task->priority;
-		$row['priority'] = $task->priority;
-		$row['dependson'] = $task->dependson;
-		$row['sprintname'] = $task->sprintname;
-		$row['sprintstate'] = $task->sprintstate;
-		$row['sprintid'] = $task->sprintid;
-		if($first)
-		{
-			$row['blockers'] = $task->blockers_present;
-			$row['dependencies'] = $task->dependencies_present;
-		}
-		
+			$row['status'] = $task->status;
+			$row['priority'] = $task->priority;
+			$row['dependson'] = $task->dependson;
+			$row['sprintname'] = $task->sprintname;
+			$row['sprintstate'] = $task->sprintstate;
+			$row['sprintid'] = $task->sprintid;
+			if($first)
+			{
+				$row['blockers'] = $task->blockers_present;
+				$row['dependencies'] = $task->dependencies_present;
+			}
     	$this->treedata[$task->extid] = $row;
     	foreach($task->children as $ctask)
     		$this->FormatForTreeView($ctask);

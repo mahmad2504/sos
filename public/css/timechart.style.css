@@ -209,6 +209,7 @@
     text-align: center;
     font-size: 11px;
 }
+
 .fn-gantt .ganttBlue {
     background-color: #ADD8E6;
 }
@@ -225,6 +226,11 @@
 .fn-gantt .ganttGreen {
     background-color: #D8EDA3;
 }
+
+.fn-gantt .ganttGreen2 {
+    background-color: rgb(226, 237, 163);
+}
+
 .fn-gantt .ganttGreen .fn-label {
     color: #778461 !important;
 }
