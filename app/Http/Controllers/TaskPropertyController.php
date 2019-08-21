@@ -23,6 +23,35 @@ class TaskPropertyController extends Controller
 		$user = $project->user()->first();
 		return view('taskproperty',compact('user','project'));
 	}
+	public function SavePosition($projectid,Request $request)
+	{
+		$project = Project::where('id',$projectid)->first();
+		if($project==null)
+    	{
+			$returnData = array(
+				'status' => 'error',
+				'message' => 'Resource Not found'
+			);
+			return Response::json($returnData, 500);
+		}
+		$projecttree = new ProjectTree($project);
+
+		$data = $request->all();
+		foreach($data as $pos=>$key)
+		{
+			
+			if(array_key_exists($key,$projecttree->tasks)  )
+			{
+				$task = $projecttree->tasks[$key];
+				$task->position = $pos;
+				
+			}
+			
+		}
+		$projecttree->save();
+		return $data;
+		
+	}
 	public function Save($projectid,Request $request)
 	{
 		/*$returnData = array(
@@ -42,15 +71,26 @@ class TaskPropertyController extends Controller
 		}
 		$projecttree = new ProjectTree($project);
 		$taskdata = $request->all();
+	
 		$key = $taskdata['key'];
-		
 		$task = $projecttree->tasks[$key];
-		
+		$task->position = $taskdata['position'];
 		$task->isconfigured = $taskdata['isconfigured'];
+		if($task->isconfigured == "true")
+			$task->isconfigured = true;
+		else
+			$task->isconfigured = false;
+		
 		$task->ismilestone = $taskdata['ismilestone'];
+		if($task->ismilestone == "true")
+			$task->ismilestone = true;
+		else
+			$task->ismilestone = false;
+
 		$task->atext = $taskdata['atext'];
 		$task->tstart = $taskdata['tstart'];
 		$task->tend = $taskdata['tend'];
+		
 
 		$projecttree->save();
 		return $taskdata;
@@ -105,6 +145,7 @@ class TaskPropertyController extends Controller
 		$row['duedate'] = $task->duedate;
 		$row['tstart'] = $task->tstart;
 		$row['tend'] = $task->tend;
+		$row['position'] = $task->position;
 		$row['duplicate'] = $task->duplicate;
 		$this->treedata[$task->extid] = $row;
     	foreach($task->children as $ctask)

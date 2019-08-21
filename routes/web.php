@@ -70,6 +70,7 @@ Route::put('/calendar/{resource_name}','CalendarController@savecalendar')->name(
 Route::get('/taskproperty/{projectid}','TaskPropertyController@Show'); // project id as input param
 Route::get('/taskproperty/data/{projectid}','TaskPropertyController@GetTreeData')->name('gettreedata');// project id
 Route::put('/taskproperty/{projectid}','TaskPropertyController@Save'); // project id as input param
+Route::put('/taskproperty/position/{projectid}','TaskPropertyController@SavePosition'); // project id as input param
 
 
 /// Test

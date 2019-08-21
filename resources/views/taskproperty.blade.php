@@ -80,6 +80,34 @@ var selected_tasks = [
     {id:9, name:"Brendon Philips", age:"125", gender:"male", height:1, col:"orange", dob:"01/08/1980"},
     {id:10, name:"Margret Marmajuke", age:"16", gender:"female", height:5, col:"yellow", dob:"31/01/1999"},
 ];
+function UpdatePosition()
+{
+	data1 = table.getData(true);
+
+	
+	output = {};
+	for(var i=0;i <data1.length; i++)
+	{
+		row  = data1[i];
+		data[row.extid].position = i;
+		output[i] = row.key;
+		//console.log(row);
+	}
+	output._token = "{{ csrf_token() }}";
+	$.ajax({
+			type:"PUT",
+			url:'/taskproperty/position/'+projectid,
+			cache: false,
+			data:output,
+			success: function(response){
+				
+			},
+			error: function(response){
+			}
+		});
+	table.redraw();
+}
+
 function LoadProjectData(url,data,onsuccess,onfail)
 {
 	$.ajax({
@@ -173,8 +201,6 @@ function GetSelectElementId(extid)
 function Update(extid)
 {
 	data[extid]._token = "{{ csrf_token() }}";
-	
-
 	console.log(data[extid]);
 	$.ajax({
 			type:"PUT",
@@ -190,6 +216,7 @@ function Update(extid)
 				
 
 				//table.setFilter("isconfigured", "=", "true");
+				//UpdatePosition();
 				table.redraw();
 				//table.setFilter("isconfigured", "=", "true");
 				setTimeout(function()
@@ -227,6 +254,7 @@ function InitTabulator()
 		columns:
 		[
 			{rowHandle:true, formatter:"handle", headerSort:false, frozen:true, width:30, minWidth:30},
+			{width:"10%",resizable: false,title:"Positiont",field:"position", headerFilter:false},
 			{width:"5%",resizable: false,title:"Milestone",field:"ismilestone", headerFilter:false,
 				align:"center", editor:true, formatter:"tick",
 			},
@@ -270,12 +298,14 @@ function InitTabulator()
 			},
 		],
 		rowMoved:function(row){
-			console.log(row);
-			console.log(row.getPosition(true));
-        	console.log("Row: " + row.getData().extid + " has been moved");
-
-			var filteredData= table.getData(true);
-			console.log(filteredData);
+			//console.log(row);
+			//console.log(row.getPosition(true));
+        	//console.log("Row: " + row.getData().extid + " has been moved");
+			
+			data[row.getData().extid].ismoved = 1;
+			UpdatePosition();
+			
+			//Update(row.getData().extid);
 		},
 		dataEdited:function(data){
 			//data - the updated table data
@@ -284,6 +314,7 @@ function InitTabulator()
 				data = cur_row._row.data;
 				
 				Update(data.extid);
+
 			}
 			
 		},
@@ -294,6 +325,9 @@ function InitTabulator()
 		},
 		rowFormatter:function(row){
 		},
+		initialSort:[
+        	{column:"position", dir:"asc"}, //sort by this first
+    	],
 		validationFailed:function(cell, value, validators)
 		{
 			
@@ -356,9 +390,6 @@ $(document).ready(function()
 		id="cb_isconfigured_"+mid;
 		console.log(data);
 	}
-	
-	
-	
 	function ShowTree(response)
 	{
 		console.log(response);
@@ -441,7 +472,7 @@ $(document).ready(function()
 			
 			if(duplicate == 0)
 			{
-				if(isconfigured == "true")
+				if(isconfigured == true)
 				{
 					rowstr += '<td><input id="'+mid+'" class="input_field" field="isconfigured" extid="'+id+'"  type="checkbox" checked></td>';  		
 				}
@@ -480,9 +511,16 @@ $(document).ready(function()
 			$(this).removeClass("unsaved");
 			$(this).removeClass("saved");
 			//console.log(data[extid].isconfigured);
-
-			Update(extid);
+			//alert(table.getDataCount(true));
+			data1 = table.getData(true);
+			//console.log(data1.length);
 			
+			if(data[extid].isconfigured == true)
+				data[extid].position =  data1.length;
+			
+			else
+				data[extid].position =  -1;
+			Update(extid);
 		});
 		
 	}

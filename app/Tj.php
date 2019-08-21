@@ -126,10 +126,11 @@ class Tj
 		if($dheader != null)
 			$header = $header.$spaces."   depends ".$dheader."\n";
 		
-		if(isset($task->startconstraint))
+		if($task->_startconstraint!=null)
 		{
-			if(strtotime($task->startconstraint) > strtotime(GetToday("Y-m-d")))
-				$header = $header.$spaces."   start ".$task->startconstraint."\n";
+			if(strtotime($task->_startconstraint) > strtotime(Utility::GetToday("Y-m-d")))
+				$header = $header.$spaces."   start ".$task->_startconstraint."\n";
+			
 		}
 		if($task->isparent == 0)
 		{

@@ -16,6 +16,14 @@ class Task
 	{
 		switch($field)
 		{
+			case '_startconstraint':
+				if(($this->isconfigured == "true")||($this->isconfigured == 1))
+				{
+					if(strlen(trim($this->tstart)) > 0)
+						return $this->tstart;
+				}
+				return null;
+				break;
 			case '_summary':
 				if(($this->isconfigured == "true")||($this->isconfigured == 1))
 				{
@@ -41,6 +49,7 @@ class Task
 	function __construct($parent,$level,$pextid,$pos,$summary=null,$query=null)
 	{
 		$this->isconfigured = false;
+		$this->position = -1;
 		$this->ismilestone = false;
 		$this->atext = '';
 		$this->summary = $summary;
@@ -625,6 +634,7 @@ class ProjectTree
 					$t->atext  = $otask->atext;
 					$t->tend =  $otask->tend;
 					$t->tstart = $otask->tstart;
+					$t->position = $otask->position;
 				}
 				else
 				{
@@ -633,6 +643,7 @@ class ProjectTree
 					$t->atext  = "";
 					$t->tend = '';
 					$t->tstart = '';
+					$t->position = -1;
 				}
 			}
 			if($t->otimespent > 0) // All tasks with worklog
