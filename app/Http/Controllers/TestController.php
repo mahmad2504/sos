@@ -44,6 +44,14 @@ class TestController extends Controller
 		$tj =  new Tj($projecttree);
 		$tj->Execute();
 	}
+	public function JiraSync(Request $request)
+	{
+		$synccontroller = new SyncController();
+		$request->debug=1;
+		$request->rebuild=1;
+		$request->worklogs=1;
+		$synccontroller->SyncJira($request);
+	}
 	public function OASync($projectid)
 	{
 		$project = Project::where('id',$projectid)->first();

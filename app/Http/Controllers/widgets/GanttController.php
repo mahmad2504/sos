@@ -120,7 +120,18 @@ class GanttController extends Controller
 		if(strlen(trim($row['pRes']))==0)
 			$row['pRes'] = $task->assignee;
 		
+		if($row['pRes'] == 'unassigned')
+			$row['pRes'] = '';
 		
+		if($task->assignee != $row['pRes'])
+			$row['pRes'] = '<span style="color:orange;">'.$row['pRes'].'</span>';
+
+		if(isset($task->estimate))
+			$row['pEstimate'] = $task->estimate;
+
+		if(isset($task->timespent))
+			$row['pTimeSpent'] = $task->timespent;
+	
 		if(isset($task->closedon))
 			$row['pClosedOn'] = $task->closedon;
 			

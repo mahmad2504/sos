@@ -23,6 +23,7 @@
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Dependecnies  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Sprint  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Duplicate  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
 		
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
@@ -33,6 +34,7 @@
 			<th class="dependencies">Dependency</th>
 			<th class='sprintcolumn'>Sprint</th>
 			<th id='estimatecolumn'></th>
+			<th>Duplicate</th>
 			<th>Progress</th>
 		  </tr>
 		</thead>
@@ -45,13 +47,14 @@
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Requirement<span style="margin-top:20px;padding:5px;" class="REQUIREMENT">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Workpackage<span style="margin-top:20px;padding:5px;" class="WORKPACKAGE">&nbsp&nbsp&nbsp</span></span>
+		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Epic<span style="margin-top:20px;padding:5px;" class="EPIC">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Task<span style="margin-top:20px;padding:5px;" class="TASK">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Defect<span style="margin-top:20px;padding:5px;" class="DEFECT">&nbsp&nbsp&nbsp</span></span>
-		<span style="margin-top:20px;padding:15px;"></span>
-		<span>Workpackage<span style="margin-top:20px;padding:5px;" class="WORKPACKAGE">&nbsp&nbsp&nbsp</span></span>
+		
 	</div>
 </div>
 <script src="{{ asset('js/jquery.treetable.js') }}" ></script>
@@ -149,6 +152,7 @@ $(document).ready(function()
 			var blockedtasks=row['blockedtasks'];
 			var sprintstate = row['sprintstate'];
 			var sprintname = row['sprintname'];
+			var duplicate=row['duplicate'];
 			var sprintlink = link+"/secure/RapidBoard.jspa?rapidView="+row['sprintid'];
 			
 			var blockedtasksstr = '';
@@ -235,6 +239,10 @@ $(document).ready(function()
 				sprints = 1;
 			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
 			rowstr += "<td>"+estimate+"</td>";
+			if(duplicate == 1)
+				rowstr += '<td>Duplicate</td>';
+			else
+			rowstr += '<td></td>';
 			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			
 			

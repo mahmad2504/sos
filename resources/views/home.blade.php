@@ -48,27 +48,25 @@ input {
 			<input id="psettings_id"  type="hidden"  name="id" value="" readonly>
 			<input id="psettings_last_synced"  type="hidden"  name="last_synced" value="Never" readonly>
 			<div class="d-flex form-group">
-				<label style=" padding: 0; margin-top:3px;" for="jirauri">Server&nbsp&nbsp</label>
-				<select class="form-control-sm" id="psettings_jirauri" name="jirauri">
+			
+				<label style="margin-top:3px;" for="jirauri">Server</label>
+				<select style="margin-left:10px;" class="form-control-sm" id="psettings_jirauri" name="jirauri">
 					@for($i=0;$i<count(config('jira.servers'));$i++)
 						<option value="{{$i}}">{{config('jira.servers')[$i]['uri']}}</option>
 					@endfor
 				</select>&nbsp&nbsp
-				<div class="form-group">
-					<input id="psettings_jiradependencies" style="margin-top:10px;" class="" type="checkbox" name="jira_dependencies" value="0">Jira Dependencies</input>
+				<div class="d-flex  form-group">
+				<label style="margin-top:3px;" for="jirauri">Jira Dependencies</label>
+				<input id="psettings_jiradependencies" style="margin-top:10px;margin-left:10px;" class="" type="checkbox" name="jira_dependencies" value="0"></input>
 				</div>
 			</div>
 			
 			<div class="d-flex form-group">
-				<label style="padding:0;margin-top:3px;" for="name">Name&nbsp&nbsp&nbsp</label>
-				<input style="" id="psettings_name" type="text" class="form-control-sm form-control" placeholder="Name" name="name">
-				<label style="padding:0;margin-top:3px;" for="name">&nbspOpenAir&nbsp&nbsp&nbsp</label>
-				<input id="psettings_oaname" type="text" class="form-control-sm form-control" placeholder="Open Air Project Name" name="oaname">
+				<label style="margin-top:3px;" for="name">Name</label>
+				<input style="width:35%;margin-left:10px;" id="psettings_name" type="text" class="form-control-sm form-control" placeholder="Name" name="name"></input>
+				<label style="padding:0;margin-top:3px;margin-left:30px;" for="name">OpenAir</label>
+				<input style="width:35%;margin-left:10px;" id="psettings_oaname" type="text" class="form-control-sm form-control" placeholder="OpenAir Project Name" name="oaname"></input>
 			</div>
-			
-			
-			
-			
 			
 			<div class="form-group">
 				<label for="name">Description</label>
@@ -95,7 +93,7 @@ input {
 			<div class="form-group d-flex">
 				<label style="margin-top:5px;" for="name">Estimation</label>&nbsp&nbsp
 				<select class="form-control-sm" id="psettings_estimation" name="estimation">
-					<option value="0">Mix</option>
+					<!-- <option value="0">Mix</option> -->
 					<option value="1">Story Points</option>
 					<option value="2">Time</option>
 				</select>
@@ -140,6 +138,7 @@ input {
 	</div>
 </div>
 <!-- End Sync Modal -->
+<script src="{{ asset('js/eventsource.min.js') }}" ></script>
 <script src="{{ asset('js/logger.js') }}" ></script>
 @endsection
 @section('script')
@@ -240,12 +239,10 @@ function ValidateFormData(data)
 }
 function AddCard(project,row)
 {
-	if(project.estimation == 1)
+	if(project.estimation == 0)
 		estimation = 'Story Points';
-	else if(project.estimation == 2)
+	else 
 		estimation = 'Time';
-	else
-		estimation = 'Story Points/Time';
 	
 	color='';
 	if(project.dirty == 1)
@@ -420,6 +417,8 @@ function OnUpdateProject(event)
 	if($('#psettings_jiradependencies').prop('checked'))
 		data.jira_dependencies = 1;
 	
+	data.estimation = $('#psettings_estimation').prop('selectedIndex');
+	console.log(data.estimation);
 	data.jirauri =  $('#psettings_jirauri').val();
 	data.user_id = userid;
 	data._token = "{{ csrf_token() }}";

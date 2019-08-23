@@ -97,7 +97,7 @@ class Task
 		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 
-		if(($issuetype=='Workpackage')||($issuetype=='Project'))
+		if(($issuetype=='Workpackage')||($issuetype=='Project')||($issuetype=='Subproject'))
 			return 'WORKPACKAGE';
 
 		if($issuetype=='Bug')
@@ -133,13 +133,8 @@ class Task
 		$sprint = $jiraconf['sprint']; // custom field
 		global $estimation_method;
 		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
-		if($estimation_method == 1)
-			$tasks = Jira::Search($query,1000,$fields.$story_points.",".$sprint,$order);
-		else if($estimation_method == 2)
-			$tasks = Jira::Search($query,1000,$fields.'timeoriginalestimate,timespent,'.$sprint,$order);
-		else
-			$tasks = Jira::Search($query,1000,'timeoriginalestimate,timespent,'.$fields.$story_points.",".$sprint,$order);
-
+		$tasks = Jira::Search($query,1000,$fields.','.$story_points.',timeoriginalestimate,timespent,'.$sprint,$order);
+			
 		return $tasks;
 	}
 	public function CreateTask($jiraconf,$task,$level,$pextid,$pos)
@@ -217,13 +212,19 @@ class Task
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
 			$ntask->query = "parent=".$ntask->key;
-		if(isset($task->fields->$story_points))
-			$ntask->storypoints = $task->fields->$story_points;
+
 		if(isset($task->fields->timeoriginalestimate))
 			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);
-		$ntask->estimate = $ntask->timeestimate;
-		if($ntask->storypoints>0)
+		if($this->parent->project->estimation == 0)// Story points
+		{
+			if(isset($task->fields->$story_points))
+				$ntask->storypoints = $task->fields->$story_points;
 			$ntask->estimate = $ntask->storypoints;
+		}
+		else
+		{
+			$ntask->estimate = $ntask->timeestimate;
+		}
 		$ntask->priority = $task->fields->priority->id;
 		$ntask->dependson = [];
 		foreach($task->fields->issuelinks as $issuelink)
@@ -431,7 +432,18 @@ class ProjectTree
 	function ComputeEstimate($task)
 	{
 		if($task->isparent == 0)
+		{
+			if($task->timespent > $task->estimate)
+				$task->estimate = $task->timespent;
+			if($task->status == 'RESOLVED')
+			{
+				if($task->timespent > 0) // if no work logged , make work= estimes
+					$task->estimate = $task->timespent;
+			}
+			if($task->duplicate == 1)
+				return 0;
 			return $task->estimate;
+		}
 		$children = $task->children;
 		$acc = 0;
 		foreach($task->children as $child)
@@ -445,7 +457,12 @@ class ProjectTree
 		if($task->isparent == 0)
 		{
 			if($task->status == 'RESOLVED')
-				$task->timespent = $task->estimate;
+			{
+				if($task->timespent == 0) // if no work logged , make work= estimes
+					$task->timespent = $task->estimate;
+			}
+			if($task->duplicate == 1)
+				return 0;
 			return $task->timespent;
 		}
 		$children = $task->children;
@@ -454,9 +471,6 @@ class ProjectTree
 			$acc += $this->ComputeTimeSpent($child);
 
 		$task->timespent = $acc;
-		if($task->status == 'RESOLVED')
-			$task->timespent = $task->estimate;
-
 		return $task->timespent;
 	}
 	function ComputeProgress($task)
@@ -590,14 +604,19 @@ class ProjectTree
 
 
 		$this->Populate($task);
+
+		$otasks = $this->tasks;
+		$this->tasks = [];
+		$this->FindDuplicates($task);
+
 		$this->ComputeStatus($task);
 		$this->ComputeEstimate($task);
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
-		$otasks = $this->tasks;
-		
-		$this->tasks = [];
-		$this->FindDuplicates($task);
+
+		//$otasks = $this->tasks;
+		//$this->tasks = [];
+		//$this->FindDuplicates($task);
 		foreach($this->tasks as $stask)
 		{
 			if($stask->instancecount > 1)
@@ -719,7 +738,7 @@ class ProjectTree
 			if($projectresource !=  null)
 			{
 				$projectresource->active = 1;
-				$projectresource->cc = $cc;
+				//Utility::ConsoleLog(time(),'Project Resource ='.$projectresource." ".$projectresource->cc);
 				$projectresource->save(); /// Updates resource for a project
 			}
 			else

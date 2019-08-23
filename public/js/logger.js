@@ -113,7 +113,7 @@ function Sync($rebuild=0,$rebuild_worklogs=0)
 			logger.log('> Disconnected');
 			$('#sync').prop('disabled', false);
 			$('#rebuild').prop('disabled', false);
-			$('#oasync').prop('disabled', true);
+			$('#oasync').prop('disabled', false);
 			updateConnectionStatus('Disconnected', false);
 			source.close();
 		}

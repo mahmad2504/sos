@@ -155,18 +155,23 @@ class Tj
 				
 				if($team != null)
 				{
-					$header = $header.$spaces."   allocate ".$task->assignee." { alternative ";
-					$delim = "";
-					$str = "";
 					$team =  explode(",",$team);
-					
-					for($i=0;$i<count($team);$i++)
+					if(count($team)>1)
 					{
-						$str = $str.$delim.$team[$i];
-						$delim = ",";
-					}
-					$header = $header.$str." select order persistent }"."\n";
+						$header = $header.$spaces."   allocate ".$team[0]." { alternative ";
+						$delim = "";
+						$str = "";
+						$team =  explode(",",$team);
 					
+						for($i=1;$i<count($team);$i++)
+						{
+							$str = $str.$delim.$team[$i];
+							$delim = ",";
+						}
+						$header = $header.$str." select order persistent }"."\n";
+					}
+					else
+						$header = $header.$spaces."   allocate ".$team[0]."\n";
 				}
 				else
 					$header = $header.$spaces."   allocate ".$task->assignee."\n";

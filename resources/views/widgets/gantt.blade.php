@@ -99,7 +99,13 @@ function ShowGantt(data)
 		  },
 		  pClosedOn : {
 			title: 'Closed On'
-		  }
+		  },
+		  pEstimate : {
+			title: 'Estimate'
+		  },
+		  pTimeSpent : {
+			title: 'TimeSpent'
+		  },
 		},
 	  vMaxDate : vMaxDate,
 	  vUseSingleCell: 100000, // Set the threshold cell per table row (Helps performance for large data.
@@ -116,7 +122,7 @@ function ShowGantt(data)
 	});
 	//console.log(vMaxDate);
 	
-	g.setShowDur(1);
+	//g.setShowDur(1);
 	
 	g.setDateInputFormat('yyyy-mm-dd'); 
 	g.setScrollTo('2018-07-02');

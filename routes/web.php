@@ -11,6 +11,9 @@
 |
 */
 
+
+//echo DateTime::createFromFormat('d/M/Y', $date_added)->format('M/d/Y');
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -76,6 +79,8 @@ Route::put('/taskproperty/position/{projectid}','TaskPropertyController@SavePosi
 /// Test
 Route::get('/test/tj/{projectid}','TestController@TJTest'); // project id as input param
 Route::get('/test/sync/oa/{projectid}','TestController@OASync'); // project id as input param
+Route::get('/test/sync/jira/{projectid}','TestController@JiraSync'); // project id as input param
+
 Route::get('/test/worklogs/jira/{projectid}','TestController@GetJiraWorklogs'); // project id as input param
 Route::get('/test/worklogs/oa/{projectid}','TestController@OAWorklogs'); // project id as input param
 Route::get('/test/resource/timelogs/{projectid}/','TestController@ResourceTimeLogs');

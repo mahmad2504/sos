@@ -103,6 +103,7 @@ class ProjectController extends Controller
 			$project['sdate'] = $request->sdate;
 			$project['edate'] = $request->edate;
 			$project['jira_dependencies'] = $request->jira_dependencies;
+			$project['estimation'] = $request->estimation;
 			$project['progress'] = $request->progress;
 		}
 		else // Update case
@@ -138,8 +139,10 @@ class ProjectController extends Controller
 				$project->last_synced = $request->last_synced;
 			if($request->jirauri != null)
 				$project->jirauri = $request->jirauri;
-			
+			if($request->estimation != null)
+				$project->estimation = $request->estimation;
 		}
+		//dd($project);
 		$project['dirty'] = 1;
 		return $project;
   }

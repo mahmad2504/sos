@@ -46,13 +46,13 @@
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Requirement<span style="margin-top:20px;padding:5px;" class="REQUIREMENT">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
+		<span style="margin-top:20px;padding:15px;"></span>
+		<span>Workpackage<span style="margin-top:20px;padding:5px;" class="WORKPACKAGE">&nbsp&nbsp&nbsp</span></span>
 		<span>Epic<span style="margin-top:20px;padding:5px;" class="EPIC">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Task<span style="margin-top:20px;padding:5px;" class="TASK">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Defect<span style="margin-top:20px;padding:5px;" class="DEFECT">&nbsp&nbsp&nbsp</span></span>
-		<span style="margin-top:20px;padding:15px;"></span>
-		<span>Workpackage<span style="margin-top:20px;padding:5px;" class="WORKPACKAGE">&nbsp&nbsp&nbsp</span></span>
 	</div>
 </div>
 <script src="{{ asset('js/tabulator.table.js') }}" ></script>
