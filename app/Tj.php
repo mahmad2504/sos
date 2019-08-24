@@ -110,6 +110,7 @@ class Tj
 		if($pos != FALSE)
 			$taskname = str_replace("\\","-",$taskname);
 		
+		$taskname = str_replace('"',"'",$taskname);
 		$taskname = trim($task->extid)." ".substr($taskname,0,15);
 		$header = "";
 		$spaces = "";

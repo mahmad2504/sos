@@ -138,6 +138,8 @@ class Jira
 			$obj =  new \StdClass();
 			$date = explode('T', $worklog['started'])[0];
 			$hours =  round($worklog['timeSpentSeconds']/(60*60),1);
+			if(($worklog['timeSpentSeconds'] > 0)&&($hours==0))
+				$hours = round($worklog['timeSpentSeconds']/(60*60),2);
 			$author = $worklog['author']['name'];
 			$comment = $worklog['comment'];
 			if(isset($data[$date][$author]))

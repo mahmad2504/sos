@@ -25,15 +25,15 @@
 		<col style="width:40%;border-right:1pt solid lightgrey;"> <!--Title  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Estimate  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Deadline  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Jira Duedate  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
 		<col style="width:5%;border-right:1pt solid lightgrey;"> <!--Select  --> 
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
 		  <tr>
 			<th>Title</th>
 			<th>Jira</th>
-			<th>Estimate</th>
-			<th>Deadline</th>
+			<th id='estimatecolumn'></th>
+			<th>Jira Duedate</th>
 			<th>Progress</th>
 			<th>Select</th>
 		  </tr>
@@ -119,16 +119,22 @@ function LoadProjectData(url,data,onsuccess,onfail)
 		error: onfail
 	});
 }
+var estimate_units = '';
 function OnProjectDataReceived(response)
 {
 	console.log(response.description);
 	$('#description').append(response.description);
-	if(response.estimation == 1)
-		header = 'Story Points';
-	if(response.estimation == 2)
-		header = 'Time Estimates';
 	if(response.estimation == 0)
-		header = 'Estimates';
+	{
+		header = 'Story Points';
+		estimate_units = 'Points';
+	}
+	else
+	{
+		header = 'Time Estimates';
+		estimate_units = 'Days';
+	}
+	
 	$('#estimatecolumn').append(header);
 }
 var dateEditor = function(cell, onRendered, success, cancel){
@@ -461,7 +467,11 @@ $(document).ready(function()
 			else
 				rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
 			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'>";
-			rowstr += estimate+" days</span></td>";
+			if(estimate > 0)
+				rowstr += estimate+" "+estimate_units+"</span></td>";
+			else
+				rowstr += "</span></td>";
+
 			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'>";
 			rowstr += duedate+"</span></td>";
 

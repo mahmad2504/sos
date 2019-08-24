@@ -14,15 +14,14 @@
 @endsection
 @section('content')
 
-
-
-<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
+<div id="container" style="width:95%; margin-left: auto; margin-right: auto; display:block" class="center">
 	<div class="loading">Loading&#8230;</div>
-	<button id="chart" type="button" class="float-right btn btn-outline-success btn-sm">Hide Chart</button>
+	<!-- <button id="chart" style="display:hidden" type="button" class="float-right btn btn-outline-success btn-sm">Hide Chart</button> -->
 	<p id='description'>Description</p>
+	<div style="border:1px solid black; position:relative" class="gantt" id="GanttChartDIV"></div>
 </div>
 
-<div style="position:relative" class="gantt" id="GanttChartDIV"></div>
+
 <script src="{{ asset('js/jsgantt.js') }}" ></script>
 @endsection
 @section('script')
@@ -53,12 +52,39 @@ function ShowGantt(data)
 	var g = new JSGantt.GanttChart(document.getElementById('GanttChartDIV'), 'day');
 	for(var i=0;i<data.length;i++)
 	{
-		if(data[i].pJira.length > 0) 
+		//if(data[i].pStatus == 'RESOLVED')
+		var href = "#";
+		if(data[i].pJira != data[i].pID)
+			href=jiraurl+"/browse/"+data[i].pJira;
+		else
+			data[i].pJira = '';
+
+		style = '';
+		data[i].pEstimate = Math.round(data[i].pEstimate);
+		if(data[i].pStatus == 'RESOLVED')
 		{
-			var href=jiraurl+"/browse/"+data[i].pJira;
-			data[i].pName = "<a class='taskname' href='"+href+"'>"+data[i].pName+"</a>";
-			data[i].pCaption = "<a href='"+href+"'>"+data[i].pJira+"</a>";
+			style = 'color:lightgrey;';
+			data[i].pComp = "<span style='"+style+"'>Done</span>";
+			data[i].pEndString = "<span style='"+style+"'>"+data[i].pClosedOn+"</span>";
+			data[i].pEstimate = "<span style='"+style+"'>"+data[i].pEstimate+"</span>";
 		}
+		else if(data[i].pStatus == 'INPROGRESS')
+		{
+			data[i].pEndString = '<span style="font-size:10px;">'+MakeDate2(data[i].pEnd)+'</span>';
+			data[i].pComp = data[i].pComp+"%";
+		}
+		else
+		{
+			data[i].pEndString = '<span style="font-size:10px;">'+MakeDate2(data[i].pEnd)+'</span>';
+			data[i].pComp = '';
+		}
+
+		data[i].pName = "<a style='"+style+"' class='taskname' href='"+href+"'>"+data[i].pName+"</a>";
+		if(data[i].pStatus == 'RESOLVED')
+			data[i].pCaption = "<a href='"+href+"'>"+data[i].pJira+"</a>";
+		else
+			data[i].pCaption = "&nbsp"+data[i].pRes+"&nbsp<a href='"+href+"'>"+data[i].pJira+"</a>";
+		
 		
 		if(data[i].deadline.length > 0)
 		{
@@ -88,24 +114,33 @@ function ShowGantt(data)
 	  vShowTaskInfoLink: 0, // Show link in tool tip (0/1)
 	  vShowEndWeekDate: 0,  // Show/Hide the date for the last day of the week in header for daily
 	  vAdditionalHeaders: { 
-		  pStatus: {
-			title: 'Status'
-		  },
-		  pPrioriy: {
-			title: 'Priority'
-		  },
-		  pJira: {
-			title: 'Jira'
-		  },
-		  pClosedOn : {
-			title: 'Closed On'
-		  },
-		  pEstimate : {
-			title: 'Estimate'
-		  },
-		  pTimeSpent : {
-			title: 'TimeSpent'
-		  },
+			pEstimate: {
+				title: 'Estimate'
+			},
+			pComp: {
+				title: 'Progress'
+			},
+			pEndString: {
+				title: 'End'
+		    },
+		  //pStatus: {
+		//	title: 'Status'
+		 // },
+		 // pPrioriy: {
+		//	title: 'Priority'
+		 // },
+		 // pJira: {
+		//	title: 'Jira'
+		 // },
+		 // pClosedOn : {
+		//	title: 'Closed On'
+		 // },
+		 // pEstimate : {
+		//	title: 'Estimate'
+		 // },
+		 // pTimeSpent : {
+		//	title: 'TimeSpent'
+		 // },
 		},
 	  vMaxDate : vMaxDate,
 	  vUseSingleCell: 100000, // Set the threshold cell per table row (Helps performance for large data.
@@ -123,9 +158,12 @@ function ShowGantt(data)
 	//console.log(vMaxDate);
 	
 	//g.setShowDur(1);
+	g.setShowRes(0);
+	g.setShowStartDate(0);
+	g.setShowEndDate(0);
 	
 	g.setDateInputFormat('yyyy-mm-dd'); 
-	g.setScrollTo('2018-07-02');
+	//g.setScrollTo('2018-07-02');
 	
 	
 		

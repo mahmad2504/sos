@@ -123,6 +123,7 @@ class TreeViewController extends Controller
 		$row['sprintname'] = $task->sprintname;
 		$row['sprintstate'] = $task->sprintstate;
 		$row['sprintid'] = $task->sprintid;
+		$row['assignee'] = $task->assignee;
 		if($first)
 		{
 			$row['blockers'] = $task->blockers_present;

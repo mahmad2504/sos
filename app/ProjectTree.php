@@ -16,6 +16,44 @@ class Task
 	{
 		switch($field)
 		{
+			case '_project_end':
+				return $this->parent->project->start;
+				break;
+			case '_project_start':
+				return $this->parent->project->start;
+				break;
+			case '_parenttask':
+				if(array_key_exists($this->pextid,$this->parent->tasksbyextid))
+				{
+					return $this->parent->tasksbyextid[$this->pextid];
+				}
+				return null;
+			case '_orig_estimate':
+				if($this->parent->project->estimation == 0)// Story points
+					return  $this->storypoints;
+				else
+					return $this->timeestimate;
+				break;
+			case '_sched_start';
+				if(!isset($this->sched_start))
+					$start = $this->twin->sched_start;
+				else
+					$start  = $this->sched_start;
+				return $start;
+			case '_sched_end';
+				if(!isset($this->sched_end))
+					$end = $this->twin->sched_end;
+				else
+					$end = $this->sched_end;
+				return $end;
+			case '_sched_assignee':
+				if(!isset($this->sched_assignee))
+					$pres = $this->twin->sched_assignee;
+				else
+					$pres =  $this->sched_assignee;
+				if(strlen(trim($pres))==0)
+					$pres = $this->assignee;
+				return $pres;
 			case '_startconstraint':
 				if(($this->isconfigured == "true")||($this->isconfigured == 1))
 				{
@@ -131,7 +169,6 @@ class Task
 		//echo $query."<br>";
 		$story_points = $jiraconf['storypoints']; // custom field
 		$sprint = $jiraconf['sprint']; // custom field
-		global $estimation_method;
 		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
 		$tasks = Jira::Search($query,1000,$fields.','.$story_points.',timeoriginalestimate,timespent,'.$sprint,$order);
 			
@@ -215,16 +252,11 @@ class Task
 
 		if(isset($task->fields->timeoriginalestimate))
 			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);
-		if($this->parent->project->estimation == 0)// Story points
-		{
-			if(isset($task->fields->$story_points))
-				$ntask->storypoints = $task->fields->$story_points;
-			$ntask->estimate = $ntask->storypoints;
-		}
-		else
-		{
-			$ntask->estimate = $ntask->timeestimate;
-		}
+		if(isset($task->fields->$story_points))
+			$ntask->storypoints = $task->fields->$story_points;
+
+		$ntask->estimate = $ntask->_orig_estimate;
+
 		$ntask->priority = $task->fields->priority->id;
 		$ntask->dependson = [];
 		foreach($task->fields->issuelinks as $issuelink)
@@ -255,14 +287,23 @@ class Task
 		{
 			//echo $ntask->key." ".$task->fields->timespent."<br>";
 			$ntask->timespent =  round($task->fields->timespent/(28800),1);
+			if(($task->fields->timespent > 0)&&($ntask->timespent==0))
+			{
+				$ntask->timespent = round($task->fields->timespent/(28800),3);
+				//echo $ntask->key." ".$task->fields->timespent." ".$ntask->timespent."<br>";
+			}
+			//echo $ntask->key." ".$task->fields->timespent." ".$ntask->timespent."<br>";
 			$ntask->otimespent = $ntask->timespent;
 		}
-
 		if(isset($task->fields->duedate))
 		{
 			$ntask->duedate = $task->fields->duedate;
-			if($ntask->duedate < Utility::GetToday('Y-m-d'))
-				Utility::ConsoleLog(time(),'Error::'.$task->key." has a missed deadline");
+			if( $ntask->duedate < Utility::GetToday('Y-m-d'))
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (Expired)");
+			else if($ntask->duedate < $ntask->_project_start)
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (Before Project start)");
+			else if($ntask->duedate < $ntask->_project_end)
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (After Project end)");	
 		}
 
 
@@ -273,6 +314,7 @@ class Task
 			if($ntask->estimate == 0)
 				$unestimated_count++;
 
+		$ntask->parent->tasksbyextid[$ntask->extid.""]=$ntask;
 		return $ntask;
 
 		//$ntask->key = $jiratask->key;
@@ -352,6 +394,7 @@ class ProjectTree
 	private $user=null;
 	private $jiraconfig = null;
 	private $tasks = [];
+	public $tasksbyextid = [];
 	public $presources = [];
 	public $resources = [];
 	function __construct(Project $project)
@@ -362,6 +405,7 @@ class ProjectTree
 		if(!file_exists($this->datapath))
     		mkdir($this->datapath, 0, true);
 		$this->treepath = $this->datapath."/tree";
+		$this->baselinepath = $this->datapath."/baseline";
 		$this->user = $user;
 		$this->project  = $project;
 
@@ -374,6 +418,12 @@ class ProjectTree
 			//echo "ff";
 			//dd($this->tree->oa);
 		}
+
+		if(file_exists($this->baselinepath))
+		{
+			//$this->baseline_date = date ("Y/m/d H:i" , filemtime($this->baselinepath));
+		}
+		
 	}
 	public function __get($property)
 	{
@@ -437,6 +487,8 @@ class ProjectTree
 				$task->estimate = $task->timespent;
 			if($task->status == 'RESOLVED')
 			{
+				//if($task->key == 'NUC4-2516')
+				//	dd($task);
 				if($task->timespent > 0) // if no work logged , make work= estimes
 					$task->estimate = $task->timespent;
 			}
@@ -512,6 +564,7 @@ class ProjectTree
 			else
 			{
 				$this->tasks[$task->key]=$task;
+				$this->tasksbyextid[$task->extid]=$task;
 			}
 		}
 		foreach($task->children as $stask)
@@ -578,8 +631,9 @@ class ProjectTree
 			Utility::ConsoleLog(time(),'Building Project - '.$this->project->name);
 		Jira::Initialize($this->jiraconfig,$this->datapath,$rebuild);
 
-		$queries = preg_replace('~[\r\n]+~', ',', $this->project->jiraquery);
-		$queries = explode(',',$queries);
+		$queries = preg_replace('~[\r\n]+~', '@', $this->project->jiraquery);
+		
+		$queries = explode('@',$queries);
 		$queries = array_filter($queries);
 
 		if(count($queries)>1)
@@ -593,8 +647,12 @@ class ProjectTree
 				if(count($query)>1)
 				{
 					$name = $query[1];
+					
 				}
+				$name = str_replace('"',"'",$name);
+				//dd($name);
 				$query = $query[0];
+				dd($query);
 				$ctask = new Task($this,$task->level+1,$task->extid,$pos++,$name,$query);
 				$task->AddChild($ctask);
 			}
@@ -606,7 +664,11 @@ class ProjectTree
 		$this->Populate($task);
 
 		$otasks = $this->tasks;
+
 		$this->tasks = [];
+		$this->tasksbyextid = [];
+		
+	
 		$this->FindDuplicates($task);
 
 		$this->ComputeStatus($task);
@@ -670,7 +732,6 @@ class ProjectTree
 				if(isset($otasks[$t->key]))
 				{
 					$otask = $otasks[$t->key];
-					
 					//dd($otask);
 					if(($otask->updated != $t->updated)||($rebuild_worklogs==1))
 					{
@@ -685,18 +746,21 @@ class ProjectTree
 					Utility::ConsoleLog(time(),'Wait::Reading worklogs of '.$t->key);
 					$t->worklogs = Jira::GetWorkLogs($t->key);
 				}
-				foreach($t->worklogs as $date=>$userdata)
+				if(isset($t->worklogs))
 				{
-					foreach($userdata as $user=>$data)
+					foreach($t->worklogs as $date=>$userdata)
 					{
-						if(!isset($this->resources[$user]))
+						foreach($userdata as $user=>$data)
 						{
-							$resource =  new Resource;
-							$resource->name = $data->name;
-							$resource->displayname =$data->displayname;
-							$resource->email = $data->email;
-							$resource->timeZone = $data->timeZone;
-							$this->resources[$user]	= $resource;
+							if(!isset($this->resources[$user]))
+							{
+								$resource =  new Resource;
+								$resource->name = $data->name;
+								$resource->displayname =$data->displayname;
+								$resource->email = $data->email;
+								$resource->timeZone = $data->timeZone;
+								$this->resources[$user]	= $resource;
+							}
 						}
 					}
 				}
@@ -768,15 +832,21 @@ class ProjectTree
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
-
-
+	function SaveBaseline()
+	{
+		$data = serialize($this->tree);
+		file_put_contents($this->baselinepath, $data);
+		$baseline = date ("Y/m/d H:i" , filemtime($this->baselinepath));
+		Utility::ConsoleLog(time(),"Baseline Generated");
+		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$this->last_synced,$baseline);
+	}
 	function Save()
 	{
 		//dd($this->tree);
 		$data = serialize($this->tree);
-    	file_put_contents($this->treepath, $data);
-		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
-		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$last_synced);
+		file_put_contents($this->treepath, $data);
+		$this->last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
+		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$this->last_synced);
 	}
 	function GetHead()
 	{

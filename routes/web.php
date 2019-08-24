@@ -81,7 +81,7 @@ Route::get('/test/tj/{projectid}','TestController@TJTest'); // project id as inp
 Route::get('/test/sync/oa/{projectid}','TestController@OASync'); // project id as input param
 Route::get('/test/sync/jira/{projectid}','TestController@JiraSync'); // project id as input param
 
-Route::get('/test/worklogs/jira/{projectid}','TestController@GetJiraWorklogs'); // project id as input param
+Route::get('/test/worklogs/jira/{projectid}/{jira_key}','TestController@GetJiraWorklogs'); // Jira key as parameter
 Route::get('/test/worklogs/oa/{projectid}','TestController@OAWorklogs'); // project id as input param
 Route::get('/test/resource/timelogs/{projectid}/','TestController@ResourceTimeLogs');
 Route::get('/test/tree/show/{projectid}','TestController@ShowTree'); // project id as input param

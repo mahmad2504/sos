@@ -21,63 +21,61 @@ class GanttController extends Controller
 		private $j=1;
     public function Show(Request $request)
     {
-			if($request->user == null || $request->project==null)
-				abort(403, 'Some Missing Parameters ShowTreeView(project id/name)');
-			$user = $request->user;
-			$project = $request->project;
-		
+		if($request->user == null || $request->project==null)
+			abort(403, 'Some Missing Parameters ShowTreeView(project id/name)');
+		$user = $request->user;
+		$project = $request->project;
     	$user = User::where('name',$user)->first();
     	if($user==null)
     	{
     		abort(403, 'Account Not Found');
     	}
-			$project = $user->projects()->where('name',$project)->first();
-			if($project==null)
-				{
-					abort(403, 'Project Not Found');
-				}
-			if($project==null)
-				{
-					abort(403, 'Project Not Found');
-				}
-				
-			return View('widgets.gantt',compact('user','project'));
-
-			}
-		public function GetData(Request $request)
+		$project = $user->projects()->where('name',$project)->first();
+		if($project==null)
 		{
-			//return file_get_contents('data.json');
-			
-			if($request->id==null)
+			abort(403, 'Project Not Found');
+		}
+		if($project==null)
+		{
+			abort(403, 'Project Not Found');
+		}
+		return View('widgets.gantt',compact('user','project'));
+	}
+	public function GetData(Request $request)
+	{
+		//return file_get_contents('data.json');
+		
+		if($request->id==null)
+		{
+			$returnData = array(
+				'status' => 'error',
+				'message' => 'No record found'
+			);
+			return Response::json($returnData, 500);
+		}
+		$projects = Project::where('id',$request->id)->get();
+			if(count($projects)==0)
 			{
 				$returnData = array(
-					'status' => 'error',
-					'message' => 'No record found'
-				);
-				return Response::json($returnData, 500);
+				'status' => 'error',
+				'message' => 'Project Not Found'
+			);
+			return Response::json($returnData, 500);
 			}
-			$projects = Project::where('id',$request->id)->get();
-				if(count($projects)==0)
-				{
-					$returnData = array(
-					'status' => 'error',
-					'message' => 'Project Not Found'
-				);
-				return Response::json($returnData, 500);
-				}
-			$project = $projects[0];
-			$projecttree = new ProjectTree($project);
-			
-			$head = $projecttree->GetHead();
-			//dd($projecttree->tasks);
-			$this->FormatForGantt($head,1);
-			return $this->data;
+		$project = $projects[0];
+		$projecttree = new ProjectTree($project);
+		
+		$head = $projecttree->GetHead();
+		
+		//dd($projecttree->tree->children[4]);
+		$this->FormatForGantt($head,1);
+		//dd($this->data);
+		return $this->data;
 	}
 	private function FormatForGantt($task,$first=0)
     {
 		$row['pID'] = $task->extid;
 		$row['pName'] = $task->_summary;
-
 		$row['pDepend'] = '';
 		if(count($task->dependson)>0)
 		{
@@ -93,32 +91,9 @@ class GanttController extends Controller
 			   }
 			}
 		}
-		//if($task->status != 'RESOLVED')
-		//{
-		if(!isset($task->sched_start))
-		{
-			/*if(!isset($task->twin->sched_start))
-			{
-				echo $task->key;
-				exit();
-			}*/
-			$row['pStart'] = $task->twin->sched_start;
-		}
-		else
-			$row['pStart'] = $task->sched_start;
-	
-		if(!isset($task->sched_end))
-			$row['pEnd'] = $task->twin->sched_end;
-		else
-			$row['pEnd'] = $task->sched_end;
-	
-		if(!isset($task->sched_assignee))
-			$row['pRes'] = $task->twin->sched_assignee;
-		else
-			$row['pRes'] = $task->sched_assignee;
-		
-		if(strlen(trim($row['pRes']))==0)
-			$row['pRes'] = $task->assignee;
+		$row['pStart'] = $task->_sched_start;
+		$row['pEnd'] = $task->_sched_end;
+		$row['pRes'] = $task->_sched_assignee;
 		
 		if($row['pRes'] == 'unassigned')
 			$row['pRes'] = '';
@@ -171,21 +146,18 @@ class GanttController extends Controller
 		
 		$row['pCaption'] = '';
 		$row['pNotes'] = 'Some Notes text';
-		
+	
 		$row['pStatus'] = $task->status;
 		$row['pPrioriy'] = $task->schedule_priority;
 		$row['pJira'] = $task->key;
 		$row['deadline'] = $task->_duedate;
 		if($row['deadline'] == null)
 			$row['deadline'] = '';
-		//if(count($this->data)0==255)
-			
-		if(count($this->data)>250)
-			return;
+
 		$this->data[] = $row;
-		
-		
-    	foreach($task->children as $ctask)
-    		$this->FormatForGantt($ctask);
+		foreach($task->children as $ctask)
+		{
+			$this->FormatForGantt($ctask);
+		}
     }
 }

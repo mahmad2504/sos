@@ -195,6 +195,11 @@
 				);
 			}
 		}
+		//yyyy-mm-dd
+		function MakeDate2(string) {
+			dateObj = new Date(string).toUTCString();
+    		return dateObj.slice(4,16);
+		}
 		function MakeDate(day,month,year)
 		{
 			//var now = new Date();

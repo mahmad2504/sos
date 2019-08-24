@@ -91,7 +91,8 @@ class ProjectController extends Controller
 				$request->progress = 0;
 			if($request->last_synced == null)
 				$request->last_synced = 'Never';
-		
+			if($request->baseline == null)
+				$request->baseline = '';
 			
 			$project['user_id'] = $request->user_id;
 			$project['name'] = $request->name;
@@ -99,6 +100,7 @@ class ProjectController extends Controller
 			$project['description'] = $request->description;
 			$project['jiraquery'] = $request->jiraquery;
 			$project['last_synced'] = $request->last_synced;
+			$project['baseline'] = $request->baseline;
 			$project['jirauri'] = $request->jirauri;
 			$project['sdate'] = $request->sdate;
 			$project['edate'] = $request->edate;
@@ -137,6 +139,8 @@ class ProjectController extends Controller
 				$project['progress'] = $request->progress;
 			if ($request->last_synced!=null)
 				$project->last_synced = $request->last_synced;
+			if ($request->baseline!=null)
+				$project->baseline = $request->baseline;
 			if($request->jirauri != null)
 				$project->jirauri = $request->jirauri;
 			if($request->estimation != null)
@@ -202,12 +206,15 @@ class ProjectController extends Controller
 		
 		$datafolder = Utility::GetDataPath($user,$project);
 		array_map('unlink', glob("$datafolder/*"));
-		rmdir($datafolder);
-		
+		if(file_exists($datafolder))
+			rmdir($datafolder);
 		
 	}
-	public static function UpdateProgressAndLastSync($id,$progress,$last_synced)
+	public static function UpdateProgressAndLastSync($id,$progress,$last_synced,$baseline=null)
 	{
-		Project::where('id', $id)->update(array('last_synced' => $last_synced,'dirty'=>0, 'progress'=>$progress));
+		if($baseline!=null)
+			Project::where('id', $id)->update(array('last_synced' => $last_synced,'dirty'=>0, 'progress'=>$progress, 'baseline'=>$baseline));
+		else
+			Project::where('id', $id)->update(array('last_synced' => $last_synced,'dirty'=>0, 'progress'=>$progress));
 	}
 }

@@ -26,7 +26,7 @@ class SyncController extends Controller
 			header('Content-Type: text/event-stream');
 			header('Cache-Control: no-cache');
 		}
-
+		
 		if($request->projectid == null)
 		{
 			Utility::ConsoleLog(time(),'Params:Project Id Missing');
@@ -41,6 +41,11 @@ class SyncController extends Controller
 			$request->worklogs = 0;
 		else
 			$request->worklogs = 1;
+
+		if($request->baseline == null)
+			$request->baseline = 0;
+		else
+			$request->baseline = 1;
 
 		//Utility::ConsoleLog(time(),$request->projectid);
 		$project = Project::where('id',$request->projectid)->first();
@@ -63,7 +68,9 @@ class SyncController extends Controller
 		$tj->Execute();
 
 		$tree->Save();
-
+		//$tree->Reset();
+		if($request->baseline==1)
+			$tree->SaveBaseline();
 		//dd(Utility::GetJiraConfig($project->jirauri));
 
 		Utility::ConsoleLog(time(),"Success::Jira Sync Completed");
@@ -91,6 +98,7 @@ class SyncController extends Controller
 		$oa = new OA($projecttree);
 		$oa->sync();
 		$projecttree->Save();
-	  Utility::ConsoleLog(time(),"Success::OpenAir Sync Completed");
+		Utility::ConsoleLog(time(),"Success::OpenAir Sync Completed");
+		
 	}
 }

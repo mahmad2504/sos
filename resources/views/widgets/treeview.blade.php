@@ -77,16 +77,21 @@ function LoadProjectData(url,data,onsuccess,onfail)
 		error: onfail
 	});
 }
+var estimate_units = '';
 function OnProjectDataReceived(response)
 {
 	console.log(response.description);
 	$('#description').append(response.description);
-	if(response.estimation == 1)
-		header = 'Story Points';
-	if(response.estimation == 2)
-		header = 'Time Estimates';
 	if(response.estimation == 0)
-		header = 'Estimates';
+	{
+		header = 'Story Points';
+		estimate_units = 'Points';
+	}
+	if(response.estimation == 1)
+	{
+		header = 'Time Estimates';
+		estimate_units = 'Days';
+	}
 	$('#estimatecolumn').append(header);
 }
 
@@ -153,6 +158,9 @@ $(document).ready(function()
 			var sprintstate = row['sprintstate'];
 			var sprintname = row['sprintname'];
 			var duplicate=row['duplicate'];
+			var assignee=row['assignee'];
+			if(assignee == 'unassigned')
+				assignee = '';
 			var sprintlink = link+"/secure/RapidBoard.jspa?rapidView="+row['sprintid'];
 			
 			var blockedtasksstr = '';
@@ -174,7 +182,6 @@ $(document).ready(function()
 			var del ='';
 			for(var i=0;i<dtasks.length;i++)
 			{
-				
 				dtasksstr += del+"<a href='"+link+"/browse/"+key+"'>"+dtasks[i]+"</a>";
 				del="&nbsp&nbsp";
 			}
@@ -219,7 +226,15 @@ $(document).ready(function()
 
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
 			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
-			rowstr += id+" "+title+"</span></td>";
+			if(duplicate == 1)
+			{
+				rowstr += id+" "+title+'&nbsp&nbsp<span   class="badge badge-warning">Duplicate&nbsp&nbsp&nbsp&nbsp</span>'+"</span></td>";
+			}
+			else
+				rowstr += id+"  "+title+"</span></td>";
+
+			
+
 			if(linktext == id)// Not a Jira Task 
 				rowstr += '<td></td>';
 			else
@@ -238,11 +253,15 @@ $(document).ready(function()
 			if(sprintname.length > 0)
 				sprints = 1;
 			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
-			rowstr += "<td>"+estimate+"</td>";
-			if(duplicate == 1)
-				rowstr += '<td>Duplicate</td>';
+			if(estimate > 0)
+				rowstr += "<td>"+estimate+" "+estimate_units+"</td>";
 			else
-			rowstr += '<td></td>';
+				rowstr += "<td></td>";
+				
+			if(duplicate == 1)
+				rowstr += '<td></td>';
+			else
+			rowstr += '<td>'+assignee+'</td>';
 			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			
 			

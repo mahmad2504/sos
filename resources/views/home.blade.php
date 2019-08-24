@@ -94,8 +94,8 @@ input {
 				<label style="margin-top:5px;" for="name">Estimation</label>&nbsp&nbsp
 				<select class="form-control-sm" id="psettings_estimation" name="estimation">
 					<!-- <option value="0">Mix</option> -->
-					<option value="1">Story Points</option>
-					<option value="2">Time</option>
+					<option value="0">Story Points</option>
+					<option value="1">Time</option>
 				</select>
 			</div>
 			<small  id="psettings_error" class="text-danger form-text"></small><br>
@@ -133,6 +133,7 @@ input {
 				<hr style="margin-top:-5px;">
 				<span style="float:right;margin-top:5px;" id="connection"></span>
 				<div  style="display: block;margin-top: 20px;" id="log"></div>
+				
 			</div>
 		</div>
 	</div>
@@ -252,18 +253,27 @@ function AddCard(project,row)
 	var card=$('<div  class="card bg-white rounded bg-white shadow">');
 	var progress=project.progress;
 	var oaname=project.oaname;
+	var baseline=project.baseline;
+	var errors=null;project.errors;
 	var progress = '<div class="shadow-lg progress position-relative" style=""><div class="progress-bar" role="progressbar" style="background-color:green !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			
-	
+	console.log(baseline);
 	var headerstr ='<div  class="card-header border-success" style="background-color: #FFFAFA;">';
 		headerstr +='<div class="d-flex">';
-		headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
-		headerstr   +='<h5 rel="tooltip" title="Project Name" id="card-name-'+project.id+'">'+project.name+'</h5>';
+		if(errors == null)
+			headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
+		else
+			headerstr +='<i style="margin-left:-10px;margin-right:10px;margin-top:5px;width:10px;height:10px;color:orange" class="fas fa-exclamation-triangle fa-xs"></i>';
+
+		headerstr   +='<span rel="tooltip" title="Project Name" id="card-name-'+project.id+'">'+project.name;
+		headerstr +='<small style="" rel="tooltip" title="Estimation Method" class="text-muted">&nbsp&nbsp&nbsp'+estimation+'</small>';
+		headerstr +='</span>';
 		headerstr   +='</div>';
 		headerstr   +='<div class="d-flex">';
-			headerstr +='<small style="margin-top:-10px;margin-left:20px;float:left" rel="tooltip" title="Estimation Method" class="float-left text-muted">'+estimation+'</small>';
-			if(oaname != null)
-				headerstr +='<img src="/images/openair.png" style="margin-top:-8px;margin-left:5px;float:left;width:35px;height:13px;"></img>';
+			//if(oaname != null)
+				headerstr +='<img rel="tooltip" title="'+oaname+'" src="/images/openair.png" style="margin-top:0px;margin-left:20px;float:left;width:40px;height:13px;"></img>';
+			if(baseline !=null)
+				headerstr +='<img rel="tooltip" title="'+baseline+'" src="/images/baseline.png" style="margin-top:0px;margin-left:5px;float:left;width:35px;height:13px;"></img>';
 		headerstr   +='</div>';
 		headerstr   +='</div>';
 		headerstr   +=progress;

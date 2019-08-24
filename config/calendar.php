@@ -12,6 +12,7 @@ return
 		 'Europe/London'=>['UK','United Kingdom'],
 		 'Asia/Kolkata'=>['IN','India'],
 		 'Europe/Vienna'=>['AU','Austria'],
+		 'Etc/GMT-5'=>['PK','Pakistan'],
 		 'X' => ['-','Unknown']
 		],
 	]
