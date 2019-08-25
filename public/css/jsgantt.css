@@ -4,6 +4,7 @@ div.gantt {
   font-family: tahoma, arial, verdana, Sans-serif;
   font-size: 10px;
   color: #656565;
+  box-shadow: 10px 5px 5px grey;
 }
 
 .gantt table {

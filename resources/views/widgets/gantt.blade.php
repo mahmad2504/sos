@@ -32,7 +32,7 @@ var projectid = {{$project->id}};
 var cur_row = null;
 var jiraurl =  null;
 var  vMaxDate = null;
-
+var isloggedin = {{$isloggedin}};
 function drawCustomElements(g) {
   for (const item of g.getList()) {
     if (item.getDataObject().deadline) {
@@ -260,9 +260,13 @@ function OnChartChangeClick(event)
 }
 $(document).ready(function()
 {
-	if(username != null)
+	if(isloggedin)
+	{
 		$('.navbar').removeClass('d-none');
-	
+		$('#dashboard_menuitem').show();
+		$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	}
+
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 	$('#chart').on('click',OnChartChangeClick);

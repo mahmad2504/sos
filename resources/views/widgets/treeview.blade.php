@@ -12,7 +12,7 @@
 
 	<div class="loading">Loading&#8230;</div>
 	<p id='description'>Description</p>
-	<table id="treetable" style="display:none;" class="table">
+	<table id="treetable" style="display:none;  box-shadow: 10px 5px 5px grey;" class="table">
 		<caption style="caption-side:top;text-align: center">
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
 		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
@@ -66,6 +66,7 @@ var username = "{{$user->name}}";
 var userid = {{$user->id}};
 var projectid = {{$project->id}};
 var cur_row = null;
+var isloggedin = {{$isloggedin}};
 function LoadProjectData(url,data,onsuccess,onfail)
 {
 	$.ajax({
@@ -97,8 +98,12 @@ function OnProjectDataReceived(response)
 
 $(document).ready(function()
 {
-	if(username != null)
+	if(isloggedin)
+	{
 		$('.navbar').removeClass('d-none');
+		$('#dashboard_menuitem').show();
+		$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	}
 	
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");

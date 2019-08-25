@@ -250,7 +250,7 @@ function AddCard(project,row)
 		color='red';
 	console.log(color);
 	var col=$('<div class="col-sm-4">');
-	var card=$('<div  class="card bg-white rounded bg-white shadow">');
+	var card=$('<div style="  box-shadow: 5px 5px 5px grey !important" class="card bg-white rounded bg-white shadow">');
 	var progress=project.progress;
 	var oaname=project.oaname;
 	var baseline=project.baseline;

@@ -30,6 +30,7 @@
 		background-clip: border-box;
 		border: none !important;
 	}
+	
 	@yield('style')
 	</style>
 </head>

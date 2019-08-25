@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
 @endsection
 @section('style')
+body { background-color: #C0C0C0 ;}
 @endsection
 @section('content')
 <div id="container" style="width:95%; margin-left: auto; margin-right: auto; display:block" class="center">

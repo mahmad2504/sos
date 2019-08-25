@@ -37,8 +37,13 @@ class TreeViewController extends Controller
 		if($project==null)
     	{
     		abort(403, 'Project Not Found');
-    	}
-		return View('widgets.treeview',compact('user','project'));
+		}
+		$isloggedin = Auth::check();
+		if($isloggedin)
+			$isloggedin = 1;
+		else
+            $isloggedin = 0;
+		return View('widgets.treeview',compact('user','project','isloggedin'));
     }
 	public function GetData(Request $request)
 	{

@@ -3,6 +3,7 @@
 
 @endsection
 @section('style')
+body { background-color: #C0C0C0 ;}
 img {
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -23,6 +24,7 @@ figure img {
 }
 figure figcaption {
     text-align: center;
+	font-weight:bold;
 }
 @endsection
 @section('content')
@@ -34,30 +36,35 @@ figure figcaption {
 	<div class="row">
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showtreeview',[$user->name,$project->name])}}"><img style="width:130px;height:130px" src="/images/treeview.gif"></img></a>
+				<a href="{{route('showtreeview',[$user->name,$project->name])}}"><img style="width:130px;height:130px;box-shadow: 5px 5px 5px grey;" src="/images/treeview.gif"></img></a>
 				<figcaption styleclass="caption">Tree View</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showgantt',[$user->name,$project->name])}}"><img style="width:130px;height:130px" src="/images/gantt.png"></img></a>
+				<a href="{{route('showgantt',[$user->name,$project->name])}}"><img style="width:130px;height:130px;box-shadow: 5px 5px 5px grey;" src="/images/gantt.png"></img></a>
 				<figcaption styleclass="caption">Gantt Chart</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showtimechart',[$user->name,$project->name])}}"><img style="width:130px;height:130px" src="/images/timechart.jpg"></img></a>
+				<a href="{{route('showtimechart',[$user->name,$project->name])}}"><img style="width:130px;height:130px;box-shadow: 5px 5px 5px grey;" src="/images/timechart.jpg"></img></a>
 				<figcaption styleclass="caption">Time Chart</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showweeklyreport',[$user->name,$project->name])}}"><img style="width:130px;height:130px" src="/images/report.gif"></img></a>
+				<a href="{{route('showweeklyreport',[$user->name,$project->name])}}"><img style="width:130px;height:130px;box-shadow: 5px 5px 5px grey;" src="/images/report.gif"></img></a>
 				<figcaption styleclass="caption">Weekly Report</figcaption>
 			</figure>
 		</div>
+	</div>
+	<div class="row">
 		<div class="col-3">
-			
+			<figure class="item">
+				<a href="{{route('showweeklyreport',[$user->name,$project->name])}}"><img style="width:130px;height:130px;box-shadow: 5px 5px 5px grey;" src="/images/burnup.png"></img></a>
+				<figcaption styleclass="caption">Burnup</figcaption>
+			</figure>
 		</div>
   </div>
   <div style="margin-top:10px;" class="row">
