@@ -270,7 +270,7 @@ function AddCard(project,row)
 		headerstr +='</span>';
 		headerstr   +='</div>';
 		headerstr   +='<div class="d-flex">';
-			//if(oaname != null)
+			if(oaname != null)
 				headerstr +='<img rel="tooltip" title="'+oaname+'" src="/images/openair.png" style="margin-top:0px;margin-left:20px;float:left;width:40px;height:13px;"></img>';
 			if(baseline !=null)
 				headerstr +='<img rel="tooltip" title="'+baseline+'" src="/images/baseline.png" style="margin-top:0px;margin-left:5px;float:left;width:35px;height:13px;"></img>';

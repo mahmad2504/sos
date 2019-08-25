@@ -7,7 +7,7 @@
 @section('style')
 @endsection
 @section('content')
-<div id="container" style="width:100%; margin-left: auto; margin-right: auto; display:block" class="center">
+<div id="container" style="width:95%; margin-left: auto; margin-right: auto; display:block" class="center">
 	 <div class="gantt"></div>
 </div>
 <script src="{{ asset('js/jquery.fn.gantt.js') }}" ></script>

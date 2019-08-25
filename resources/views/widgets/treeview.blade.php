@@ -150,7 +150,7 @@ $(document).ready(function()
 			var title=row['summary'];
 			var link=row['jiraurl'];
 			var linktext=row['key'];
-			var estimate=round(row['estimate'],1);
+			var estimate=Math.round(row['estimate']);
 			var progress=round(row['progress'],1);
 			var status=row['status'];
 			var priority=row['priority'];
@@ -257,7 +257,7 @@ $(document).ready(function()
 				rowstr += "<td>"+estimate+" "+estimate_units+"</td>";
 			else
 				rowstr += "<td></td>";
-				
+
 			if(duplicate == 1)
 				rowstr += '<td></td>';
 			else

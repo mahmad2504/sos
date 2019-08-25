@@ -38,10 +38,7 @@ class TreeViewController extends Controller
     	{
     		abort(403, 'Project Not Found');
     	}
-    	
-			
 		return View('widgets.treeview',compact('user','project'));
-
     }
 	public function GetData(Request $request)
 	{

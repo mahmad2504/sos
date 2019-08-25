@@ -86,6 +86,7 @@ class Task
 	}
 	function __construct($parent,$level,$pextid,$pos,$summary=null,$query=null)
 	{
+		$this->worklogs = [];
 		$this->isconfigured = false;
 		$this->position = -1;
 		$this->ismilestone = false;
@@ -823,7 +824,7 @@ class ProjectTree
 			}
 		}
 		$this->presources = $this->project->resources()->get();
-
+	
 		//dd($this);
 		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
@@ -871,6 +872,42 @@ class ProjectTree
 		$task->progress = $totalprogress;
 		$task->estimate = $totalestimate;
 		$task->timespent = $totaltimespent;
+	}
+	private static function cmp($a,$b) 
+	{
+		var_dump($a);
+		dd($b);
+		return true;
+ 	}
+	function GetWeeklyWorkLog()
+	{
+		$data = [];
+        foreach($this->tasks as $task)
+        {
+            foreach($task->worklogs as $date=>$worklog)
+            {
+				$dte = new \DateTime($date);
+				foreach($worklog as $user=>$worklog)
+				{
+                	$y = $dte->format("Y");
+					$w = $dte->format("W");
+					$w = (int)$w;
+					$worklog->jira = $task->key;
+					$worklog->summary = $task->summary;
+					unset($worklog->timeZone);
+					unset($worklog->email);
+					$data[$y][$w][$date][] = $worklog;
+				}
+            }
+		}
+		foreach($data as $year=>$d)
+		{
+			foreach($data[$year] as $week=>$w)
+			{
+				ksort($data[$year][$week]);
+			}
+		}
+		return $data;
 	}
 	function GetTimeLog()
 	{

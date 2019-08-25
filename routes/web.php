@@ -54,6 +54,9 @@ Route::get('/widget/data/gantt/{id}','Widgets\GanttController@GetData')->name('g
 Route::get('/widget/timechart/{user}/{project}','Widgets\TimeChartController@Show')->name('showtimechart');
 Route::get('/widget/data/timechart/{projectid}','Widgets\TimeChartController@GetData')->name('gettimechartdata');// project id
 
+//// Report
+Route::get('/widget/report/weekly/{user}/{project}/{year?}/{weekno?}','Widgets\ReportController@ShowWeeklyReport')->name('showweeklyreport');
+Route::get('/widget/data/report/weekly/{user}/{project}/{year?}/{weekno?}','Widgets\ReportController@GetWeeklyReport')->name('getweeklyreport');
 
 //// Project Resource //////
 Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->name('showprojectresources'); // project id as input param
@@ -75,18 +78,19 @@ Route::get('/taskproperty/data/{projectid}','TaskPropertyController@GetTreeData'
 Route::put('/taskproperty/{projectid}','TaskPropertyController@Save'); // project id as input param
 Route::put('/taskproperty/position/{projectid}','TaskPropertyController@SavePosition'); // project id as input param
 
+/// Calendar
+Route::get('/calendars','CalendarController@ShowCountryCalendarList'); // View all country calendar links (only admin can see)
+
 
 /// Test
 Route::get('/test/tj/{projectid}','TestController@TJTest'); // project id as input param
 Route::get('/test/sync/oa/{projectid}','TestController@OASync'); // project id as input param
 Route::get('/test/sync/jira/{projectid}','TestController@JiraSync'); // project id as input param
-
 Route::get('/test/worklogs/jira/{projectid}/{jira_key}','TestController@GetJiraWorklogs'); // Jira key as parameter
 Route::get('/test/worklogs/oa/{projectid}','TestController@OAWorklogs'); // project id as input param
 Route::get('/test/resource/timelogs/{projectid}/','TestController@ResourceTimeLogs');
 Route::get('/test/tree/show/{projectid}','TestController@ShowTree'); // project id as input param
 Route::get('/test/resource/worklogs/{projectid}','TestController@ResourceTimeLogs'); // project id as input param
 
-/// Calendar
-Route::get('/calendars','CalendarController@ShowCountryCalendarList'); // View all country calendar links (only admin can see)
+
 

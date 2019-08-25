@@ -61,21 +61,25 @@ function ShowGantt(data)
 
 		style = '';
 		data[i].pEstimate = Math.round(data[i].pEstimate);
+		
 		if(data[i].pStatus == 'RESOLVED')
 		{
 			style = 'color:lightgrey;';
-			data[i].pComp = "<span style='"+style+"'>Done</span>";
-			data[i].pEndString = "<span style='"+style+"'>"+data[i].pClosedOn+"</span>";
-			data[i].pEstimate = "<span style='"+style+"'>"+data[i].pEstimate+"</span>";
+			data[i].pComp = "<span style='font-size:9px;"+style+"'>Done</span>";
+			data[i].pEndString = "<span style='font-size:9px;"+style+"'>"+data[i].pClosedOn+"</span>";
+			data[i].pEstimate = "<span style='font-size:9px;"+style+"'>"+data[i].pEstimate+"</span>";
 		}
 		else if(data[i].pStatus == 'INPROGRESS')
 		{
-			data[i].pEndString = '<span style="font-size:10px;">'+MakeDate2(data[i].pEnd)+'</span>';
+			data[i].pEndString = '<span style="font-size:9px;">'+MakeDate2(data[i].pEnd)+'</span>';
 			data[i].pComp = data[i].pComp+"%";
+			data[i].pComp = "<span style='font-size:9px;"+style+"'>"+data[i].pComp+"</span>";
+			data[i].pEstimate = "<span style='font-size:9px;'>"+data[i].pEstimate+"</span>";
 		}
 		else
 		{
-			data[i].pEndString = '<span style="font-size:10px;">'+MakeDate2(data[i].pEnd)+'</span>';
+			data[i].pEndString = '<span style="font-size:9px;">'+MakeDate2(data[i].pEnd)+'</span>';
+			data[i].pEstimate = "<span style='font-size:9px;'>"+data[i].pEstimate+"</span>";
 			data[i].pComp = '';
 		}
 
@@ -83,7 +87,7 @@ function ShowGantt(data)
 		if(data[i].pStatus == 'RESOLVED')
 			data[i].pCaption = "<a href='"+href+"'>"+data[i].pJira+"</a>";
 		else
-			data[i].pCaption = "&nbsp"+data[i].pRes+"&nbsp<a href='"+href+"'>"+data[i].pJira+"</a>";
+			data[i].pCaption = "&nbsp<span style='color:orange;'>"+data[i].pRes+"</span>&nbsp<a href='"+href+"'>"+data[i].pJira+"</a>";
 		
 		
 		if(data[i].deadline.length > 0)
