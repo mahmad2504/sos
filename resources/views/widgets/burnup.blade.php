@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ asset('css/dygraph.css') }}" />
 @endsection
 @section('style')
-.pill {font-size:.5rem;box-shadow: 0 0 2px 1px rgba(1, 0, 0, 0.5)}
+.pill {font-size:.7rem;box-shadow: 0 0 2px 1px rgba(1, 0, 0, 0.5)}
 @endsection
 @section('content')
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
@@ -88,7 +88,7 @@ $(function()
 		}
 		else
 		{
-			title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>>&nbsp';
+			title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>&nbsp';
 			$('#finishingon').html('<span class="badge badge-success">'+MakeDate2(data.finishingon)+'</span>');
 		}
 	}
@@ -106,7 +106,7 @@ $(function()
 		{
 			title: title,
             ylabel: 'Earned Values (Days of work)',
-			xlabel: 'Period '+MakeDate2(data.start)+' - '+MakeDate2(data.end),
+			xlabel: MakeDate2(data.start)+' - '+MakeDate2(data.end),
 			labels: [ "x", "Target" ,"Earned","Past Target"],
 			showRangeSelector: false,
 			//strokeWidth: .5,
@@ -152,7 +152,8 @@ $(function()
 				{
                     axisLabelFormatter: function(y) 
 					{
-						return '<span style="font-size:10px;">'+y+'</span>';
+						
+						return '<span style="font-size:10px;">'+Round(y)+'</span>';
                     }
                 }
             }

@@ -288,6 +288,10 @@
 				var day = ndate.getDate();
 				return year+"-"+("0" + (month + 1)).slice(-2)+"-"+day;
 		}
+		function Round(val)
+		{
+            return  Math.round( val * 10 ) / 10;
+		}
 		@yield('script')
 		</script>
 		
