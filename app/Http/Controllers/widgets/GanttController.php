@@ -82,6 +82,7 @@ class GanttController extends Controller
 		$row['pID'] = $task->extid;
 		$row['pName'] = $task->_summary;
 		$row['pDepend'] = '';
+		
 		if(count($task->dependson)>0)
 		{
 			 $del = "";

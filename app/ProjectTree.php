@@ -16,11 +16,33 @@ class Task
 	{
 		switch($field)
 		{
+			case '_tstart':
+				$t = $this;
+				while(strlen(trim($t->tstart)) == 0)
+				{
+					$parent=$t->_parenttask;
+					if($parent == null)
+						return $this->_project_start;
+					$t = $parent;
+				}
+				return $t->tstart;
+				break;
+			case '_tend':
+				$t = $this;
+				while(strlen(trim($t->_duedate)) == 0)
+				{
+					$parent=$t->_parenttask;
+					if($parent == null)
+						return $this->_project_end;
+					$t = $parent;
+				}
+				return $t->_duedate;
+				break;
 			case '_project_end':
-				return $this->parent->project->start;
+				return $this->parent->project->edate;
 				break;
 			case '_project_start':
-				return $this->parent->project->start;
+				return $this->parent->project->sdate;
 				break;
 			case '_parenttask':
 				if(array_key_exists($this->pextid,$this->parent->tasksbyextid))
@@ -28,6 +50,9 @@ class Task
 					return $this->parent->tasksbyextid[$this->pextid];
 				}
 				return null;
+			case '_projectestimation':
+				return $this->parent->project->estimation;
+				break;
 			case '_orig_estimate':
 				if($this->parent->project->estimation == 0)// Story points
 					return  $this->storypoints;
@@ -73,6 +98,9 @@ class Task
 				return $this->summary;
 				break;
 			case '_duedate':
+				if($this->extid == 1)
+					return $this->_project_end;
+
 				if(($this->isconfigured == "true")||($this->isconfigured == 1))
 				{
 					if(strlen(trim($this->tend)) > 0)
@@ -124,6 +152,7 @@ class Task
 		$this->sprintname = '';
 		$this->sprintstate = '';
 		$this->sprintid = '';
+		$this->sprintno = -1;
 		$this->issuetype = 'PROJECT';
 		$this->assignee = 'unassigned';
 		$this->dependencies_present = 0; // valid only for head
@@ -131,7 +160,7 @@ class Task
 		$this->dependson = [];
 	}
 
-	function MapIssueType($issuetype)
+	function MapIssueType($issuetype,$key)
 	{
 		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
@@ -145,18 +174,18 @@ class Task
 		if($issuetype=='Epic')
 			return 'EPIC';
 
-		if(($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
+		if(($issuetype=='Action')||($issuetype=='Dependency')||($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
 
-		Utility::ConsoleLog(time(),"Error::Unmapped type=[".$issuetype."]");
+		Utility::ConsoleLog(time(),"Error::Unmapped type=[".$key." ".$issuetype."]");
 		return 'TASK';
 		//
 	}
 	function MapStatus($status)
 	{
-		if( ($status=='To Do')||($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
+		if( ($status=='Created')||($status=='Blocked')||($status=='To Do')||($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
 			return 'OPEN';
-		if(($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
+		if(($status=='Verified')||($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
 
 		if(($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
@@ -182,44 +211,67 @@ class Task
 		$sprint = $jiraconf['sprint']; // custom field
 
 		$ntask = new Task($this->parent,$level,$pextid,$pos);
+		
 		$ntask->key = $task->key;;
 		$ntask->id = $task->id;
 		$ntask->otatus = $task->fields->status->name;
+		$ntask->updated = $task->fields->updated;
 		if(isset($task->fields->resolutiondate))
 			$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
 		$ntask->status = $this->MapStatus($task->fields->status->name);
 		if(($ntask->status == 'RESOLVED') and ($ntask->closedon == null))
-			Utility::ConsoleLog(time(),"Error::"." Closedon date missing");
+		{
+			Utility::ConsoleLog(time(),"Error::"." Closedon date missing for resolved task. Check Your Jira Configurations");
+			Utility::ConsoleLog(time(),"Error::"." Burnup Charts may not be accurate");
+			$ntask->closedon = $ntask->updated;
+			//dd($task);
+		}
 		$ntask->summary = $task->fields->summary;
 		$ntask->oissuetype = $task->fields->issuetype->name;
-		$ntask->updated = $task->fields->updated;
-		$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name);
+		//$ntask->updated = $task->fields->updated;
+	
+		$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name,$task->key);
 		$sprintname = '';
 		$sprintstate = '';
 		$sprintid = '';
+		$sprintno = -1;
 		if(isset($task->fields->$sprint))
 		{
-			$str = $task->fields->$sprint[count($task->fields->$sprint)-1];
-			$sprint_info = explode(',',$str);
-			for($i=0;$i<count($sprint_info);$i++)
+			$last_sequence = 0;
+			//echo count($task->fields->$sprint);
+			for($j=0;$j<count($task->fields->$sprint);$j++)
 			{
-				$keyvalue = explode('=',$sprint_info[$i]);
-				if($keyvalue[0] =='name')
+				$str = $task->fields->$sprint[$j];
+				$sequence = explode('sequence=',$str)[1];
+				$sequence = explode(']',$sequence)[0];
+				//echo $sequence;
+				if($sequence < $last_sequence)
 				{
-					$sprintname = $keyvalue[1];
+					continue;
 				}
-				else if($keyvalue[0] =='state')
+				$last_sequence = $sequence;
+				$sprint_info = explode(',',$str);
+				for($i=0;$i<count($sprint_info);$i++)
 				{
-					$sprintstate = $keyvalue[1];
-				}
-				else if($keyvalue[0] == 'rapidViewId')
-				{
-					$sprintid = $keyvalue[1];
+					$keyvalue = explode('=',$sprint_info[$i]);
+					if($keyvalue[0] =='name')
+					{
+						$sprintname = $keyvalue[1];
+					}
+					else if($keyvalue[0] =='state')
+					{
+						$sprintstate = $keyvalue[1];
+					}
+					else if($keyvalue[0] == 'rapidViewId')
+					{
+						$sprintid = $keyvalue[1];
+					}
 				}
 			}
 			$ntask->sprintname = $sprintname;
 			$ntask->sprintstate = $sprintstate;
 			$ntask->sprintid = $sprintid;
+			$ntask->sprintno = $last_sequence;
 		}
 		if(isset($task->fields->assignee))
 		{
@@ -259,6 +311,8 @@ class Task
 		$ntask->estimate = $ntask->_orig_estimate;
 
 		$ntask->priority = $task->fields->priority->id;
+		if($ntask->key == 'IP-83')
+			Utility::ConsoleLog(time(),$ntask->key." TESTING");
 		$ntask->dependson = [];
 		foreach($task->fields->issuelinks as $issuelink)
 		{
@@ -269,10 +323,12 @@ class Task
 					if(isset($issuelink->outwardIssue))
 					{
 						$ntask->dependson[] = $issuelink->outwardIssue->key;
+						Utility::ConsoleLog(time(),$ntask->key." depends on".$issuelink->outwardIssue->key);
 					}
 				}
 			}
 		}
+		
 		//var_dump($ntask->dependson);
 		$ntask->timespent =  0;
 		//Utility::ConsoleLog(time(),"Estimate is ".$ntask->estimate);
@@ -316,6 +372,8 @@ class Task
 				$unestimated_count++;
 
 		$ntask->parent->tasksbyextid[$ntask->extid.""]=$ntask;
+		//if($ntask->key == 'IP-83')
+		// 	dd($ntask);
 		return $ntask;
 
 		//$ntask->key = $jiratask->key;
@@ -377,10 +435,32 @@ class Task
 			Utility::ConsoleLog(time(),"Running Query ".$this->query);
 			$tasks = $this->SearchInJira($this->query,$jiraconf,'ORDER BY Rank ASC');
 			$j=0;
+
+			$sprintno = 0;
+			$values = explode('sprint=', strtolower($this->query));
+			if(count($values)>1)
+				$sprintno = explode(' ', $values[1])[0];
+			
 			foreach($tasks as $key=>$task)
 			{
+				//Utility::ConsoleLog(time(),$key);
 				$ntask = $this->CreateTask($jiraconf,$task,$this->level+1,$this->extid,$j++);
-				$this->AddChild($ntask);
+				//Utility::ConsoleLog(time(),$ntask->sprintno." ".$sprintno);
+				if($sprintno > 0)
+				{
+					//Utility::ConsoleLog(time(),$ntask->sprintno." ".$sprintno);
+					if($ntask->sprintno == $sprintno)
+					{
+						if(($ntask->status != 'RESOLVED')&&($ntask->sprintstate == 'CLOSED'))
+						{
+							// ignore
+						}
+						else
+							$this->AddChild($ntask);
+					}
+				}
+				else
+					$this->AddChild($ntask);
 			}
 			return 1;
 		}
@@ -398,6 +478,7 @@ class ProjectTree
 	public $tasksbyextid = [];
 	public $presources = [];
 	public $resources = [];
+	private $weeklylogs = [];
 	function __construct(Project $project)
 	{
 		$user = $project->user()->first();
@@ -484,6 +565,12 @@ class ProjectTree
 	{
 		if($task->isparent == 0)
 		{
+			if($this->_projectestimation == 0)//Story points
+			{
+				if($task->duplicate == 1)
+					return 0;
+				return $task->estimate;
+			}
 			if($task->timespent > $task->estimate)
 				$task->estimate = $task->timespent;
 			if($task->status == 'RESOLVED')
@@ -611,7 +698,10 @@ class ProjectTree
 				}
 			}
 			foreach($del as $d)
+			{
+				Utility::ConsoleLog(time(),'Removing '.$task->dependson[$d]." from dependency of ".$task->key." [Marked Done]");
 				unset($task->dependson[$d]);
+			}
 		}
 		foreach($this->tasks as $task)
 		{
@@ -653,7 +743,7 @@ class ProjectTree
 				$name = str_replace('"',"'",$name);
 				//dd($name);
 				$query = $query[0];
-				dd($query);
+				//dd($query);
 				$ctask = new Task($this,$task->level+1,$task->extid,$pos++,$name,$query);
 				$task->AddChild($ctask);
 			}
@@ -831,6 +921,7 @@ class ProjectTree
 
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
+		//dd($this->tasks);
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
 	function SaveBaseline()
@@ -876,38 +967,93 @@ class ProjectTree
 	private static function cmp($a,$b) 
 	{
 		var_dump($a);
-		dd($b);
 		return true;
- 	}
-	function GetWeeklyWorkLog()
+	 }
+	private function _GetWeeklyWorkLog($task)
 	{
-		$data = [];
-        foreach($this->tasks as $task)
-        {
-            foreach($task->worklogs as $date=>$worklog)
-            {
+		if($task->isparent == 0)
+		{
+			//$acc = 0;
+			foreach($task->worklogs as $date=>$worklog)
+			{
 				$dte = new \DateTime($date);
 				foreach($worklog as $user=>$worklog)
 				{
-                	$y = $dte->format("Y");
+					$y = $dte->format("Y");
 					$w = $dte->format("W");
 					$w = (int)$w;
+					if($w == 1) // some time last few days of year fall in week of next year
+					{
+						$m = $dte->format("m");
+						if($m == 12)
+							$w = 53;
+					}
 					$worklog->jira = $task->key;
 					$worklog->summary = $task->summary;
 					unset($worklog->timeZone);
 					unset($worklog->email);
-					$data[$y][$w][$date][] = $worklog;
+					$this->weeklylogs[$y][$w][$date][] = $worklog;
+					//$acc += $worklog->hours; 
 				}
-            }
-		}
-		foreach($data as $year=>$d)
-		{
-			foreach($data[$year] as $week=>$w)
-			{
-				ksort($data[$year][$week]);
 			}
+			//echo $task->key." ".$task->timespent." ".($acc/8)."<br>";
 		}
-		return $data;
+		else foreach($task->children as $stask)
+			$this->_GetWeeklyWorkLog($stask);
+	}
+	public function GetWeeklyWorkLog($task)
+	{
+		$this->_GetWeeklyWorkLog($task);
+		foreach($this->weeklylogs as $year=>$d)
+		{
+			foreach($this->weeklylogs[$year] as $week=>$w)
+			{
+				ksort($this->weeklylogs[$year][$week]);
+			}
+			ksort($this->weeklylogs[$year]);
+		}
+		ksort($this->weeklylogs);
+		//dd($this->weeklylogs);
+		return $this->weeklylogs;
+	}
+	private function _GetWeeklySprintLog($task)
+	{
+		if($task->isparent == 0)
+		{
+			//$acc = 0;
+			//echo $task->key." ".$task->closedon."<br>";
+			$dte = new \DateTime($task->closedon);
+			$user = $task->assignee;
+			$worklog =  new \StdClass();
+			$y = $dte->format("Y");
+			$w = $dte->format("W");
+			$w = (int)$w;
+			{
+				$m = $dte->format("m");
+				if($m == 12)
+					$w = 53;
+			}
+			$worklog->jira = $task->key;
+			$worklog->summary = $task->summary;
+			$worklog->hours = $task->timespent * 8;
+			$this->weeklylogs[$y][$w][$task->closedon][] = $worklog;
+		}
+		else foreach($task->children as $stask)
+			$this->_GetWeeklySprintLog($stask);
+	}
+	public function GetWeeklySprintLog($task)
+	{
+		$this->_GetWeeklySprintLog($task);
+		foreach($this->weeklylogs as $year=>$d)
+		{
+			foreach($this->weeklylogs[$year] as $week=>$w)
+			{
+				ksort($this->weeklylogs[$year][$week]);
+			}
+			ksort($this->weeklylogs[$year]);
+		}
+		ksort($this->weeklylogs);
+		return $this->weeklylogs;
 	}
 	function GetTimeLog()
 	{
@@ -977,35 +1123,35 @@ class ProjectTree
 		}
 		foreach($this->tasks as $task)
 		{
-			  if(isset($task->worklogs))
+			if(isset($task->worklogs))
+			{
+				foreach($task->worklogs as $date=>$worklogdata)
 				{
-					foreach($task->worklogs as $date=>$worklogdata)
+					foreach($worklogdata as $resource=>$worklog)
 					{
-						foreach($worklogdata as $resource=>$worklog)
+						/*if($resource == 'amhamza')
 						{
-							/*if($resource == 'amhamza')
-							{
-									echo $resource." ".$date." ".$worklog->hours."\r\n";
-									if(isset($data[$resource]->jira[$date]->decimal_hours))
-									{
-									     echo ($data[$resource]->jira[$date]->decimal_hours);
-											 echo "\r\n";
-									}
-							}*/
-							if(isset($data[$resource]->jira[$date]->decimal_hours))
-							{
-									$data[$resource]->jira[$date]->decimal_hours += $worklog->hours;
-							}
-							else
-							{
-								$d = new \StdClass();
-								$d->approved = true;
-							  $d->decimal_hours = $worklog->hours;
-								$data[$resource]->jira[$date] = $d;
-							}
+								echo $resource." ".$date." ".$worklog->hours."\r\n";
+								if(isset($data[$resource]->jira[$date]->decimal_hours))
+								{
+										echo ($data[$resource]->jira[$date]->decimal_hours);
+											echo "\r\n";
+								}
+						}*/
+						if(isset($data[$resource]->jira[$date]->decimal_hours))
+						{
+								$data[$resource]->jira[$date]->decimal_hours += $worklog->hours;
+						}
+						else
+						{
+							$d = new \StdClass();
+							$d->approved = true;
+							$d->decimal_hours = $worklog->hours;
+							$data[$resource]->jira[$date] = $d;
 						}
 					}
 				}
+			}
 		}
 		foreach($data as $user=>$userdata)
 		{
@@ -1014,5 +1160,147 @@ class ProjectTree
 
 		}
 		return $data;
+	}
+	function GetBurnUpData($task)
+	{
+		//dd($task->_tstart." ".$task->_tend);
+		$range = Utility::DateRange($task->_tstart,$task->_tend);
+	
+		$cv = 0;
+		if(($range->totaldays - $range->remaingdays)>0)
+			$cv = round($task->timespent/($range->totaldays - $range->remaingdays),1);
+
+		$rv = 0;
+		$remainingwork = $task->estimate - $task->timespent;
+		if($range->remaingdays > 0)
+			$rv = round(($task->estimate-$task->timespent)/$range->remaingdays,1);
+		else
+			$rv = $remainingwork;
+
+		//$logs = $this->GetWeeklyWorkLog($task);
+		$logs = $this->GetWeeklySprintLog($task);
+		$processedworklogs = [];
+		$acchours  = 0.0;
+		
+		$previousworkdate = null;
+		$lastdate  = '';
+		//dd($logs);
+		foreach($logs as $year=>$weeklydata)
+		{
+			foreach($weeklydata as $weekno=>$worklogs)
+			{
+				foreach($worklogs as $date=>$workloglist)
+				{
+					//echo $date."<br>";
+					//if($lastdate > $date)
+					//	dd($worklogs);
+					$lastdate = $date;
+					foreach($workloglist as $worklog)
+					{
+						if(array_key_exists($date,$processedworklogs))
+						{
+							$processedworklogs[$date]->hours +=  $worklog->hours;
+							$processedworklogs[$date]->acchours = $acchours + $worklog->hours;
+							$acchours = $processedworklogs[$date]->acchours;
+						}
+						else
+						{
+							$processedworklogs[$date] = new \StdClass();
+							$processedworklogs[$date]->hours =  $worklog->hours;
+							$processedworklogs[$date]->acchours = $acchours + $worklog->hours;
+							$acchours = $processedworklogs[$date]->acchours;
+						}
+					}
+					if($previousworkdate == null)
+						$previousworkdate = $date;
+
+					if(($date < $task->_tstart)&&($date > $previousworkdate))
+						$previousworkdate = $date;
+				}	
+			}
+		}
+		//dd($previousworkdate);
+		//dd($range);
+		ksort($processedworklogs);
+		$accdays = $acchours/8;
+		$unloggedwork = $task->timespent - $accdays;
+		//echo $task->estimate."<br>";
+		$remainingwork = $task->estimate - $task->timespent;
+		
+		$previouswork = ($processedworklogs[$previousworkdate]->acchours/8);
+		//echo $task->estimate - $previouswork;
+		$deltaofwork = ($task->estimate - $previouswork) /$range->totaldays;
+
+		//echo "Project Duration ".$task->_tstart." - ".$task->_tend."<br>";
+		$range->start = $task->_tstart;
+		$range->end = $task->_tend;
+		//echo "Project estimation ".$task->estimate."<br>";
+		$range->totalestimate = $task->estimate;
+		//echo "Project Total working days = ".$range->totaldays."<br>";
+		//echo "Project Remaining working days = ".$range->remaingdays."<br>";
+		//echo "Logged  work = ".$accdays." days <br>";
+		//echo "Computed  work = ".$task->timespent." days <br>";
+		$range->timespent = $task->timespent;
+		//echo "Unlogged work = ".$unloggedwork." days <br>";
+		//echo "Remanining work = ".$remainingwork." days <br>";
+		$range->remainingwork = $task->remainingwork;
+		//echo "Previous work date from start =".$previousworkdate."<br>";
+		//echo "Previous workdone =".$previouswork." days<br>";
+		$range->previouswork = $task->previouswork;
+		//echo "Delta = ".$deltaofwork."<br>";
+		//echo "Current Velocity  = ".$cv."<br>";
+		$range->cv=round($cv,1);
+		//echo "Required Velocity  = ".$rv."<br>";
+		$range->progress = $task->progress;
+		$range->duedate = $task->_duedate;
+		$range->finishingon = $task->_sched_end;
+		$range->rv=round($rv,1);
+		$lastwork = $previouswork;
+		$lastev = $previouswork;
+		foreach($range->data as $date=>$daydata)
+		{
+			$daydata->tv = $lastwork;
+			$daydata->ev = $lastev;
+			if($daydata->holiday == 0)
+			{
+				$daydata->tv = $lastwork + $deltaofwork;
+				$lastwork = $daydata->tv;
+				
+
+				if(array_key_exists($date,$processedworklogs))
+				{
+					$lastev = $daydata->ev = $processedworklogs[$date]->acchours/8;
+				}
+				else
+					$daydata->ev = $lastev;
+				
+			}
+			$daydata->ftv = $daydata->tv; 
+			if( $date > Utility::GetToday('Y-m-d'))
+			{
+				$daydata->ev =  null;
+				$daydata->ftv = $daydata->tv; 
+				$daydata->tv = null;
+			}
+			
+		}
+
+		if(floor($lastwork) > $task->estimate)
+		{
+			dd("Not possible ".floor($lastwork)." > ".$task->estimate." ".__file__." ".__line__);
+		}
+			
+		//dd($range);
+		//dd($processedworklogs);
+		/*dd($range);*/
+
+		return $range;
+
+		//dd($range);
+		
+		//dd($this->project);
+		//foreach($task->children as $child)
+		//	dd($task);
+
 	}
 }

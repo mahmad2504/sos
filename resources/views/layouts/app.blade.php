@@ -226,6 +226,9 @@
 		//yyyy-mm-dd
 		function MakeDate2(string) {
 			dateObj = new Date(string).toUTCString();
+			if(dateObj === 'Invalid Date')
+				return '';
+			
     		return dateObj.slice(4,16);
 		}
 		function MakeDate(day,month,year)

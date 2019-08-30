@@ -60,7 +60,7 @@ class CalendarController extends Controller
 		if($resource == null)
 		{
 			if($localcall)
-					return null;
+				return null;
 			$returnData = array(
 				'status' => 'error',
 				'message' => 'Resource Not found'

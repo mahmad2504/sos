@@ -14,7 +14,7 @@ use App\ProjectTree;
 
 class ReportController extends Controller
 {
-    public function ShowWeeklyReport($user, $project, $year=null, $weekno=null)
+    public function ShowWeeklyReport(Request $request,$user, $project)
     {
         $user = User::where('name',$user)->first();
     	if($user==null)
@@ -25,20 +25,34 @@ class ReportController extends Controller
 		if($project==null)
     	{
     		abort(403, 'Project Not Found');
-    	}
-        if(($year == null)||($year=='default'))
+        }
+        $year = $request->year;
+        $weekno = $request->weekno;
+        $key = $request->key;
+
+        if($year == null)
         {
             $year = date("Y");
 
         }
-        if(($weekno == null)||($weekno=='default'))
+        if($weekno == null)
         {
             $weekno = date("W");
             $weekno =  (int)$weekno;
         }
+        if($key == null)
+        {
+            $key = (string)1;
+        }
         
         $projecttree = new ProjectTree($project);
-        $wlogs = $projecttree->GetWeeklyWorkLog();
+        
+        if(array_key_exists($key,$projecttree->tasks))
+             $head = $projecttree->tasks[$key];
+        else
+            abort(403, 'Key '.$key.' Not Found');
+
+        $wlogs = $projecttree->GetWeeklyWorkLog($head);
         
         if(!array_key_exists($year,$wlogs))
             abort(403, 'No Report Found For year '.$year);
@@ -71,9 +85,9 @@ class ReportController extends Controller
 			$isloggedin = 1;
 		else
             $isloggedin = 0;
-		return View('widgets.report',compact('user','project','isloggedin','data'));
+		return View('widgets.report',compact('key','user','project','isloggedin','data'));
     }
-    function GetWeeklyReport($user, $project, $year=null, $weekno=null)
+    function GetWeeklyReport(Request $request,$user, $project)
     {
         
         $user = User::where('name',$user)->first();
@@ -93,21 +107,40 @@ class ReportController extends Controller
 				'message' => 'Invalid Project'
 			);
 			return Response::json($returnData, 500);
-    	}
-        if(($year == null)||($year=='default'))
+        }
+        $year = $request->year;
+        $weekno = $request->weekno;
+        $key = $request->key;
+
+        if($year == null)
         {
             $year = date("Y");
 
         }
        
-        if(($weekno == null)||($weekno=='default'))
+        if($weekno == null)
         {
             $weekno = date("W");
             $weekno =  (int)$weekno;
         }
+        if($key == null)
+        {
+            $key = (string)1;
+        }
         
         $projecttree = new ProjectTree($project);
-        $wlogs = $projecttree->GetWeeklyWorkLog();
+        if(array_key_exists($key,$projecttree->tasks))
+             $head = $projecttree->tasks[$key];
+        else
+        {
+            $returnData = array(
+				'status' => 'error',
+				'message' => 'Invalid Key'
+			);
+			return Response::json($returnData, 500);
+        }
+
+        $wlogs = $projecttree->GetWeeklyWorkLog($head);
         
         if(!array_key_exists($year,$wlogs))
         {

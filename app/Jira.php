@@ -141,7 +141,11 @@ class Jira
 			if(($worklog['timeSpentSeconds'] > 0)&&($hours==0))
 				$hours = round($worklog['timeSpentSeconds']/(60*60),2);
 			$author = $worklog['author']['name'];
-			$comment = $worklog['comment'];
+			if(isset($worklog['comment']))
+				$comment = $worklog['comment'];
+			else
+				$comment = '';
+			
 			if(isset($data[$date][$author]))
 			{
 				$data[$date][$author]->hours += $hours;

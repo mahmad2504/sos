@@ -17,8 +17,8 @@ return
 		['uri'=>'https://mentorgraphics.atlassian.net',
 		 'username' => env('JIRA_ATTLASSIAN_USERNAME'),
 		 'password' => env('JIRA_ATTLASSIAN_PASSWORD'),
-		 'storypoints' => 'customfield_10022',
-		 'sprint' => 'customfield_11040'
+		 'storypoints' => 'customfield_10004',
+		 'sprint' => 'customfield_10007'
 		]
 	]
 ];

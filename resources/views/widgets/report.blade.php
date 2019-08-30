@@ -59,7 +59,7 @@ body { font-family: Arial, Helvetica, sans-serif;font-size: 11px;}
     <button id="viewreport" type="button" class="btn-outline  btn-primary">View Report</button>
     <span style="color:red" id="error"></span>
     <div class="box">
-        <h1 style="margin-top:40px;font-weight: bold; color:CornflowerBlue;font-size:20px;">Report for the period <span id="from"></span>&nbsp-&nbsp<span id="to"><span></h1> 
+        <h1 style="margin-top:40px;font-weight: bold; color:CornflowerBlue;font-size:20px;"><span id="key">{{$key}}</span>&nbsp&nbspReport for the period <span id="from"></span>&nbsp-&nbsp<span id="to"><span></h1> 
         <hr>
         <div id="content">
          <h1 style="font-weight: bold; color:CornflowerBlue;font-size:20px;">Report for the period <span id="from"></span>&nbsp-&nbsp<span id="to"><span></h1>
@@ -73,7 +73,7 @@ var user = @json($user);
 var project =  @json($project);
 var isloggedin = {{$isloggedin}};
 var data = @json($data);
-
+var key= '{{$key}}';
 var dataurl = '{{route('getweeklyreport',[$user->name,$project->name])}}';
 
 if(isloggedin)
@@ -94,17 +94,17 @@ function OnViewReportClick()
 {
     console.log("OnViewReportClicked");
     year = $('#select_year').val();
-    month = $('#select_week').val();
-    LoadReport(year,month,OnReportDataReceived)
+    week = $('#select_week').val();
+    LoadReport(year,week,OnReportDataReceived)
    
 }
 
-function LoadReport(year,month,onsuccess)
+function LoadReport(year,weekno,onsuccess)
 {
     ShowLoading();
 	$.ajax({
 		type:"GET",
-		url:dataurl+"/"+year+"/"+month,
+		url:dataurl+"?year="+year+"&weekno="+weekno+"&key="+key,
 		cache: false,
 		data:null,
 		success: onsuccess,

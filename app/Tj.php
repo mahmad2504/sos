@@ -162,7 +162,7 @@ class Tj
 						$header = $header.$spaces."   allocate ".$team[0]." { alternative ";
 						$delim = "";
 						$str = "";
-						$team =  explode(",",$team);
+						//$team =  explode(",",$team);
 					
 						for($i=1;$i<count($team);$i++)
 						{
@@ -214,7 +214,8 @@ class Tj
 			{
 				$cc =  $presource->cc;
 				$ccal = CalendarController::GetcalenarData($cc);
-				$ccaldata = json_decode($ccal->data);
+				if($ccal != null) // TBD why some calendars are null
+					$ccaldata = json_decode($ccal->data);
 			}
 			$header = $header.'    resource '.$presource->name.' "'.$presource->name.'_'.$presource->cc.'" {'."\n";
 			

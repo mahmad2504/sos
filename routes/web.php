@@ -18,6 +18,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 Auth::routes();
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/', 'HomeController@index');   // View
@@ -34,7 +35,7 @@ Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  
 
 
 //// Sync //////
-Route::get('/sync/jira', 'SyncController@syncjira')->name('syncjira');// arg project modal with project.id
+Route::get('/sync/jira', 'SyncController@syncjira')->name('syncjira');// arg project modal with project.id  
 Route::get('/sync/oa', 'SyncController@syncoa')->name('syncoa');// arg project modal with project.id
 
 // Dashboard //
@@ -55,8 +56,14 @@ Route::get('/widget/timechart/{user}/{project}','Widgets\TimeChartController@Sho
 Route::get('/widget/data/timechart/{projectid}','Widgets\TimeChartController@GetData')->name('gettimechartdata');// project id
 
 //// Report
-Route::get('/widget/report/weekly/{user}/{project}/{year?}/{weekno?}','Widgets\ReportController@ShowWeeklyReport')->name('showweeklyreport');
-Route::get('/widget/data/report/weekly/{user}/{project}/{year?}/{weekno?}','Widgets\ReportController@GetWeeklyReport')->name('getweeklyreport');
+Route::get('/widget/report/weekly/{user}/{project}','Widgets\ReportController@ShowWeeklyReport')->name('showweeklyreport');// {year?}/{weekno?}/{key?}
+Route::get('/widget/data/report/weekly/{user}/{project}','Widgets\ReportController@GetWeeklyReport')->name('getweeklyreport');//{year?}/{weekno?}/{key?}
+
+
+//// Burnup
+Route::get('/widget/burnup/{user}/{project}/{jira?}','Widgets\BurnupController@Show')->name('showwburnupchart');
+
+
 
 //// Project Resource //////
 Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->name('showprojectresources'); // project id as input param

@@ -5,6 +5,52 @@ use App;
 use  App\Project;
 class Utility
 {
+	public static function   IsItHoliday($date)
+	{
+		$day = Date('D',strtotime($date));
+		if($day == 'Sat' || $day == 'Sun')
+			return 1;
+		return 0;
+	}
+	public static function IsItFutureDate($date)
+	{
+		if(strtotime(Utility::GetToday('Y-m-d'))<strtotime($date))
+			return 1;
+		return 0;
+	}
+	public static function  DateRange($start,$end)
+	{
+		$ret = new \StdClass();
+		$totaldays = 0;
+		$remaingdays = 0;
+		$data = array();
+		$begin = new \DateTime($start);
+		$end = date('Y-m-d', strtotime('+1 day', strtotime($end)));
+		$end = new \DateTime($end);
+		$interval = \DateInterval::createFromDateString('1 day');
+		$period = new \DatePeriod($begin, $interval, $end);
+		//iterator_count($period);
+		foreach ( $period as $dt )
+		{
+			
+			$date = $dt->format("Y-m-d");
+			$day = Date('D',strtotime($date));
+		
+			$data[$date] =  new \StdClass();
+			$data[$date]->holiday = Utility::IsItHoliday($date);
+			if($data[$date]->holiday ==0) //  working day
+			{
+				$totaldays++;
+				if(Utility::IsItFutureDate($date))
+					$remaingdays++;
+			}
+			//echo $dt->format("Y-m-d").EOL;
+		}
+		$ret->data = $data;
+		$ret->totaldays = $totaldays;
+		$ret->remaingdays = $remaingdays;
+		return $ret;
+	}
 	public static function array_insert(&$array, $position, $insert)
 	{
 		if (is_int($position)) {

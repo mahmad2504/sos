@@ -13,6 +13,11 @@ return
 		 'Asia/Kolkata'=>['IN','India'],
 		 'Europe/Vienna'=>['AU','Austria'],
 		 'Etc/GMT-5'=>['PK','Pakistan'],
+		 'America/New_York'=>['US','USA'],
+		 'America/Phoenix'=>['US','USA'],
+		 'Europe/Berlin'=>['GE','Germany'],
+		 'America/Toronto'=>['CA','Canada'],
+		 'Europe/Bucharest'=>['RO','Romania'],
 		 'X' => ['-','Unknown']
 		],
 	]
