@@ -4,30 +4,27 @@
 <link rel="stylesheet" href="{{ asset('css/dygraph.css') }}" />
 @endsection
 @section('style')
-
+.pill {font-size:.5rem;box-shadow: 0 0 2px 1px rgba(1, 0, 0, 0.5)}
 @endsection
 @section('content')
-<div id="container" style="width:50%; margin-left: auto; margin-right: auto; display:block" class="center">
+<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
 	<div class="row">
-		<div class="col-1">
-		</div>
-		<div class="col-10">
-			<div class="card text-center">
+		<div class="col-12">
+			<div style="box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.5);" class="card text-center">
 				<div class="card-header">
 					<span class="float-left">Current Velocity  <span style id="cv"></span></span>
 					<span >Progress = <span style id="progress"></span></span>
 					<span class="float-right">Required Velocity  <span style id="rv"></span></span>
 				</div>
 				<div class="card-body">
-					<div style="margin-left: auto; margin-right: auto; width:100%;height:300px;" id="graphdiv"></div>
+					<div style="margin-left: auto; margin-right: auto; width:100%;height:400px;" id="graphdiv"></div>
 				</div>
 				<div class="card-footer text-muted">
 					<span class="float-left">Duedate  <span style id="duedate"></span></span>
+					<span style id="title"></span>
 					<span class="float-right">Expected Finish <span style id="finishingon"></span></span>
 				</div>
 			</div>
-		</div>
-		<div class="col-1">
 		</div>
 	</div>
 </div>
@@ -65,7 +62,7 @@ $(function()
 		$('#rv').html('<span class="badge badge-success">'+data.rv+'</span>');
 	
 	$('#progress').html('<span class="badge badge-success">&nbsp&nbsp'+data.progress+'%</span>');
-
+	$('#title').text(data.summary);
 	
 	for(var date in data.data)
 	{
@@ -79,20 +76,19 @@ $(function()
 	title = 'Earned Value Graph&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	
 	if(lowvelocity == 1)
-		title =  title+'<span class="badge badge-pill badge-warning">Low Velocity</span>';
-	
+		title =  title+'<span  class="pill badge badge-pill badge-warning">Low Velocity</span>&nbsp';
 	
 	if(data.duedate.length != 0)
 	{
 		$('#duedate').html('<span class="badge badge-info">'+MakeDate2(data.duedate)+'</span>'); 
 		if(data.finishingon > data.duedate)
 		{
-			title =  title+'<span class="badge badge-pill badge-danger">Delay</span>';
+			title =  title+'<span  class="pill badge badge-pill badge-danger">Delay</span>&nbsp';
 			$('#finishingon').html('<span class="badge badge-danger">'+MakeDate2(data.finishingon)+'</span>');
 		}
 		else
 		{
-			title =  title+'<span class="badge badge-pill badge-success">On Track</span>';
+			title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>>&nbsp';
 			$('#finishingon').html('<span class="badge badge-success">'+MakeDate2(data.finishingon)+'</span>');
 		}
 	}
@@ -111,7 +107,7 @@ $(function()
 			title: title,
             ylabel: 'Earned Values (Days of work)',
 			xlabel: 'Period '+MakeDate2(data.start)+' - '+MakeDate2(data.end),
-			labels: [ "x", "Target" ,"Earned","Past"],
+			labels: [ "x", "Target" ,"Earned","Past Target"],
 			showRangeSelector: false,
 			//strokeWidth: .5,
             //gridLineColor: 'rgb(123, 00, 00)',
@@ -123,7 +119,7 @@ $(function()
             visibility: [true, true, true],
 			series: 
 			{
-					'Past': 
+					'Past Target': 
 					{
                         fillGraph:true,
 						color: 'red',

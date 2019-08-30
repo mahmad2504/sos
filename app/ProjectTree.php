@@ -1240,6 +1240,7 @@ class ProjectTree
 		//echo "Project Remaining working days = ".$range->remaingdays."<br>";
 		//echo "Logged  work = ".$accdays." days <br>";
 		//echo "Computed  work = ".$task->timespent." days <br>";
+		$range->summary = $task->_summary;
 		$range->timespent = $task->timespent;
 		//echo "Unlogged work = ".$unloggedwork." days <br>";
 		//echo "Remanining work = ".$remainingwork." days <br>";
@@ -1282,6 +1283,13 @@ class ProjectTree
 				$daydata->ftv = $daydata->tv; 
 				$daydata->tv = null;
 			}
+			else if( $date == Utility::GetToday('Y-m-d'))
+				$daydata->ftv = $daydata->tv; 
+			else
+			{
+				$daydata->ftv = null;
+			}
+			
 			
 		}
 

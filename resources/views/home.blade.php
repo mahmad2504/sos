@@ -60,14 +60,12 @@ input {
 				<input id="psettings_jiradependencies" style="margin-top:10px;margin-left:10px;" class="" type="checkbox" name="jira_dependencies" value="0"></input>
 				</div>
 			</div>
-			
 			<div class="d-flex form-group">
 				<label style="margin-top:3px;" for="name">Name</label>
 				<input style="width:35%;margin-left:10px;" id="psettings_name" type="text" class="form-control-sm form-control" placeholder="Name" name="name"></input>
 				<label style="padding:0;margin-top:3px;margin-left:30px;" for="name">OpenAir</label>
 				<input style="width:35%;margin-left:10px;" id="psettings_oaname" type="text" class="form-control-sm form-control" placeholder="OpenAir Project Name" name="oaname"></input>
 			</div>
-			
 			<div class="form-group">
 				<label for="name">Description</label>
 				<textarea id="psettings_description" class="form-control-sm form-control" rows="2" placeholder="Enter description" name="description"></textarea>
@@ -256,8 +254,9 @@ function AddCard(project,row)
 	var baseline=project.baseline;
 	var errors=null;project.errors;
 	var progress = '<div class="shadow-lg progress position-relative" style=""><div class="progress-bar" role="progressbar" style="background-color:green !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
-			
-	console.log(baseline);
+	if((baseline != null)&&(baseline.length==0))
+		baseline=null;
+	
 	var headerstr ='<div  class="card-header border-success" style="background-color: #FFFAFA;">';
 		headerstr +='<div class="d-flex">';
 		if(errors == null)

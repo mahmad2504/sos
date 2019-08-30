@@ -298,7 +298,7 @@ span.gfoldercollapse {
 .gtaskpurple,
 .gtaskgreenunestimated,
 .gtaskpink {
-  height: 13px;
+  height: 5px;
   filter: alpha(opacity=90);
   opacity: 0.9;
   margin-top: 1px;
