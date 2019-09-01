@@ -13,7 +13,7 @@
 			<div style="box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.5);" class="card text-center">
 				<div class="card-header">
 					<span class="float-left">Current Velocity  <span style id="cv"></span></span>
-					<span >Progress = <span style id="progress"></span></span>
+					<span >Progress = <span style="font-size:25px;" id="progress"></span></span>
 					<span class="float-right">Required Velocity  <span style id="rv"></span></span>
 				</div>
 				<div class="card-body">

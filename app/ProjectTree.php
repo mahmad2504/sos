@@ -1013,6 +1013,7 @@ class ProjectTree
 	}
 	public function GetWeeklyWorkLog($task)
 	{
+		$this->weeklylogs = [];
 		$this->_GetWeeklyWorkLog($task);
 		foreach($this->weeklylogs as $year=>$d)
 		{
@@ -1023,11 +1024,12 @@ class ProjectTree
 			ksort($this->weeklylogs[$year]);
 		}
 		ksort($this->weeklylogs);
-		//dd($this->weeklylogs);
+	
 		return $this->weeklylogs;
 	}
 	private function _GetWeeklyStorypoints($task)
 	{
+
 		if($task->isparent == 0)
 		{
 			//$acc = 0;
@@ -1189,7 +1191,7 @@ class ProjectTree
 			$rv = $remainingwork;
 
 		//$logs = $this->GetWeeklyWorkLog($task);
-		if($this->estimation == 0)// story points
+		if($this->project->estimation == 0)// story points
 			$logs = $this->GetWeeklyStorypoints($task);
 		else
 			$logs = $this->GetWeeklyWorkLog($task);
@@ -1226,11 +1228,10 @@ class ProjectTree
 							$acchours = $processedworklogs[$date]->acchours;
 						}
 					}
-					if($previousworkdate == null)
-						$previousworkdate = $date;
-
 					if(($date < $task->_tstart)&&($date > $previousworkdate))
+					{
 						$previousworkdate = $date;
+					}
 				}	
 			}
 		}
@@ -1238,12 +1239,16 @@ class ProjectTree
 		//dd($previousworkdate);
 		//dd($range);
 		ksort($processedworklogs);
+		//dd($processedworklogs);
 		$accdays = $acchours/8;
 		$unloggedwork = $task->timespent - $accdays;
 		//echo $task->estimate."<br>";
 		$remainingwork = $task->estimate - $task->timespent;
 		
-		$previouswork = ($processedworklogs[$previousworkdate]->acchours/8);
+		if($previousworkdate == null)
+			$previouswork = 0;
+		else
+			$previouswork = ($processedworklogs[$previousworkdate]->acchours/8);
 		
 		//echo $task->estimate - $previouswork;
 		if($range->totaldays == 0)
@@ -1282,6 +1287,9 @@ class ProjectTree
 		$range->rv=round($rv,1);
 		$lastwork = $previouswork;
 		$lastev = $previouswork;
+		/*echo "Previous work = ".$previouswork;
+		echo "Previous date = ".$previousworkdate;
+		echo "Delta = ".$deltaofwork;*/
 		foreach($range->data as $date=>$daydata)
 		{
 			$daydata->tv = $lastwork;

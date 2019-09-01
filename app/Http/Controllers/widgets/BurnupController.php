@@ -49,6 +49,8 @@ class BurnupController extends Controller
 		
 		$data = $projecttree->GetBurnUpData($head);
 		
+		if(count($data->data)==0)
+			abort(403, 'Burnup Chart Does Not Exist');
 		return View('widgets.burnup',compact('user','project','isloggedin','data','key'));
 	}
 	

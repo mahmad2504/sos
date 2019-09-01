@@ -77,10 +77,10 @@ table {
        width: 8%;
      }
 .bordered tr th:nth-child(10){ /* State */
-       width: 8%;
+       width: 5%;
      }
 .bordered tr th:nth-child(11){ /* % Tools */
-       width: 8%;
+       width: 0%;
      }
 	 
 .bordered td, .bordered th {
