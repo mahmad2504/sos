@@ -485,6 +485,7 @@ class ProjectTree
 	public $presources = [];
 	public $resources = [];
 	private $weeklylogs = [];
+	private $milestones = [];
 	function __construct(Project $project)
 	{
 		$user = $project->user()->first();
@@ -571,11 +572,12 @@ class ProjectTree
 	{
 		if($task->isparent == 0)
 		{
-			if($this->_projectestimation == 0)//Story points
+			if($task->_projectestimation == 0)//Story points
 			{
 				if($task->duplicate == 1)
 					return 0;
 				return $task->estimate;
+
 			}
 			if($task->timespent > $task->estimate)
 				$task->estimate = $task->timespent;
@@ -605,6 +607,8 @@ class ProjectTree
 			if($task->status == 'RESOLVED')
 			{
 				if($task->timespent == 0) // if no work logged , make work= estimes
+					$task->timespent = $task->estimate;
+				if($task->_projectestimation == 0)//Story points
 					$task->timespent = $task->estimate;
 			}
 			if($task->duplicate == 1)
@@ -1022,7 +1026,7 @@ class ProjectTree
 		//dd($this->weeklylogs);
 		return $this->weeklylogs;
 	}
-	private function _GetWeeklySprintLog($task)
+	private function _GetWeeklyStorypoints($task)
 	{
 		if($task->isparent == 0)
 		{
@@ -1045,11 +1049,11 @@ class ProjectTree
 			$this->weeklylogs[$y][$w][$task->closedon][] = $worklog;
 		}
 		else foreach($task->children as $stask)
-			$this->_GetWeeklySprintLog($stask);
+			$this->_GetWeeklyStorypoints($stask);
 	}
-	public function GetWeeklySprintLog($task)
+	public function GetWeeklyStorypoints($task)
 	{
-		$this->_GetWeeklySprintLog($task);
+		$this->_GetWeeklyStorypoints($task);
 		foreach($this->weeklylogs as $year=>$d)
 		{
 			foreach($this->weeklylogs[$year] as $week=>$w)
@@ -1169,6 +1173,7 @@ class ProjectTree
 	}
 	function GetBurnUpData($task)
 	{
+		$this->weeklylogs = array();
 		//dd($task->_tstart." ".$task->_tend);
 		$range = Utility::DateRange($task->_tstart,$task->_tend);
 	
@@ -1184,7 +1189,11 @@ class ProjectTree
 			$rv = $remainingwork;
 
 		//$logs = $this->GetWeeklyWorkLog($task);
-		$logs = $this->GetWeeklySprintLog($task);
+		if($this->estimation == 0)// story points
+			$logs = $this->GetWeeklyStorypoints($task);
+		else
+			$logs = $this->GetWeeklyWorkLog($task);
+
 		$processedworklogs = [];
 		$acchours  = 0.0;
 		
@@ -1225,6 +1234,7 @@ class ProjectTree
 				}	
 			}
 		}
+		
 		//dd($previousworkdate);
 		//dd($range);
 		ksort($processedworklogs);
@@ -1234,8 +1244,12 @@ class ProjectTree
 		$remainingwork = $task->estimate - $task->timespent;
 		
 		$previouswork = ($processedworklogs[$previousworkdate]->acchours/8);
+		
 		//echo $task->estimate - $previouswork;
-		$deltaofwork = ($task->estimate - $previouswork) /$range->totaldays;
+		if($range->totaldays == 0)
+			$deltaofwork = 0;
+		else
+			$deltaofwork = ($task->estimate - $previouswork) /$range->totaldays;
 
 		//echo "Project Duration ".$task->_tstart." - ".$task->_tend."<br>";
 		$range->start = $task->_tstart;
@@ -1248,6 +1262,7 @@ class ProjectTree
 		//echo "Computed  work = ".$task->timespent." days <br>";
 		$range->summary = $task->_summary;
 		$range->timespent = $task->timespent;
+		$range->status = $task->status;
 		//echo "Unlogged work = ".$unloggedwork." days <br>";
 		//echo "Remanining work = ".$remainingwork." days <br>";
 		$range->remainingwork = $task->remainingwork;
@@ -1260,7 +1275,10 @@ class ProjectTree
 		//echo "Required Velocity  = ".$rv."<br>";
 		$range->progress = $task->progress;
 		$range->duedate = $task->_duedate;
-		$range->finishingon = $task->_sched_end;
+		if( $task->status == 'RESOLVED')
+			$range->finishingon = '';
+		else
+			$range->finishingon = $task->_sched_end;
 		$range->rv=round($rv,1);
 		$lastwork = $previouswork;
 		$lastev = $previouswork;
@@ -1316,5 +1334,20 @@ class ProjectTree
 		//foreach($task->children as $child)
 		//	dd($task);
 
+	}
+	
+	function GetMilestones($task,$firstcall=1)
+	{
+		if($firstcall)
+			$this->milestones = array();
+		if(($task->isconfigured )&&($task->ismilestone))
+		{
+			$this->milestones[] = $task;
+		}
+		foreach($task->children as $child)
+		{
+			$this->GetMilestones($child,0);
+		}
+		return $this->milestones;
 	}
 }

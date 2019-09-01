@@ -116,7 +116,8 @@ class TreeViewController extends Controller
     	$row['summary'] = $task->_summary;
     	$row['jiraurl'] = $this->jiraurl;
     	$row['key'] = $task->key;
-    	$row['estimate'] = $task->estimate;
+		$row['estimate'] = $task->estimate;
+		$row['timespent'] = $task->timespent;
 		$row['progress'] = $task->progress;
 		$row['duplicate'] = $task->duplicate;
 		$row['status'] = $task->status;

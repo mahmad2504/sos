@@ -63,6 +63,8 @@ Route::get('/widget/data/report/weekly/{user}/{project}','Widgets\ReportControll
 //// Burnup
 Route::get('/widget/burnup/{user}/{project}/{jira?}','Widgets\BurnupController@Show')->name('showwburnupchart');
 
+/// Milestone Report
+Route::get('/widget/milestone/{user}/{project}/{jira?}','Widgets\MilestoneController@Show')->name('showwmilestonereport');
 
 
 //// Project Resource //////

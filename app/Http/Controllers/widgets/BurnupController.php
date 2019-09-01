@@ -46,8 +46,9 @@ class BurnupController extends Controller
 			$isloggedin = 1;
 		else
 			$isloggedin = 0;
+		
 		$data = $projecttree->GetBurnUpData($head);
-		//dd($data);
+		
 		return View('widgets.burnup',compact('user','project','isloggedin','data','key'));
 	}
 	

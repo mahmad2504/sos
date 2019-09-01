@@ -23,7 +23,7 @@
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Dependecnies  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Sprint  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Duplicate  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Resource  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
 		
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
@@ -34,7 +34,7 @@
 			<th class="dependencies">Dependency</th>
 			<th class='sprintcolumn'>Sprint</th>
 			<th id='estimatecolumn'></th>
-			<th>Duplicate</th>
+			<th>Resource</th>
 			<th>Progress</th>
 		  </tr>
 		</thead>
@@ -156,6 +156,7 @@ $(document).ready(function()
 			var link=row['jiraurl'];
 			var linktext=row['key'];
 			var estimate=Math.round(row['estimate']);
+			var timespent=Math.round(row['timespent']);
 			var progress=round(row['progress'],1);
 			var status=row['status'];
 			var priority=row['priority'];
@@ -259,14 +260,14 @@ $(document).ready(function()
 				sprints = 1;
 			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
 			if(estimate > 0)
-				rowstr += "<td>"+estimate+" "+estimate_units+"</td>";
+				rowstr += "<td>"+estimate+" "+timespent+" "+estimate_units+"</td>";
 			else
 				rowstr += "<td></td>";
 
 			if(duplicate == 1)
-				rowstr += '<td></td>';
+				rowstr += '<td>Duplicate</td>';
 			else
-			rowstr += '<td>'+assignee+'</td>';
+				rowstr += '<td>'+assignee+'</td>';
 			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			
 			

@@ -35,7 +35,7 @@
 			<th>Jira</th>
 			<th id='estimatecolumn'></th>
 			<th>Alternate</th>
-			<th>Start</th>
+			<th>Start Constraint</th>
 			<th>Duedate</th>
 			<th>Milestone</th>
 			<th>Progress</th>

@@ -43,8 +43,13 @@ class GanttController extends Controller
 		if($isloggedin)
 			$isloggedin = 1;
 		else
-            $isloggedin = 0;
-		return View('widgets.gantt',compact('user','project','isloggedin'));
+			$isloggedin = 0;
+		$key = $request->key;
+		if($key==null)
+		{
+			$key = (string)1;
+		}
+		return View('widgets.gantt',compact('user','project','isloggedin','key'));
 	}
 	public function GetData(Request $request)
 	{
@@ -70,7 +75,18 @@ class GanttController extends Controller
 		$project = $projects[0];
 		$projecttree = new ProjectTree($project);
 		
-		$head = $projecttree->GetHead();
+		$key = $request->key;
+		if($key==null)
+		{
+			$key = (string)1;
+		}
+
+		if(array_key_exists($key,$projecttree->tasks))
+             $head = $projecttree->tasks[$key];
+        else
+			$head = $projecttree->GetHead();
+			
+		
 		
 		//dd($projecttree->tree->children[4]);
 		$this->FormatForGantt($head,1);
@@ -118,7 +134,10 @@ class GanttController extends Controller
 			
 		$row['pPlanStart'] =  "";
 		$row['pPlanEnd'] =  "";
-		$row['pParent'] = $task->pextid;
+		if($first == 1)
+			$row['pParent'] = 0;
+		else
+			$row['pParent'] = $task->pextid;
 		
 		if( $task->isparent )
 			$row['pClass'] = "ggroupblack";

@@ -274,7 +274,7 @@ $(document).ready(function()
 	$.ajax(
 	{
 		type:"GET",
-		url:"{{ route('getganttdata',[$project->id]) }}",
+		url:"{{ route('getganttdata',[$project->id]) }}/?key={{$key}}",
 		data:null,
 		success: function(response)
 		{

@@ -50,10 +50,9 @@ $(function()
 {
 	var graphdata = [];
 	i = 0;
-	lowvelocity = 0;
-	if(data.cv < (85/100)*data.rv)
-		lowvelocity = 1;
-	console.log(data);
+	lowvelocity = IsVleocityLow(data.cv,data.rv);
+
+	//console.log(data);
 	$('#cv').html('<span class="badge badge-info">'+data.cv+'</span>');
 	
 	if(lowvelocity == 1)
@@ -63,7 +62,7 @@ $(function()
 	
 	$('#progress').html('<span class="badge badge-success">&nbsp&nbsp'+data.progress+'%</span>');
 	$('#title').text(data.summary);
-	
+	console.log(data);
 	for(var date in data.data)
 	{
 		var row = [];
@@ -88,7 +87,10 @@ $(function()
 		}
 		else
 		{
-			title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>&nbsp';
+			if(data.status == 'RESOLVED')
+				title =  title+'<span  class="pill badge badge-pill badge-success">Completed</span>&nbsp';
+			else
+				title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>&nbsp';
 			$('#finishingon').html('<span class="badge badge-success">'+MakeDate2(data.finishingon)+'</span>');
 		}
 	}

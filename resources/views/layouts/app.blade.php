@@ -292,6 +292,57 @@
 		{
             return  Math.round( val * 10 ) / 10;
 		}
+		function ConvertDateToString(datestr)
+		{
+			var d = new Date(datestr);
+			if(d == 'Invalid Date')
+				return '';
+			
+			dateString = d.toUTCString();
+			dateString = dateString.split(' ').slice(0, 4).join(' ').substring(5);
+			return dateString;
+		}
+		function ConvertDateFormat(datestr)
+		{
+			var d = new Date(datestr);
+			if(d == 'Invalid Date')
+				return '';
+			
+			var weekno = ISO8601_week_no(d);
+			var dayno = ISO8601_day_no(d);
+			var yearno = ISO8601_year_no(d);
+			
+			return yearno+"W"+weekno+"."+dayno;
+		}
+		function ISO8601_year_no(dt)
+		{
+			return dt.getFullYear().toString().substr(2, 2);;
+		}
+		function ISO8601_day_no(dt) 
+		{
+			var tdt = new Date(dt.valueOf());
+			var dayn = (dt.getDay() + 6) % 7;
+			return dayn+1;
+		}
+		function ISO8601_week_no(dt) 
+		{
+			var tdt = new Date(dt.valueOf());
+			var dayn = (dt.getDay() + 6) % 7;
+			tdt.setDate(tdt.getDate() - dayn + 3);
+			var firstThursday = tdt.valueOf();
+			tdt.setMonth(0, 1);
+			if (tdt.getDay() !== 4) 
+			{
+				tdt.setMonth(0, 1 + ((4 - tdt.getDay()) + 7) % 7);
+			}
+			return 1 + Math.ceil((firstThursday - tdt) / 604800000);
+		}
+		function IsVleocityLow(cv,rv)
+		{
+			if(cv < (85/100)*rv)
+				return 1;
+			return 0;
+		}
 		@yield('script')
 		</script>
 		
