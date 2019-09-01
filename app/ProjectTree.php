@@ -98,8 +98,13 @@ class Task
 				return $this->summary;
 				break;
 			case '_duedate':
-				if($this->extid == 1)
+				if(($this->extid == "1")&&($this->level==1))
+				{
+					if(strlen(trim($this->tend)) > 0)
+						return $this->tend;
+
 					return $this->_project_end;
+				}
 
 				if(($this->isconfigured == "true")||($this->isconfigured == 1))
 				{
@@ -218,6 +223,7 @@ class Task
 		$ntask->updated = $task->fields->updated;
 		if(isset($task->fields->resolutiondate))
 			$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
+		echo $ntask->key." ".$ntask->closedon."<br>";
 		$ntask->status = $this->MapStatus($task->fields->status->name);
 		if(($ntask->status == 'RESOLVED') and ($ntask->closedon == null))
 		{

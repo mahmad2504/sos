@@ -87,12 +87,16 @@ class TaskPropertyController extends Controller
 		else
 			$task->ismilestone = false;
 
-		$task->atext = $taskdata['atext'];
+		
+		if($taskdata['atext'] == null)
+			$task->atext  = '';
+		else
+			$task->atext = $taskdata['atext'];
 		$task->tstart = $taskdata['tstart'];
 		$task->tend = $taskdata['tend'];
-		
-
 		$projecttree->save();
+		$taskdata['tend'] = $task->_duedate;
+
 		return $taskdata;
 	}
 	public function GetTreeData(Request $request)
@@ -142,9 +146,8 @@ class TaskPropertyController extends Controller
 		$row['ismilestone'] = $task->ismilestone;
 		$row['isconfigured'] = $task->isconfigured;
 		$row['atext'] = $task->atext;
-		$row['duedate'] = $task->duedate;
 		$row['tstart'] = $task->tstart;
-		$row['tend'] = $task->tend;
+		$row['tend'] = $task->_duedate;
 		$row['position'] = $task->position;
 		$row['duplicate'] = $task->duplicate;
 		$this->treedata[$task->extid] = $row;
