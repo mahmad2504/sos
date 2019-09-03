@@ -1115,19 +1115,22 @@ class ProjectTree
 					if(strlen($cc) > 1)
 					{
 						$ccal = CalendarController::GetcalenarData($cc);
-						$ccaldata = json_decode($ccal->data);
-						foreach($ccaldata as $holiday)
+						if($ccal != null)
 						{
-							$d = new \StdClass();
-							$d->approved = true;
+							$ccaldata = json_decode($ccal->data);
+							foreach($ccaldata as $holiday)
+							{
+								$d = new \StdClass();
+								$d->approved = true;
 
-							$d->enddate = $holiday->endDate;
-							$earlier = new \DateTime($holiday->startDate);
-							$later = new \DateTime($holiday->endDate);
-							$diff = $later->diff($earlier)->format("%a");
-							$d->decimal_hours = ($diff+1)*8;
-							$data[$resource->name]->ccal[$holiday->startDate] = $d;
+								$d->enddate = $holiday->endDate;
+								$earlier = new \DateTime($holiday->startDate);
+								$later = new \DateTime($holiday->endDate);
+								$diff = $later->diff($earlier)->format("%a");
+								$d->decimal_hours = ($diff+1)*8;
+								$data[$resource->name]->ccal[$holiday->startDate] = $d;
 
+							}
 						}
 					}
 					//$data[$resource->name]->cal = $cal->data;

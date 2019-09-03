@@ -52,18 +52,17 @@ body { font-family: Arial, Helvetica, sans-serif;font-size: 11px;}
 }
 @endsection
 @section('content')
-
 <div id="container" style="width:70%; margin-left: auto; margin-right: auto; display:block" class="center">
     <select rel="tooltip" title="Select Year" class="select-css" id="select_year" name="year"></select>
     <select rel="tooltip" title="Select Week Number" style="width: 8%;" class="select-css" id="select_week" name="week"></select>
     <button id="viewreport" type="button" class="btn-outline  btn-primary">View Report</button>
     <span style="color:red" id="error"></span>
     <div class="box">
-        <h1 style="margin-top:40px;font-weight: bold; color:CornflowerBlue;font-size:20px;"><span id="key">{{$key}}</span>&nbsp&nbspReport for the period <span id="from"></span>&nbsp-&nbsp<span id="to"><span></h1> 
+        <h1 style="margin-top:40px;font-weight: bold; color:CornflowerBlue;font-size:20px;"><span id="key"></span><span id="message"></span><span id="from"></span>&nbsp-&nbsp<span id="to"></span></h1> 
         <hr>
         <div id="content">
-         <h1 style="font-weight: bold; color:CornflowerBlue;font-size:20px;">Report for the period <span id="from"></span>&nbsp-&nbsp<span id="to"><span></h1>
-        </div>
+         <h1 style="font-weight: bold; color:CornflowerBlue;font-size:20px;"></h1>
+        </div> 
     </div>
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
@@ -75,14 +74,12 @@ var isloggedin = {{$isloggedin}};
 var data = @json($data);
 var key= '{{$key}}';
 var dataurl = '{{route('getweeklyreport',[$user->name,$project->name])}}';
-
 if(isloggedin)
 {
 	$('.navbar').removeClass('d-none');
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 }
-
 function OnReportDataReceived(indata)
 {
     HideLoading();
@@ -98,7 +95,6 @@ function OnViewReportClick()
     LoadReport(year,week,OnReportDataReceived)
    
 }
-
 function LoadReport(year,weekno,onsuccess)
 {
     ShowLoading();
@@ -148,6 +144,14 @@ function PopulateYearSelect()
 function PopulateWeekSelect()
 {
     $('#select_week').empty();
+    if(data['year'] === undefined)
+    {
+        for(var year in data['lists'])
+        {
+            data['year'] = year;
+            break;
+        }
+    }
     for(var week in data['lists'][data['year']]) 
     {
         if(week == data['week'])
@@ -160,30 +164,40 @@ function PopulatePage()
 {
     console.log(data);
     PopulateYearSelect();
-    PopulateWeekSelect();
-    
+    PopulateWeekSelect();  
+   
     range = getDateRangeOfWeek(data.week,data.year);
-    console.log(range);
-    $('#from').text(MakeDate2(range.from));
-    $('#to').text(MakeDate2(range.to));
-    $("#content").empty();
-    for(var task in data.worklogs) 
+    console.log(data);
+    console.log(data.week);
+    console.log(data.year);
+    if((data.week == undefined)||(data.year == undefined))
+    {   
+       
+        $('#message').text("Not Found");
+    }
+    else
     {
-        i=0;
-        for(var date in data.worklogs[task])
+        $('#message').text('');
+        $('#from').text(MakeDate2(range.from));
+        $('#to').text(MakeDate2(range.to));
+        $("#content").empty();
+        for(var task in data.worklogs) 
         {
-            worklog = data.worklogs[task][date];
-            link = project.jiraurl+"/browse/"+worklog.jira;
-            link = "<a href='"+link+"'>"+worklog.jira+"</a>";
-            summary = worklog.summary;
-            if(i++ > 0)
+            i=0;
+            for(var date in data.worklogs[task])
             {
-                link = '';
-                summary = '';
+                worklog = data.worklogs[task][date];
+                link = project.jiraurl+"/browse/"+worklog.jira;
+                link = "<a href='"+link+"'>"+worklog.jira+"</a>";
+                summary = worklog.summary;
+                if(i++ > 0)
+                {
+                    link = '';
+                    summary = '';
+                }
+                PopulateWorkLog( link, summary, worklog.comment,worklog.displayname,date,worklog.hours);
             }
-            PopulateWorkLog( link, summary, worklog.comment,worklog.displayname,date,worklog.hours);
         }
-
     }
 }
 $(function() {

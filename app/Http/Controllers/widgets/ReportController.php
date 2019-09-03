@@ -53,13 +53,12 @@ class ReportController extends Controller
             abort(403, 'Key '.$key.' Not Found');
 
         $wlogs = $projecttree->GetWeeklyWorkLog($head);
-        
-        if(!array_key_exists($year,$wlogs))
-            abort(403, 'No Report Found For year '.$year);
-        if(!array_key_exists($weekno,$wlogs[$year]))
-            abort(403, 'No Report Found For week '.$weekno." of ".$year);
+       
+       // if(!array_key_exists($year,$wlogs))
+       //     abort(403, 'No Report Found For year '.$year);
+       // if(!array_key_exists($weekno,$wlogs[$year]))
+       //     abort(403, 'No Report Found For week '.$weekno." of ".$year);
 
-        $worklogs_by_task = [];
         $data = [];
         foreach($wlogs as $year=>$wlog)
         {
@@ -68,15 +67,22 @@ class ReportController extends Controller
                 $data['lists'][$year][$week] = $week;
             }
         }
-        $data['year']= $year;
-        $data['week']= $weekno;
-    
-        foreach($wlogs[$year][$weekno] as $date=>$wlgs)
+       
+        if((!array_key_exists($year,$wlogs))||(!array_key_exists($weekno,$wlogs[$year])))
         {
-            foreach($wlgs as $wlg)
+           // $data['worklogs'] = [];
+          
+        }
+        else
+        {
+            $data['year']= $year;
+            $data['week']= $weekno;
+            foreach($wlogs[$year][$weekno] as $date=>$wlgs)
             {
-                $data['worklogs'][$wlg->jira][$date] = $wlg;
-              
+                foreach($wlgs as $wlg)
+                {
+                    $data['worklogs'][$wlg->jira][$date] = $wlg;
+                }
             }
         }
        
