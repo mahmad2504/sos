@@ -71,7 +71,7 @@ class ReportController extends Controller
         if((!array_key_exists($year,$wlogs))||(!array_key_exists($weekno,$wlogs[$year])))
         {
            // $data['worklogs'] = [];
-           $data['lists'][$year][$week] = $week;
+           $data['lists'][$year][$weekno] = $weekno;
         }
         else
         {
