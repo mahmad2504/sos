@@ -60,21 +60,22 @@ class ReportController extends Controller
        //     abort(403, 'No Report Found For week '.$weekno." of ".$year);
 
         $data = [];
-        foreach($wlogs as $year=>$wlog)
+        foreach($wlogs as $year1=>$wlog)
         {
-            foreach($wlog as $week=>$wlg)
+            foreach($wlog as $week1=>$wlg)
             {
-                $data['lists'][$year][$week] = $week;
+                $data['lists'][$year1][$week1] = $week1;
             }
         }
-       
+        
         if((!array_key_exists($year,$wlogs))||(!array_key_exists($weekno,$wlogs[$year])))
         {
            // $data['worklogs'] = [];
-          
+            
         }
         else
         {
+            $data['lists'][$year][$week] = $week;
             $data['year']= $year;
             $data['week']= $weekno;
             foreach($wlogs[$year][$weekno] as $date=>$wlgs)
