@@ -8,8 +8,7 @@
 .progress {height: 10px;}
 @endsection
 @section('content')
-<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:none" class="center">
-
+<div id="container" style="width:95% ; margin-left: auto; margin-right: auto; display:none;!important" class="center">
 	<div class="loading">Loading&#8230;</div>
 	<p id='description'></p>
 	<table id="treetable" style="display:none;  box-shadow: 10px 5px 5px grey;" class="table">
@@ -18,6 +17,7 @@
 		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
 		</caption>
 		<col style="width:40%;border-right:1pt solid lightgrey;"> <!--Title  --> 
+		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Type  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Blockers  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Dependecnies  --> 
@@ -25,10 +25,10 @@
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Resource  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
-		
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
 		  <tr>
 			<th>Title</th>
+			<th>Label</th>
 			<th>Jira</th>
 			<th class="blockers">Blockers</th>
 			<th class="dependencies">Dependency</th>
@@ -40,7 +40,6 @@
 		</thead>
 		<tbody id="tablebody">
 		</tbody>
-		
 	</table>
 	<div id="legend">
 		<span>Project<span style="margin-top:20px;padding:5px;" class="PROJECT">&nbsp&nbsp&nbsp</span></span>
@@ -54,14 +53,12 @@
 		<span>Task<span style="margin-top:20px;padding:5px;" class="TASK">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Defect<span style="margin-top:20px;padding:5px;" class="DEFECT">&nbsp&nbsp&nbsp</span></span>
-		
 	</div>
 </div>
 <script src="{{ asset('js/jquery.treetable.js') }}" ></script>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
 @endsection
 @section('script')
-
 var username = "{{$user->name}}";
 var userid = {{$user->id}};
 var projectid = {{$project->id}};
@@ -95,7 +92,6 @@ function OnProjectDataReceived(response)
 	}
 	$('#estimatecolumn').append(header);
 }
-
 $(document).ready(function()
 {
 	if(isloggedin)
@@ -104,7 +100,6 @@ $(document).ready(function()
 		$('#dashboard_menuitem').show();
 		$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 	}
-	
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 	LoadProjectData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
@@ -145,7 +140,6 @@ $(document).ready(function()
 		var dependencies = 0;
 		var blockers = 0;
 		var sprints = 0;
-		
 		for (var exitid in data)
 		{
 			var row = data[exitid];
@@ -171,9 +165,7 @@ $(document).ready(function()
 			if(assignee == 'unassigned')
 				assignee = '';
 			var sprintlink = link+"/secure/RapidBoard.jspa?rapidView="+row['sprintid'];
-			
 			var blockedtasksstr = '';
-			
 			console.log(row['key'],oissuetype,priority);
 			var dtasks=row['dependson'];
 			if(row['dependencies'] !== undefined)
@@ -184,17 +176,14 @@ $(document).ready(function()
 			{
 				blockers = row['blockers'];
 			}
-			console.log(blockers);
-			
+			//console.log(blockers);
 			var dtasksstr = '';
-			
 			var del ='';
 			for(var i=0;i<dtasks.length;i++)
 			{
 				dtasksstr += del+"<a href='"+link+"/browse/"+key+"'>"+dtasks[i]+"</a>";
 				del="&nbsp&nbsp";
 			}
-			
 			var del ='';
 			for (var key in blockedtasks)
 			{
@@ -228,19 +217,16 @@ $(document).ready(function()
 			}
 			var rowstr = '<tr ';
 			rowstr += "data-tt-id='"+id+"' ";
-
 			if(pid != '')
 				rowstr += "data-tt-parent-id='"+pid+"'";
-			
-
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
-			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
-			rowstr += id+" "+title;
+			rowstr += "<td title='"+title+"' style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			rowstr += title+"</td>";
+			rowstr += "<td>";
 			if(duplicate == 1)
 			{
 				rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Duplicate&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
 			}
-			
 			if((oissuetype == 'Risk')&&(status != 'RESOLVED'))
 			{
 				if(risk_severity == 'Critical')
@@ -263,26 +249,21 @@ $(document).ready(function()
 				else
 					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Issue&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
 			}
-			
 			if(issuetype == 'DEFECT')
 			{
 				if(status == 'RESOLVED')
 					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
 				else
 					rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
-
 			}
-
+			
 			rowstr += "</td>";
-
-
 			if(linktext == id)// Not a Jira Task 
 				rowstr += '<td></td>';
 			else
 				rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
 			rowstr += "<td class='blockers' style='font-size:.6rem;'>"+blockedtasksstr+"</td>";
 			rowstr += "<td class='dependencies' style='font-size:.6rem;'>"+dtasksstr+"</td>";
-			
 			if(sprintstate == 'ACTIVE')
 				style="color:green";
 			else if(sprintstate == 'FUTURE')
@@ -304,15 +285,11 @@ $(document).ready(function()
 			else
 				rowstr += '<td>'+assignee+'</td>';
 			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
-			
-			
 			rowstr += "<td>"+str+"</td>";
 			rowstr += "</tr>";
 			//console.log(rowstr);
 			$('#tablebody').append(rowstr);
 		}
-		
-		
 		/*dependencies=0;
 		blockers =0;
 		sprints=0;*/
@@ -320,31 +297,27 @@ $(document).ready(function()
 		$('#container').css('width',width+'%');
 		if(dependencies == 0)
 		{
-			width = width-10;
+			width = width-5;
 			$('.dependencies').hide();
 			$('#container').css('width',width+'%');
 		}
 		if(blockers == 0)
 		{
-			width = width-10;
+			width = width-5;
 			$('.blockers').hide();
 			$('#container').css('width',width+'%');
 		}
-		
-		
 		if(sprints == 0)
 		{
-			width = width-10;
+			width = width-5;
 			$('.blockers').hide();
 			$('.sprintcolumn').hide();
 		}
 		$('#container').css('display','block');
-		
 		$("#treetable").treetable({ expandable: true });
 		$("#treetable").show();
 		$("#legend").show();
 		$("#treetable").treetable("expandNode", "1");
-		
 	}
 })
 @endsection
