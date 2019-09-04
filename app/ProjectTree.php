@@ -289,9 +289,11 @@ class Task
 		if(isset($task->fields->assignee))
 		{
 			$resource =  new Resource;
-			$resource->name = $task->fields->assignee->name;
+			$resource->name = str_replace (".", "_", $task->fields->assignee->name);
 			$resource->displayname = $task->fields->assignee->displayName;
-			$resource->email = $task->fields->assignee->emailAddress;
+			$resource->email = '';
+			if(isset($task->fields->assignee->emailAddress))
+				$resource->email = $task->fields->assignee->emailAddress;
 			$resource->timeZone = $task->fields->assignee->timeZone;
 
 			$this->parent->resources[$task->fields->assignee->name]	= $resource;

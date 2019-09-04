@@ -72,6 +72,12 @@ figure figcaption {
 				<figcaption styleclass="caption">Milestone</figcaption>
 			</figure>
 		</div>
+		<div class="col-3">
+			<figure class="item">
+				<a href="{{route('showwmilestonereport',[$user->name,$project->name])}}"><img style="width:130px;height:130px;box-shadow: 5px 5px 5px grey;" src="/images/status.png"></img></a>
+				<figcaption styleclass="caption">Summary</figcaption>
+			</figure>
+		</div>
   </div>
   <div style="margin-top:10px;" class="row">
 		<div class="col-3">
