@@ -251,17 +251,19 @@ $(document).ready(function()
 			}
 			if(issuetype == 'DEFECT')
 			{
-				if(status == 'RESOLVED')
-					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
-				else
-					rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				if(status != 'RESOLVED')
+				{
+					if(priority == 1)
+						rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+					else
+						rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				}
 			}
-			
 			rowstr += "</td>";
 			if(linktext == id)// Not a Jira Task 
 				rowstr += '<td></td>';
 			else
-				rowstr += "<td><a style='font-size:.6rem; color:"+color+";' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+				rowstr += "<td><a style='font-size:.6rem;' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
 			rowstr += "<td class='blockers' style='font-size:.6rem;'>"+blockedtasksstr+"</td>";
 			rowstr += "<td class='dependencies' style='font-size:.6rem;'>"+dtasksstr+"</td>";
 			if(sprintstate == 'ACTIVE')
