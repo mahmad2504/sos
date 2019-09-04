@@ -11,7 +11,7 @@
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:none" class="center">
 
 	<div class="loading">Loading&#8230;</div>
-	<p id='description'>Description</p>
+	<p id='description'></p>
 	<table id="treetable" style="display:none;  box-shadow: 10px 5px 5px grey;" class="table">
 		<caption style="caption-side:top;text-align: center">
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
