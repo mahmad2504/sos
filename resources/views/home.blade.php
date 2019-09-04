@@ -22,6 +22,8 @@ input {
 <div class="container">
 	@if($admin)
 		<h3>Program Dashboard - {{$user->name}}</h3>
+	@else
+		<h3>Program Board</h3>
 	@endif
     <button rel="tooltip" title="Create New Project" id="new_project" class="btn btn-primary float-left" data-toggle="modal" data-target="#psettings_modal">Add Project</button>
 	@if($user->role == 'admin')
