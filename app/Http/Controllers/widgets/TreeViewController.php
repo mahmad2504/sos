@@ -112,7 +112,8 @@ class TreeViewController extends Controller
 			$this->blockedtasks[$task->key] = $task;
 		$row['extid'] = $task->extid;
     	$row['pextid'] = $task->pextid;
-    	$row['issuetype'] = $task->issuetype;
+		$row['issuetype'] = $task->issuetype;
+		$row['oissuetype'] = $task->oissuetype;
     	$row['summary'] = $task->_summary;
     	$row['jiraurl'] = $this->jiraurl;
     	$row['key'] = $task->key;
@@ -127,6 +128,7 @@ class TreeViewController extends Controller
 		$row['sprintstate'] = $task->sprintstate;
 		$row['sprintid'] = $task->sprintid;
 		$row['assignee'] = $task->assignee;
+		$row['risk_severity'] = $task->risk_severity;
 		if($first)
 		{
 			$row['blockers'] = $task->blockers_present;

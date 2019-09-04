@@ -163,6 +163,7 @@ class Task
 		$this->sprintno = -1;
 		$this->issuetype = 'PROJECT';
 		$this->assignee = 'unassigned';
+		$this->risk_severity = 'None';
 		$this->dependencies_present = 0; // valid only for head
 		$this->blockers_present = 0; // valid only for head
 		$this->dependson = [];
@@ -206,9 +207,11 @@ class Task
 	{
 		//echo $query."<br>";
 		$story_points = $jiraconf['storypoints']; // custom field
+		$risk_severity = $jiraconf['risk_severity']; // custom field
+		
 		$sprint = $jiraconf['sprint']; // custom field
 		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
-		$tasks = Jira::Search($query,1000,$fields.','.$story_points.',timeoriginalestimate,timespent,'.$sprint,$order);
+		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint,$order);
 			
 		return $tasks;
 	}
@@ -216,6 +219,7 @@ class Task
 	{
 		global $unestimated_count;
 		$story_points = $jiraconf['storypoints']; // custom field
+		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$sprint = $jiraconf['sprint']; // custom field
 
 		$ntask = new Task($this->parent,$level,$pextid,$pos);
@@ -317,11 +321,15 @@ class Task
 		if(isset($task->fields->$story_points))
 			$ntask->storypoints = $task->fields->$story_points;
 
-		$ntask->estimate = $ntask->_orig_estimate;
+		if(isset($task->fields->$risk_severity))
+		{
+			$ntask->risk_severity = $task->fields->$risk_severity->value;
+		}
 
+		$ntask->estimate = $ntask->_orig_estimate;
 		$ntask->priority = $task->fields->priority->id;
-		if($ntask->key == 'IP-83')
-			Utility::ConsoleLog(time(),$ntask->key." TESTING");
+		//if($ntask->key == 'IP-72')
+		//	dd($task);
 		$ntask->dependson = [];
 		foreach($task->fields->issuelinks as $issuelink)
 		{

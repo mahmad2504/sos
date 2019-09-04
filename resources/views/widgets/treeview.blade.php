@@ -155,11 +155,14 @@ $(document).ready(function()
 			var title=row['summary'];
 			var link=row['jiraurl'];
 			var linktext=row['key'];
+			var issuetype = row['issuetype'];
+			var oissuetype=row['oissuetype'];
 			var estimate=Math.round(row['estimate']);
 			var timespent=Math.round(row['timespent']);
 			var progress=round(row['progress'],1);
 			var status=row['status'];
 			var priority=row['priority'];
+			var risk_severity = row['risk_severity'];
 			var blockedtasks=row['blockedtasks'];
 			var sprintstate = row['sprintstate'];
 			var sprintname = row['sprintname'];
@@ -171,7 +174,7 @@ $(document).ready(function()
 			
 			var blockedtasksstr = '';
 			
-			
+			console.log(row['key'],oissuetype,priority);
 			var dtasks=row['dependson'];
 			if(row['dependencies'] !== undefined)
 			{
@@ -232,14 +235,46 @@ $(document).ready(function()
 
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
 			rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			rowstr += id+" "+title;
 			if(duplicate == 1)
 			{
-				rowstr += id+" "+title+'&nbsp&nbsp<span   class="badge badge-warning">Duplicate&nbsp&nbsp&nbsp&nbsp</span>'+"</span></td>";
+				rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Duplicate&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
 			}
-			else
-				rowstr += id+"  "+title+"</span></td>";
-
 			
+			if((oissuetype == 'Risk')&&(status != 'RESOLVED'))
+			{
+				if(risk_severity == 'Critical')
+					rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Risk&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else if(risk_severity == 'High')
+					rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Risk&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else if((risk_severity == 'Medium')||(risk_severity == 'Low'))
+					rowstr += '&nbsp&nbsp<span   class="badge badge-light">Risk&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else
+					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Risk&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+			}
+			else if((oissuetype == 'Issue')&&(status != 'RESOLVED'))
+			{
+				if(risk_severity == 'Critical')
+					rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Issue&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else if(risk_severity == 'High')
+					rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Issue&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else if((risk_severity == 'Medium')||(risk_severity == 'Low'))
+					rowstr += '&nbsp&nbsp<span   class="badge badge-light">Issue&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else
+					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Issue&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+			}
+			
+			if(issuetype == 'DEFECT')
+			{
+				if(status == 'RESOLVED')
+					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else
+					rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+
+			}
+
+			rowstr += "</td>";
+
 
 			if(linktext == id)// Not a Jira Task 
 				rowstr += '<td></td>';
@@ -260,7 +295,7 @@ $(document).ready(function()
 				sprints = 1;
 			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
 			if(estimate > 0)
-				rowstr += "<td>"+estimate+" "+timespent+" "+estimate_units+"</td>";
+				rowstr += "<td>"+estimate+"  "+estimate_units+"</td>";
 			else
 				rowstr += "<td></td>";
 

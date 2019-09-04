@@ -312,6 +312,7 @@ $(document).ready(function()
 		console.log(optionSelected);
 		milestone = milestones[optionSelected];
 		url = baseurl+"/"+milestone.key;
+		ShowLoading();
 		LoadGanttData();
 	});
 	$('#dashboard_menuitem').show();
