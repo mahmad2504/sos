@@ -12,9 +12,9 @@
 @section('content')
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
 	<div class="loading">Loading&#8230;</div>
-	<p id='description'>Description</p>
+	<h3 id='description'>Milestone Configuration</h3>
 	<div id="selectedtable"></div><br>
-	<input id="showall"  field="all"  type="checkbox" false>Show All</input> 
+	<input id="showall"  field="all"  type="checkbox" false>Show All Project Tasks</input> 
 	<table id="treetable" style="display:none;" class="table">
 		<caption style="caption-side:top;text-align: center">
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
@@ -89,7 +89,7 @@ var estimate_units = '';
 function OnProjectDataReceived(response)
 {
 	//console.log(response.description);
-	$('#description').append(response.description);
+	//$('#description').append(response.description);
 	if(response.estimation == 0)
 	{
 		header = 'Story Points';
