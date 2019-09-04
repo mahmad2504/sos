@@ -39,7 +39,7 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm d-none">
             <div class="container">
                 <a id="home_menuitem" class="navbar-brand" href="{{ url('/') }}">
-                    Home
+                    Program
                 </a>
 				<a id="dashboard_menuitem" style="display:none" class="navbar-brand" href="{{ url('/') }}">
                     Dashboard
