@@ -249,15 +249,13 @@ $(document).ready(function()
 				else
 					rowstr += '&nbsp&nbsp<span   class="badge badge-secondary">Issue&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
 			}
-			if(issuetype == 'DEFECT')
+			if((issuetype == 'DEFECT')&&(status != 'RESOLVED'))
 			{
-				if(status != 'RESOLVED')
-				{
-					if(priority == 1)
-						rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
-					else
-						rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
-				}
+				if(priority == 1)
+					rowstr += '&nbsp&nbsp<span   class="badge badge-danger">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				else
+					rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Defect&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";
+				
 			}
 			rowstr += "</td>";
 			if(linktext == id)// Not a Jira Task 

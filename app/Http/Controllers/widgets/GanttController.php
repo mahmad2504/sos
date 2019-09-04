@@ -185,10 +185,14 @@ class GanttController extends Controller
 		$row['pStatus'] = $task->status;
 		$row['pPrioriy'] = $task->schedule_priority;
 		$row['pJira'] = $task->key;
-		$row['deadline'] = $task->_duedate;
-		if($row['deadline'] == null)
+		if($task->status == 'RESOLVED')
 			$row['deadline'] = '';
-
+		else
+		{
+			$row['deadline'] = $task->_duedate;
+			if($row['deadline'] == null)
+				$row['deadline'] = '';
+		}
 		$this->data[] = $row;
 		foreach($task->children as $ctask)
 		{
