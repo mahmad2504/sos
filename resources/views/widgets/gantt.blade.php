@@ -13,11 +13,27 @@
     }
 @endsection
 @section('content')
-
+<?php $selected = 0;?>
 <div id="container" style="width:95%; margin-left: auto; margin-right: auto; display:block" class="center">
+	<select style="margin-left:10px;" class="form-control-sm" id="milestones" name="jirauri">
+		@for($i=0;$i<count($milestones);$i++)
+			@if (strcmp($milestones[$i]->key,$key)==0)
+				<option value="i" selected="selected">{{$milestones[$i]->summary}}</option>
+				{{ $selected = 1}}
+			@else
+				<option value="i">{{$milestones[$i]->summary}}</option>
+			@endif
+		@endfor
+
+		@if ($selected == 0)
+			<option value="i" selected="selected">{{$key}}</option>
+		@endif
+	</select>
+	<hr>
 	<div class="loading">Loading&#8230;</div>
+
 	<!-- <button id="chart" style="display:hidden" type="button" class="float-right btn btn-outline-success btn-sm">Hide Chart</button> -->
-	<p id='description'>Description</p>
+	<!--<p id='description'>Description</p>-->
 	<div style="border:1px solid black; position:relative" class="gantt" id="GanttChartDIV"></div>
 </div>
 
@@ -33,6 +49,11 @@ var cur_row = null;
 var jiraurl =  null;
 var  vMaxDate = null;
 var isloggedin = {{$isloggedin}};
+var key = '{{$key}}';
+var milestones = @json($milestones);
+var baseurl = '{{route('getganttdata',[$project->id])}}';
+var url = baseurl+"/"+key;
+
 function drawCustomElements(g) {
   for (const item of g.getList()) {
     if (item.getDataObject().deadline) {
@@ -237,7 +258,7 @@ function OnProjectDataReceived(response)
 {
 	//console.log(response);
 	jiraurl = response.jiraurl;
-	$('#description').text(response.description);
+	//$('#description').text(response.description);
 }
 function OnChartChangeClick(event)
 {
@@ -258,23 +279,12 @@ function OnChartChangeClick(event)
 		$('#chart').text('Hide Chart');
 	}
 }
-$(document).ready(function()
+function LoadGanttData()
 {
-	if(isloggedin)
-	{
-		$('.navbar').removeClass('d-none');
-		$('#dashboard_menuitem').show();
-		$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
-	}
-
-	$('#dashboard_menuitem').show();
-	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
-	$('#chart').on('click',OnChartChangeClick);
-	LoadProjectData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
 	$.ajax(
 	{
 		type:"GET",
-		url:"{{ route('getganttdata',[$project->id]) }}/?key={{$key}}",
+		url:url,
 		data:null,
 		success: function(response)
 		{
@@ -288,6 +298,27 @@ $(document).ready(function()
 			mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){window.location.href = "/";})
 		}
 	});
+}
+$(document).ready(function()
+{
+	if(isloggedin)
+	{
+		$('.navbar').removeClass('d-none');
+		$('#dashboard_menuitem').show();
+		$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	}
+	$('#milestones').on('change', '', function (e) {
+		var optionSelected = $('#milestones').prop('selectedIndex');
+		console.log(optionSelected);
+		milestone = milestones[optionSelected];
+		url = baseurl+"/"+milestone.key;
+		LoadGanttData();
+	});
+	$('#dashboard_menuitem').show();
+	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	$('#chart').on('click',OnChartChangeClick);
+	LoadProjectData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
+	LoadGanttData();
 	return;
 })
 @endsection

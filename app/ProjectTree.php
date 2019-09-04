@@ -12,6 +12,7 @@ class Task
 {
 	public $children = array();
 	public $parent = null;
+
 	public function __get($field) 
 	{
 		switch($field)
@@ -54,6 +55,8 @@ class Task
 				return $this->parent->project->estimation;
 				break;
 			case '_orig_estimate':
+				if(isset($this->oestimate))
+					return $this->oestimate; 
 				if($this->parent->project->estimation == 0)// Story points
 					return  $this->storypoints;
 				else
@@ -223,7 +226,7 @@ class Task
 		$ntask->updated = $task->fields->updated;
 		if(isset($task->fields->resolutiondate))
 			$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
-		echo $ntask->key." ".$ntask->closedon."<br>";
+		//echo $ntask->key." ".$ntask->closedon."<br>";
 		$ntask->status = $this->MapStatus($task->fields->status->name);
 		if(($ntask->status == 'RESOLVED') and ($ntask->closedon == null))
 		{
@@ -568,6 +571,22 @@ class ProjectTree
 
 		return $task->status;
 	}
+	function ComputeOEstimate($task)
+	{
+		if($task->isparent == 0)
+		{
+			if($task->duplicate == 1)
+				return 0;
+			return $task->_orig_estimate;
+		}
+		$children = $task->children;
+		$acc = 0;
+		foreach($task->children as $child)
+			$acc += $this->ComputeOEstimate($child);
+
+		$task->oestimate = $acc; // Only set for group tasks which is fine.
+		return $task->oestimate;
+	}
 	function ComputeEstimate($task)
 	{
 		if($task->isparent == 0)
@@ -776,6 +795,9 @@ class ProjectTree
 		$this->ComputeEstimate($task);
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
+		$this->ComputeOEstimate($task);
+
+	
 
 		//$otasks = $this->tasks;
 		//$this->tasks = [];
@@ -933,6 +955,17 @@ class ProjectTree
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
 		//dd($this->tasks);
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
+	}
+	function ReadBaseline()
+	{
+		if(file_exists($this->baselinepath))
+		{
+			$this->baselinetree = unserialize(file_get_contents($this->baselinepath));
+			$baselineproject = new ProjectTree($this->project);
+			return $baselineproject;
+		}
+		return null;
+
 	}
 	function SaveBaseline()
 	{

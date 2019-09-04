@@ -31,6 +31,7 @@ class BurnupController extends Controller
 		{
             $key = (string)1;
         }
+		$key = (string)$key;
 		
         $projecttree = new ProjectTree($project);
         
@@ -38,20 +39,28 @@ class BurnupController extends Controller
              $head = $projecttree->tasks[$key];
         else
             abort(403, 'Key '.$key.' Not Found');
-       
-       
-       
+		
         $isloggedin = Auth::check();
 		if($isloggedin)
 			$isloggedin = 1;
 		else
 			$isloggedin = 0;
 		
+		$ms =  $projecttree->GetMilestones($projecttree->tree);
+		$milestones =  array();
+		foreach($ms as $m)
+		{
+			$milestone = new \StdClass();
+			$milestone->summary = $m->_summary;
+			$milestone->key = $m->key;
+			$milestones[] = $milestone;
+		}
+		
 		$data = $projecttree->GetBurnUpData($head);
 		
 		if(count($data->data)==0)
 			abort(403, 'Burnup Chart Does Not Exist');
-		return View('widgets.burnup',compact('user','project','isloggedin','data','key'));
+		return View('widgets.burnup',compact('user','project','isloggedin','data','key','milestones'));
 	}
 	
 }

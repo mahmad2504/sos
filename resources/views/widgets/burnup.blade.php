@@ -7,7 +7,26 @@
 .pill {font-size:.7rem;box-shadow: 0 0 2px 1px rgba(1, 0, 0, 0.5)}
 @endsection
 @section('content')
+<?php $selected = 0;?>
+
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
+	<div class="d-flex form-group">
+			<label style="margin-top:3px;" for="jirauri">Milestones</label>
+			<select style="margin-left:10px;" class="form-control-sm" id="milestones" name="jirauri">
+				@for($i=0;$i<count($milestones);$i++)
+					@if (strcmp($milestones[$i]->key,$key)==0)
+						<option value="i" selected="selected">{{$milestones[$i]->summary}}</option>
+						{{ $selected = 1}}
+					@else
+						<option value="i">{{$milestones[$i]->summary}}</option>
+					@endif
+				@endfor
+
+				@if ($selected == 0)
+					<option value="i" selected="selected">{{$key}}</option>
+				@endif
+			</select>
+	</div>
 	<div class="row">
 		<div class="col-12">
 			<div style="box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.5);" class="card text-center">
@@ -37,6 +56,8 @@ var project =  @json($project);
 var isloggedin = {{$isloggedin}};
 var data = @json($data);
 var key = '{{$key}}';
+var milestones = @json($milestones);
+var url = '{{route('showwburnupchart',[$user->name,$project->name])}}';
 'use strict';
 
 if(isloggedin)
@@ -50,6 +71,15 @@ $(function()
 {
 	var graphdata = [];
 	i = 0;
+	$('#milestones').on('change', '', function (e) {
+		var optionSelected = $('#milestones').prop('selectedIndex');
+		console.log(optionSelected);
+		milestone = milestones[optionSelected];
+		url = url+"/"+milestone.key;
+		ShowLoading();
+		window.location.replace(url);
+	
+	});
 	lowvelocity = IsVleocityLow(data.cv,data.rv);
 
 	//console.log(data);

@@ -49,13 +49,23 @@ class GanttController extends Controller
 		{
 			$key = (string)1;
 		}
-		return View('widgets.gantt',compact('user','project','isloggedin','key'));
+		$projecttree = new ProjectTree($project);
+		$ms =  $projecttree->GetMilestones($projecttree->tree);
+		$milestones =  array();
+		foreach($ms as $m)
+		{
+			$milestone = new \StdClass();
+			$milestone->summary = $m->_summary;
+			$milestone->key = $m->key;
+			$milestones[] = $milestone;
+		}
+		return View('widgets.gantt',compact('user','project','isloggedin','key','milestones'));
 	}
 	public function GetData(Request $request)
 	{
-		//return file_get_contents('data.json');
-		
-		if($request->id==null)
+
+		//return file_get_contents('data.json');		
+		if($request->projectid==null)
 		{
 			$returnData = array(
 				'status' => 'error',
@@ -63,15 +73,15 @@ class GanttController extends Controller
 			);
 			return Response::json($returnData, 500);
 		}
-		$projects = Project::where('id',$request->id)->get();
-			if(count($projects)==0)
-			{
-				$returnData = array(
-				'status' => 'error',
-				'message' => 'Project Not Found'
-			);
-			return Response::json($returnData, 500);
-			}
+		$projects = Project::where('id',$request->projectid)->get();
+		if(count($projects)==0)
+		{
+			$returnData = array(
+			'status' => 'error',
+			'message' => 'Project Not Found'
+		);
+		return Response::json($returnData, 500);
+		}
 		$project = $projects[0];
 		$projecttree = new ProjectTree($project);
 		
@@ -80,7 +90,7 @@ class GanttController extends Controller
 		{
 			$key = (string)1;
 		}
-
+	
 		if(array_key_exists($key,$projecttree->tasks))
              $head = $projecttree->tasks[$key];
         else

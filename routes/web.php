@@ -49,8 +49,8 @@ Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboar
 Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@Show')->name('showtreeview');
 Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetData')->name('gettreeviewdata');// project id
 
-Route::get('/widget/gantt/{user}/{project}','Widgets\GanttController@Show')->name('showgantt');
-Route::get('/widget/data/gantt/{id}','Widgets\GanttController@GetData')->name('getganttdata');// project id
+Route::get('/widget/gantt/{user}/{project}/{key?}','Widgets\GanttController@Show')->name('showgantt');
+Route::get('/widget/data/gantt/{projectid}/{key?}','Widgets\GanttController@GetData')->name('getganttdata');// project id
 
 Route::get('/widget/timechart/{user}/{project}','Widgets\TimeChartController@Show')->name('showtimechart');
 Route::get('/widget/data/timechart/{projectid}','Widgets\TimeChartController@GetData')->name('gettimechartdata');// project id
@@ -61,10 +61,10 @@ Route::get('/widget/data/report/weekly/{user}/{project}','Widgets\ReportControll
 
 
 //// Burnup
-Route::get('/widget/burnup/{user}/{project}/{jira?}','Widgets\BurnupController@Show')->name('showwburnupchart');
+Route::get('/widget/burnup/{user}/{project}/{key?}','Widgets\BurnupController@Show')->name('showwburnupchart');
 
 /// Milestone Report
-Route::get('/widget/milestone/{user}/{project}/{jira?}','Widgets\MilestoneController@Show')->name('showwmilestonereport');
+Route::get('/widget/milestone/{user}/{project}/{key?}','Widgets\MilestoneController@Show')->name('showwmilestonereport');
 
 
 //// Project Resource //////

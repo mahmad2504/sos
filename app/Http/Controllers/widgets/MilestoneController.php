@@ -49,8 +49,10 @@ class MilestoneController extends Controller
             $key = (string)1;
         }
 		
-        $projecttree = new ProjectTree($project);
-        
+		$projecttree = new ProjectTree($project);
+	
+		
+
         if(array_key_exists($key,$projecttree->tasks))
              $head = $projecttree->tasks[$key];
         else
@@ -63,6 +65,7 @@ class MilestoneController extends Controller
 			$isloggedin = 0;
 		//$data = $projecttree->GetBurnUpData($head);
 		$milestones = $projecttree->GetMilestones($head);
+
 		
 	
 		$header[]='Description';
@@ -78,23 +81,40 @@ class MilestoneController extends Controller
 		$header[]='Indicators';
 		$header[]='Reports';
 		
+		$baselinetree = $projecttree->ReadBaseline();
+		
+
 		$data = [];
 		for($i=0;$i<count($milestones);$i++)
 		{
 			$milestone = $milestones[$i];
-			
+			if(array_key_exists($milestone->key,$baselinetree->tasks))
+				$baselinetask = $baselinetree->tasks[$milestone->key];
+			else
+				$baselinetask =  null;
+	  		
 			$burnupdata = $projecttree->GetBurnUpData($milestone);
+			
+			//baselinetree->tree() MUMTAZ
+			
 			//dd($burnupdata);
 			$row =  array();
 		
 			$row[] = $milestone->_summary;
-			$row[] = '2010-12-12';
+			if($baselinetask != null)
+				$row[] = $baselinetask->_duedate;
+			else
+				$row[] = '';
 			$row[] = $milestone->_duedate;
 			if($milestone->status == 'RESOLVED')
 				$row[] = '';
 			else
 				$row[]  = $milestone->_sched_end;
-			$row[] =  8;// Baseline
+			if($baselinetask != null)
+				$row[] =  $baselinetask->_orig_estimate;
+			else
+				$row[] = '';
+
 			$row[] =  $milestone->estimate;
 			$row[] =  $milestone->estimate - $milestone->timespent ;
 			$row[] =  $milestone->progress;
