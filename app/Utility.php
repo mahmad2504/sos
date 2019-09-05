@@ -5,6 +5,12 @@ use App;
 use  App\Project;
 class Utility
 {
+	public function  IsVleocityLow($cv,$rv)
+	{
+		if($cv < (85/100)*$rv)
+			return 1;
+		return 0;
+	}
 	public static function   IsItHoliday($date)
 	{
 		$day = Date('D',strtotime($date));

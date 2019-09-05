@@ -66,6 +66,9 @@ Route::get('/widget/burnup/{user}/{project}/{key?}','Widgets\BurnupController@Sh
 /// Milestone Report
 Route::get('/widget/milestone/{user}/{project}/{key?}','Widgets\MilestoneController@Show')->name('showwmilestonereport');
 
+/// Milesrone status Report
+Route::get('/widget/status/{user}/{project}/{key?}','Widgets\MilestoneController@ShowStatus')->name('showwmilestonestatus');
+
 
 //// Project Resource //////
 Route::get('/projectresource/{project_id}','ProjectResourceController@Show')->name('showprojectresources'); // project id as input param

@@ -1404,4 +1404,10 @@ class ProjectTree
 		}
 		return $this->milestones;
 	}
+	function GetTask($key)
+	{
+		if(array_key_exists($key,$this->tasks))
+            return $this->tasks[$key];
+		return null;
+	}
 }
