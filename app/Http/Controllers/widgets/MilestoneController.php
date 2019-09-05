@@ -61,79 +61,32 @@ class MilestoneController extends Controller
 		$head = $projecttree->GetTask($key);
 		if($head == null)
         	abort(403, 'Key '.$key.' Not Found');
-       
+		
 
 		//$data = $projecttree->GetBurnUpData($head);
 		$milestones = $projecttree->GetMilestones($head);
-
-		
-	
-		$header[]='Description';
-		$header[]='Baseline End';
-		$header[]='Current End';
-		$header[]='Forecast End';
-
-		$header[]='Baseline EAC';
-		$header[]='Current EAC';
-		$header[]='Remaining';
-	
-		$header[]='Progress';
-		$header[]='Indicators';
-		$header[]='Reports';
 		
 		$baselinetree = $projecttree->ReadBaseline();
-		
-
 		$data = [];
 		for($i=0;$i<count($milestones);$i++)
 		{
-			$milestone = $milestones[$i];
-			if(array_key_exists($milestone->key,$baselinetree->tasks))
-				$baselinetask = $baselinetree->tasks[$milestone->key];
-			else
-				$baselinetask =  null;
-	  		
-			$burnupdata = $projecttree->GetBurnUpData($milestone);
-			
-			//baselinetree->tree() MUMTAZ
-			
-			//dd($burnupdata);
-			$row =  array();
-		
-			$row[] = $milestone->_summary;
-			if($baselinetask != null)
-				$row[] = $baselinetask->_duedate;
-			else
-				$row[] = '';
-			$row[] = $milestone->_duedate;
-			if($milestone->status == 'RESOLVED')
-				$row[] = '';
-			else
-				$row[]  = $milestone->_sched_end;
-			if($baselinetask != null)
-				$row[] =  $baselinetask->_orig_estimate;
-			else
-				$row[] = '';
-
-			$row[] =  $milestone->estimate;
-			$row[] =  $milestone->estimate - $milestone->timespent ;
-			$row[] =  $milestone->progress;
-			$row[] =  $milestone->status;
-			$row[] =  $burnupdata->cv; 
-			$row[] =  $burnupdata->rv; 
-			$row[] =  $milestone->key;
+			$task = $milestones[$i];
+				
+			if($baselinetree != null)
+				$baselinetask = $baselinetree->GetTask($task->key);
+			$burnupdata = $projecttree->GetBurnUpData($task);
+			$task->cv = $burnupdata->cv;
+			$task->rv = $burnupdata->rv;
+			$row = $this->FillStatusData($task,$baselinetask);
 			$data[] = $row;
 		}
-		
-		usort($data,array($this,'Sort'));
-		$test[] = 'f';
-		$data = array_merge($test,$data);
-		$data[0] = $header;
 		$isloggedin = $this->isloggedin;
+		
 		return View('widgets.milestone',compact('user','project','isloggedin','data','key'));
 	}
 	private function FillStatusData($task,$baselinetask)
 	{
+		$data = array();
 		$data['bend'] = '';
 		$data['bestimate'] = '';	
 		if($baselinetask != null)
@@ -141,7 +94,6 @@ class MilestoneController extends Controller
 			$data['bend'] = $baselinetask->_tend;
 			$data['bestimate'] =  $baselinetask->_orig_estimate;
 		}
-		
 		$data['summary'] = $task->_summary;
 		$data['tstart'] = $task->_tstart;
 		$data['tend'] = $task->_tend;

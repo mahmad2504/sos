@@ -1,45 +1,13 @@
 @extends('layouts.app')
 @section('csslinks')
 <link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
-
+<link rel="stylesheet" href="{{ asset('css/table.css') }}" />
 @endsection
 @section('style')
-    .zui-table 
-    {
-        width: 100%;
-        border: solid 1px #000000;
-        border-collapse: collapse;
-        border-spacing: 0;
-        font: normal 13px Arial, sans-serif;
-        background-color: #fff;
-        box-shadow: 3px 3px 3px grey;
-       
-        border-radius: 5px;
-    }
-    .zui-table thead th {
-        background-color: #DDEFEF;
-        border: solid 2px #cdcdcd;
-        font: normal 15px Arial, sans-serif;
-        font-weight: bold;
-        color: #000;
-        padding: 10px;
-        text-align: center;
-        text-shadow: 1px 1px 1px #fff;
-    }
-    .zui-table tbody td {
-        border: solid 2px #cdcdcd;
-        color: #333;
-        padding: 10px;
-        text-align: center;
-        text-shadow: 1px 1px 1px #fff;
-    }
-    .small {
-        font: normal 13px Arial, sans-serif;
-    }
-
+ 
 @endsection
 @section('content')
-<div width="100%" class="container" >
+<div class="center" style="background-color:AliceBlue ;">
     <h4 id="summary" style="margin-bottom:-17px;"></h4>
     	<table class="zui-table">
         <thead>
@@ -96,7 +64,7 @@ var data = @json($data);
 var key = '{{$key}}';
 
 
-$('#summary').text(data['summary']);
+$('#summary').text('Status '+data['summary']);
 
 var weekdate = ConvertDateFormat(data['tstart']);
 $('#tstart').html(ConvertDateToString(data['tstart'])+"<br><small class='grey-text'>"+weekdate+"</small>");
