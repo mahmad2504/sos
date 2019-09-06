@@ -77,6 +77,7 @@ class MilestoneController extends Controller
 			$burnupdata = $projecttree->GetBurnUpData($task);
 			$task->cv = $burnupdata->cv;
 			$task->rv = $burnupdata->rv;
+			
 			$row = $this->FillStatusData($task,$baselinetask);
 			$data[] = $row;
 		}
@@ -114,6 +115,7 @@ class MilestoneController extends Controller
 					$data['status'] = 'STALL';
 			}
 		}
+	
 		return $data;
 	}
 	public function ShowStatus($user, $project,$key="1")
@@ -143,6 +145,8 @@ class MilestoneController extends Controller
 			$data['bestimate'] =  $baselinetask->_orig_estimate;
 		}
 		$data = $this->FillStatusData($task,$baselinetask);
+		$data['risksissues'] = $projecttree->GetRiskAndIssues($task);
+	
 		$isloggedin = $this->isloggedin;
 		return View('widgets.status',compact('user','project','isloggedin','data','key'));
 	}

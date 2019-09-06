@@ -1410,4 +1410,28 @@ class ProjectTree
             return $this->tasks[$key];
 		return null;
 	}
+	
+	function GetRiskAndIssues($task,$firstcall=1)
+	{
+		if($firstcall)
+		{
+			$this->risks = array();
+			$this->issues = array();
+		}
+		if(($task->risk_severity != 'None')&&($task->status != 'RESOLVED'))
+		{
+			if($task->oissuetype == 'Risk')
+				$this->issues[$task->risk_severity][$task->key] = $task->risk_severity;
+			else if($task->oissuetype == 'Issue')
+				$this->risks[$task->risk_severity][$task->key] = $task->risk_severity;
+		}
+		foreach($task->children as $child)
+		{
+			$this->GetRiskAndIssues($child,0);
+		}
+		$data['risks'] =  $this->risks;
+		$data['issues'] =  $this->issues;
+		return $data;
+	}
+	
 }

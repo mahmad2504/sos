@@ -25,7 +25,7 @@
 	<tbody>
 		@for($i=0;$i<count($data);$i++)
 		<tr>
-			<td style="text-align: left;" id="desc{{$i}}"></td>
+			<td style="text-align: left;font-weight:bold" id="desc{{$i}}"></td>
 			<td id="bend{{$i}}"></td>
 			<td id="tend{{$i}}"></td>
 			<td id="end{{$i}}"></td>
