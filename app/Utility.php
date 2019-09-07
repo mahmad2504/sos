@@ -5,7 +5,7 @@ use App;
 use  App\Project;
 class Utility
 {
-	public function  IsVleocityLow($cv,$rv)
+	public static function  IsVleocityLow($cv,$rv)
 	{
 		if($cv < (85/100)*$rv)
 			return 1;

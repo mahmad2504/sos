@@ -1417,6 +1417,7 @@ class ProjectTree
 		{
 			$this->risks = array();
 			$this->issues = array();
+			$this->blockers = array();
 		}
 		if(($task->risk_severity != 'None')&&($task->status != 'RESOLVED'))
 		{
@@ -1425,12 +1426,17 @@ class ProjectTree
 			else if($task->oissuetype == 'Issue')
 				$this->risks[$task->risk_severity][$task->key] = $task->risk_severity;
 		}
+		if(($task->priority == 1)&&($task->status != 'RESOLVED'))
+			$this->blockers[$task->key] =$task->key;
+			
 		foreach($task->children as $child)
 		{
 			$this->GetRiskAndIssues($child,0);
 		}
 		$data['risks'] =  $this->risks;
 		$data['issues'] =  $this->issues;
+		$data['blockers'] =  $this->blockers;
+		
 		return $data;
 	}
 	

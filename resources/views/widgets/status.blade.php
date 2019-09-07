@@ -2,6 +2,7 @@
 @section('csslinks')
 <link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
 <link rel="stylesheet" href="{{ asset('css/table.css') }}" />
+
 @endsection
 @section('style')
  
@@ -9,12 +10,12 @@
 @section('content')
 <div class="center" style="background-color:AliceBlue ;">
         <h4 class="d-flex;" id="summary" style="margin-bottom:-17px;"></h4>
-        <span id="risklabel"  class="d-flex float-right" ></span>
         <span id="riskcount" class="d-flex float-right badge"></span>
         <span class="d-flex float-right" >&nbsp&nbsp</span>
-        <span id="issuelabel" class="d-flex float-right" ></span>
         <span id="issuecount" class="d-flex float-right badge"></span>
-
+        <span class="d-flex float-right" >&nbsp&nbsp</span>
+        <span id="blockercount" class="d-flex float-right badge"></span>
+        
     	<table class="zui-table">
         <thead>
             <tr>
@@ -58,8 +59,11 @@
            
         </tbody>
     </table>
+   
+	
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
+<script src="{{ asset('js/radialIndicator.min.js') }}" ></script>
 
 @endsection
 @section('script')
@@ -77,13 +81,24 @@ if(isloggedin)
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 }
-function UpdateRiskOnUi(risks, severity)
+function UpdateRiskOnUi(severity)
 {
+    count = 0;
+    for (var key in data['risksissues']['risks'][severity]) 
+    {
+        risks[count] = key;
+        count++
+    }
+
     if(risks.length > 0)
     {
         str = risks.toString();
         $('#riskcount').prop('title', str);
-        $('#riskcount').text(risks.length+" Issues");
+
+        if(risks.length == 1)
+             $('#riskcount').text(risks.length+" Risk");
+        else
+            $('#riskcount').text(risks.length+" Risks");
 
         if(severity == 'Critical')
         {
@@ -101,15 +116,23 @@ function UpdateRiskOnUi(risks, severity)
             $('#riskcount').prop('title', 'Medium Severity  - '+str);
         }
     }
-  
 }
-function UpdateIssueOnUi(risks, severity)
+function UpdateIssueOnUi(severity)
 {
+    count = 0;
+    for (var key in data['risksissues']['issues'][severity]) 
+    {
+        issues[count] = key;
+        count++
+    }
+    console.log(issues);
     if(issues.length > 0)
     {
         str = issues.toString();
-
-        $('#issuecount').text(issues.length+" Risks");
+        if(issues.length == 1)
+            $('#issuecount').text(issues.length+" Issue");
+        else
+            $('#issuecount').text(issues.length+" Issues");
 
         if(severity == 'Critical')
         {
@@ -127,7 +150,25 @@ function UpdateIssueOnUi(risks, severity)
             $('#issuecount').prop('title', 'Medium severity - '+str);
         }
     }
-  
+}
+function UpdateBlockersOnUi(severity)
+{
+    count = 0;
+    for (var key in data['risksissues']['blockers']) 
+    {
+        blockers[count] = key;
+        count++
+    }
+    if(blockers.length > 0)
+    {
+        str = blockers.toString();
+        if(blockers.length == 1)
+            $('#blockercount').text(blockers.length+" Blocker");
+        else
+            $('#blockercount').text(blockers.length+" Blockers");
+        $("#blockercount").addClass( "badge-danger" );
+        $('#blockercount').prop('title', 'Blocker  - '+str);
+    }
 }
 $(function() 
 {
@@ -147,102 +188,89 @@ $(function()
     var weekdate = ConvertDateFormat(data['end']);
     $('#end').html(ConvertDateToString(data['end'])+"<br><small class='grey-text'>"+weekdate+"</small>");
 
+    estimate = Math.round(data['estimate']);
+    bestimate = Math.round(data['bestimate']);
+    consumed = Math.round(data['consumed']);
+    remaining = estimate - consumed;
 
     if(project.estimation == 0)
     {
         $('#headerearned').text('Earned StoryPoints');
-        $('#estimate').text(data['estimate']+" Points" );
-        $('#bestimate').text(data['bestimate']+" Points" );
-        $('#consumed').text(data['consumed']+" Points" );
-        $('#remaining').text(data['remaining']+" Points" );
+        
+        if(estimate > 0)
+            $('#estimate').text(estimate+" Points" );
+        
+        if(bestimate > 0)
+            $('#bestimate').text(bestimate+" Points" );
+        
+        if(consumed > 0)
+            $('#consumed').text(consumed+" Points" );
+
+        if(remaining >0)
+            $('#remaining').text(remaining+" Points" );
     }
     else
     {
         $('#headerearned').text('Time Spent');
-        $('#estimate').text(data['estimate']+" Days" ); 
-        $('#bestimate').text(data['bestimate']+" Days" ); 
-        $('#consumed').text(data['consumed']+" Days" );
-        $('#remaining').text(data['remaining']+" Days" );
+        if(estimate > 0)
+            $('#estimate').text(estimate+" Days" ); 
+
+        if(bestimate > 0)
+            $('#bestimate').text(bestimate+" Days" ); 
+        
+        if(consumed > 0)
+            $('#consumed').text(consumed+" Days" );
+
+        if(remaining > 0)
+            $('#remaining').text(remaining+" Days" );
     }
-    $('#progress').text(data['progress']+" %" ); 
+    //$('#progress').text(data['progress']+" %" ); 
     $('#status').html("<img width='80px' src='/images/"+data['status']+".png'></img>"); 
 
     console.log(data['risksissues']['risks']);
     risks = [];
     issues = [];
+    blockers = [];
     // Risks ////
     if(data['risksissues']['risks']['Critical'] !==  undefined)
     {
-        console.log(data['risksissues']['risks']['Critical'].length, 'Critical', data['risksissues']['risks']);
-        count = 0;
-        for (var key in data['risksissues']['risks']['Critical']) 
-        {
-            risks[count] = key;
-            count++
-        }
-        UpdateRiskOnUi(risks,'Critical');
+        UpdateRiskOnUi('Critical');
     }else
     if(data['risksissues']['risks']['High'] !==  undefined)
     {
-        console.log(data['risksissues']['risks']['High'].length, 'High', data['risksissues']['risks']);
-        count = 0;
-        for (var key in data['risksissues']['risks']['High']) 
-        {
-            risks[count] = key;
-            count++
-        }
-        UpdateRiskOnUi(risks,'High');
+        UpdateRiskOnUi('High');
     }else
     if(data['risksissues']['risks']['Medium'] !==  undefined)
     {
-        console.log(data['risksissues']['risks']['Medium'].length, 'High', data['risksissues']['risks']);
-        count = 0;
-        for (var key in data['risksissues']['risks']['Medium']) 
-        {
-            risks[count] = key;
-            count++
-        }
-        UpdateRiskOnUi(risks,'Medium');
-    }else
-    {
-        console.log('Low', data['risksissues']['risks']);
+        UpdateRiskOnUi('Medium');
     }
+
     // Issue ////
     if(data['risksissues']['issues']['Critical'] !==  undefined)
     {
-        console.log(data['risksissues']['issues']['Critical'].length, 'Critical', data['risksissues']['issues']);
-        count = 0;
-        for (var key in data['risksissues']['issues']['Critical']) 
-        {
-            issues[count] = key;
-            count++
-        }
-        UpdateIssueOnUi(issues,'Critical');
+        UpdateIssueOnUi('Critical');
     }else
     if(data['risksissues']['issues']['High'] !==  undefined)
     {
-        console.log(data['risksissues']['issues']['High'].length, 'High', data['risksissues']['issues']);
-        count = 0;
-        for (var key in data['risksissues']['issues']['High']) 
-        {
-            issues[count] = key;
-            count++
-        }
-        UpdateIssueOnUi(issues,'High');
+        UpdateIssueOnUi('High');
     }else
     if(data['risksissues']['issues']['Medium'] !==  undefined)
     {
-        console.log(data['risksissues']['issues']['Medium'].length, 'High', data['risksissues']['issues']);
-        count = 0;
-        for (var key in data['risksissues']['issues']['Medium']) 
-        {
-            issues[count] = key;
-            count++
-        }
-        UpdateIssueOnUi(issues,'Medium');
-    }else
-    {
-        console.log('Low', data['risksissues']['issues']);
+        UpdateIssueOnUi('Medium');
     }
+    // Blockers
+    if(data['risksissues']['blockers'] !==  undefined)
+    {
+        UpdateBlockersOnUi(blockers,'Blocker');
+    }
+    $('#progress').radialIndicator({
+        barColor: '#2E8B57',
+        radius:15,
+        barWidth: 6,
+        initValue: Math.round(data['progress']),
+        roundCorner : true,
+        percentage: true
+    });
+
 });
 @endsection
