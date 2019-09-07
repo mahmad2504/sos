@@ -25,7 +25,18 @@ input {
 	@else
 		<h3>Program Board</h3>
 	@endif
-    <button rel="tooltip" title="Create New Project" id="new_project" class="btn btn-primary float-left" data-toggle="modal" data-target="#psettings_modal">Add Project</button>
+	
+	<div class="d-flex  mb-3">
+		<button rel="tooltip" title="Create New Project" id="new_project" class="mr-auto p-2 btn btn-primary" data-toggle="modal" data-target="#psettings_modal">Add Project</button>
+
+		<label style="margin-top:-5px;padding-left: 0px;text-indent: 0px;" class="float-right" for="show_closed_projects">Show Archived Projects</label>
+		<input style="margin-left:5px;"id="show_closed_projects" class="reload" type="checkbox" name="show_closed_projects" value="0"></input>
+	</div>
+
+	<a href='#'
+		<button rel="tooltip" title="Program Summary" id="program_summar" class="float-right btn btn-primary float-left" data-toggle="modal" data-target="#">Program Summary</button>
+	</a>
+
 	@if($user->role == 'admin')
 	<a href="/admin" style="margin-left:5px;" class="btn btn-info" role="button">Admin</a>
 	@endif
@@ -193,7 +204,7 @@ function OnNewProject(event)
 	settings.estimation = 0;
 	settings.error = '';
 	settings.sdate = MakeDate(dates.day(),dates.month()+1,dates.year());
-	settings.edate = MakeDate(dates.day(),dates.month()+1,dates.year()+1);
+	settings.edate = MakeDate(dates.day(),dates.month()+3,dates.year());
 	settings.jira_dependencies = 0;
 	
 	SetPsettingsModalFields(settings);
@@ -261,10 +272,16 @@ function AddCard(project,row)
 	
 	var headerstr ='<div  class="card-header border-success" style="background-color: #FFFAFA;">';
 		headerstr +='<div class="d-flex">';
-		if(errors == null)
-			headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
+		com = dates.compare(new Date(project.edate),new Date());
+		if(project.archived==1)
+			headerstr   +='<img src="/images/inactive.jpg" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 		else
-			headerstr +='<i style="margin-left:-10px;margin-right:10px;margin-top:5px;width:10px;height:10px;color:orange" class="fas fa-exclamation-triangle fa-xs"></i>';
+		{
+			if(com == 1)
+				headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
+			else
+				headerstr   +='<img src="/images/redpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
+		}
 
 		headerstr   +='<span rel="tooltip" title="Project Name" id="card-name-'+project.id+'">'+project.name;
 		headerstr +='<small style="" rel="tooltip" title="Estimation Method" class="text-muted">&nbsp&nbsp&nbsp'+estimation+'</small>';
@@ -274,7 +291,7 @@ function AddCard(project,row)
 			if(oaname != null)
 				headerstr +='<img rel="tooltip" title="'+oaname+'" src="/images/openair.png" style="margin-top:0px;margin-left:20px;float:left;width:40px;height:13px;"></img>';
 			if(baseline !=null)
-				headerstr +='<img rel="tooltip" title="'+baseline+'" src="/images/baseline.png" style="margin-top:0px;margin-left:5px;float:left;width:35px;height:13px;"></img>';
+				headerstr +='<img rel="tooltip" title="'+MakeDate2(baseline)+'" src="/images/baseline.png" style="margin-top:0px;margin-left:5px;float:left;width:35px;height:13px;"></img>';
 		headerstr   +='</div>';
 		headerstr   +='</div>';
 		headerstr   +=progress;
@@ -291,7 +308,11 @@ function AddCard(project,row)
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Resources" class="icon fas fa-user-circle float-right"></i></a>';
 	footerstr+='<a class="float-right" href='+'"/taskproperty/'+project.id+'">';
 		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Milestones" style="margin-right:5px;" class="icon fas fa-flag-checkered float-right"></i></a>';
-	footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Last sync '+project.last_synced+'</p></div>';
+	if(project.last_synced == 'Never')
+		footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Never Synced '+'</p></div>';
+	else
+		footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Synced on '+MakeDate2(project.last_synced)+'</p></div>';
+
 	var footer = $(footerstr);
 	body.append(desc);
 	body.append(query);
@@ -389,14 +410,20 @@ function OnProjectsDataLoad(response)
 	projects = response;
 	console.log(projects);
 	PopulateCard(projects);
+	$('.reload').on('click', OnReload); 
 	$('.editbutton').on('click', OnEdit); 
 	$('.syncbutton').on('click', OnSync);
 	HideLoading();
 }
 function LoadProjectsData(onsuccess,onfail)
 {
+	showclosedprojects =0
+	if($('#show_closed_projects').prop('checked'))
+		showclosedprojects=1;
+
 	data = {};
 	data.user_id = userid;
+	data.showclosedprojects=showclosedprojects;
 	data._token = "{{ csrf_token() }}";
 	ShowLoading();
 	$.ajax({
@@ -536,6 +563,10 @@ function OnSyncModalClosed()
 	ShowLoading();
 	LoadProjectsData(OnProjectsDataLoad,null);
 
+}
+function OnReload(event)
+{
+	LoadProjectsData(OnProjectsDataLoad,null);
 }
 $(document).ready(function()
 {

@@ -521,10 +521,6 @@ class ProjectTree
 			//dd($this->tree->oa);
 		}
 
-		if(file_exists($this->baselinepath))
-		{
-			//$this->baseline_date = date ("Y/m/d H:i" , filemtime($this->baselinepath));
-		}
 		
 	}
 	public function __get($property)
@@ -981,7 +977,7 @@ class ProjectTree
 	{
 		$data = serialize($this->tree);
 		file_put_contents($this->baselinepath, $data);
-		$baseline = date ("Y/m/d H:i" , filemtime($this->baselinepath));
+		$baseline = date ("Y-m-d" , filemtime($this->baselinepath));
 		Utility::ConsoleLog(time(),"Baseline Generated");
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$this->last_synced,$baseline);
 	}
@@ -990,7 +986,7 @@ class ProjectTree
 		//dd($this->tree);
 		$data = serialize($this->tree);
 		file_put_contents($this->treepath, $data);
-		$this->last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
+		$this->last_synced = date ("Y-m-d" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$this->last_synced);
 	}
 	function GetHead()

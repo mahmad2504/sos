@@ -56,4 +56,5 @@ class HomeController extends Controller
         $user->save();
         return redirect()->back()->with("success","Password changed successfully !");
     }
+    
 }

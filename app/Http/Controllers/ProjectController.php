@@ -13,7 +13,7 @@ use Redirect,Response;
 class ProjectController extends Controller
 {
 	public function GetProject(Request $request) // $request->name input paramter
-  {
+    {
 		if(($request->id == null)&&($request->name == null))
 		{
 			$returnData = array(
@@ -44,7 +44,7 @@ class ProjectController extends Controller
 			return Response::json($returnData, 500);
 		}
   }
-	private static function ValidateRequest($request)
+  private static function ValidateRequest($request)
   {
 		$project = null;
 		
@@ -82,10 +82,10 @@ class ProjectController extends Controller
 			if ($request->sdate==null)
 			{
 				$request->sdate = Utility::GetToday('Y-m-d');
-				$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+6 months"));
+				$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+1 months"));
 			}
 			if ($request->edate==null)
-				$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+6 months"));
+				$request->edate = date("Y-m-d",strtotime(date("Y-m-d", strtotime($request->sdate)) . "+1 months"));
 	
 			if ($request->progress==null)
 				$request->progress = 0;
@@ -184,8 +184,33 @@ class ProjectController extends Controller
 		if($request->user_id == null)
 			abort(403, 'Missing Parameters - ProjectController@GetProjects(user_id)');
 		
-		$projects = Project::where('user_id',$request->user_id)->get();
-        return Response::json($projects);
+		$lastdate = date("Y-m-d",strtotime("-15 days"));
+		if($request->showclosedprojects == 1)
+		{
+			$projects = Project::where(
+			[
+				['user_id', '=', $request->user_id],
+				['last_synced', '<=', $lastdate]
+			]
+			)->orderBy('edate','asc')->get();
+			foreach($projects as $project)
+				$project->archived = 1;
+		}
+		else
+		{
+			//$projects = Project::where('user_id',$request->user_id)->where('edate','>','2011-09-07')->where('progress','<',100)->orderBy('edate','asc')->get();
+			$projects = Project::where(
+				[
+					['user_id', '=', $request->user_id],
+					['last_synced', '>', $lastdate]
+				]
+				)->orderBy('edate','asc')->get();
+				foreach($projects as $project)
+					$project->archived = 0;
+		}
+		if($request->local)
+			return $projects;
+		return Response::json($projects);
 	}
 	public function Delete(Request $request)
 	{

@@ -71,15 +71,9 @@ class MilestoneController extends Controller
 		for($i=0;$i<count($milestones);$i++)
 		{
 			$task = $milestones[$i];
-				
-			if($baselinetree != null)
-				$baselinetask = $baselinetree->GetTask($task->key);
-			$burnupdata = $projecttree->GetBurnUpData($task);
-			$task->cv = $burnupdata->cv;
-			$task->rv = $burnupdata->rv;
-			
-			$row = $this->FillStatusData($task,$baselinetask);
-			$data[] = $row;
+			$row = $this->GetStatus($project,$task->key);
+			if($row != null)
+				$data[] = $row;
 		}
 		$isloggedin = $this->isloggedin;
 		
@@ -118,20 +112,11 @@ class MilestoneController extends Controller
 	
 		return $data;
 	}
-	public function ShowStatus($user, $project,$key="1")
+	public function GetStatus(Project $project,$key)
 	{
-		//echo $user." ".$project." ".$key;
-		$user = User::where('name',$user)->first();
-    	if($user==null)
-    	{
-    		abort(403, 'Account Not Found');
-    	}
-		$project = $user->projects()->where('name',$project)->first();
-		if($project==null)
-    	{
-    		abort(403, 'Project Not Found');
-		}
 		$projecttree = new ProjectTree($project);
+		if($projecttree->tree == null)
+			return null;
 		$task = $projecttree->GetTask($key);	
 		$burnupdata = $projecttree->GetBurnUpData($task);
 		$task->cv = $burnupdata->cv;
@@ -146,7 +131,26 @@ class MilestoneController extends Controller
 		}
 		$data = $this->FillStatusData($task,$baselinetask);
 		$data['risksissues'] = $projecttree->GetRiskAndIssues($task);
-	
+		$data['jiraurl'] = Utility::GetJiraURL($project);
+		return $data;
+	}
+	public function ShowStatus($user, $project,$key="1")
+	{
+		//echo $user." ".$project." ".$key;
+		$user = User::where('name',$user)->first();
+    	if($user==null)
+    	{
+    		abort(403, 'Account Not Found');
+    	}
+		$project = $user->projects()->where('name',$project)->first();
+		if($project==null)
+    	{
+    		abort(403, 'Project Not Found');
+		}
+		$data = $this->GetStatus($project,$key);
+		if($data == null)
+			abort(403, 'Key '.$key.' Not Found');
+			
 		$isloggedin = $this->isloggedin;
 		return View('widgets.status',compact('user','project','isloggedin','data','key'));
 	}

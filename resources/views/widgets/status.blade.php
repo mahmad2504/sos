@@ -172,7 +172,8 @@ function UpdateBlockersOnUi(severity)
 }
 $(function() 
 {
-
+    if(data['summary'] === undefined)
+        return;
     $('#summary').text('Status '+data['summary']);
 
     var weekdate = ConvertDateFormat(data['tstart']);

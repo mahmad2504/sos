@@ -55,7 +55,12 @@ class SyncController extends Controller
 			exit();
     	}
 		//$user = User::where('id',$project->user_id)->first();
-
+		if($project->edate < Utility::GetToday('Y-m-d'))
+		{
+			Utility::ConsoleLog(time(),'Error::Cannot Sync. Project End Date is expired.');
+			Utility::ConsoleLog(time(),'Error::Check Project Settings');
+			return; 
+		}
 		$tree  =  new ProjectTree($project);
 		$tree->SyncJira($request->rebuild,$request->worklogs);
 
@@ -93,7 +98,13 @@ class SyncController extends Controller
     	{
     		Utility::ConsoleLog(time(),'Project does not exist');
 			exit();
-    	}
+		}
+		if($project->edate < Utility::GetToday('Y-m-d'))
+		{
+			Utility::ConsoleLog(time(),'Error::Cannot Sync. Project End Date is expired.');
+			Utility::ConsoleLog(time(),'Error::Check Project Settings');
+			return; 
+		}
 		$projecttree  =  new ProjectTree($project);
 		$oa = new OA($projecttree);
 		$oa->sync();

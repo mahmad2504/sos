@@ -23,6 +23,7 @@ Auth::routes();
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/', 'HomeController@index');   // View
 Route::get('/home', 'HomeController@index')->name('home');   // View
+
 Route::get('/changePassword','HomeController@showChangePasswordForm')->name('showchangepassword'); // View
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
 
@@ -44,6 +45,9 @@ Route::get('/dashboard/{user}/{project}','DashboardController@Show')->name('dash
 Route::get('/admin', 'AdminController@index')->name('adminhome');
 Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboard');
 
+
+//Program View
+Route::get('/program/summary/{user}', 'Widgets\ProgramViewController@ShowSummary')->name('programsummary');   // View
 
 // Widgets
 Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@Show')->name('showtreeview');
