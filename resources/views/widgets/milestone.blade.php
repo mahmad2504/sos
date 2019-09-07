@@ -75,19 +75,14 @@ $(function()
 		$('#end'+i).html(ConvertDateToString(data[i]['end'])+"<br><small class='grey-text'>"+weekdate+"</small>");
 
 		if(project.estimation == 0)
-		{
-			//$('#headerearned').text('Earned StoryPoints');
-			$('#estimate'+i).text(data[i]['estimate']+" Points" );
-			$('#bestimate'+i).text(data[i]['bestimate']+" Points" );
-			$('#remaining'+i).text(data[i]['remaining']+" Points" );
-		}
+			units = 'Points';
 		else
-		{
-			//$('#headerearned').text('Time Spent');
-			$('#estimate'+i).text(data[i]['estimate']+" Days" ); 
-			$('#bestimate'+i).text(data[i]['bestimate']+" Days" ); 
-			$('#remaining'+i).text(data[i]['remaining']+" Days" );
-		}
+			units = 'Days of work';
+		
+		$('#estimate'+i).html(data[i]['estimate']+"<br><small class='grey-text'>"+units+"</small>" );
+		$('#bestimate'+i).html(data[i]['bestimate']+"<br><small class='grey-text'>"+units+"</small>");
+		$('#remaining'+i).html(data[i]['remaining']+"<br><small class='grey-text'>"+units+"</small>");
+
 		$('#progress'+i).text(data[i]['progress']+" %" );
 		$('#status'+i).html("<img width='80px' src='/images/"+data[i]['status']+".png'></img>"); 
 	}

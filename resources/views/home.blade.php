@@ -33,9 +33,9 @@ input {
 		<input style="margin-left:5px;"id="show_closed_projects" class="reload" type="checkbox" name="show_closed_projects" value="0"></input>
 	</div>
 
-	<a href='#'
+	<!-- <a href='#'
 		<button rel="tooltip" title="Program Summary" id="program_summar" class="float-right btn btn-primary float-left" data-toggle="modal" data-target="#">Program Summary</button>
-	</a>
+	</a> -->
 
 	@if($user->role == 'admin')
 	<a href="/admin" style="margin-left:5px;" class="btn btn-info" role="button">Admin</a>

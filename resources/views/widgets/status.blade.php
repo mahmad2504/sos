@@ -214,16 +214,16 @@ $(function()
     {
         $('#headerearned').text('Time Spent');
         if(estimate > 0)
-            $('#estimate').text(estimate+" Days" ); 
+            $('#estimate').text(estimate+" Days of work" ); 
 
         if(bestimate > 0)
-            $('#bestimate').text(bestimate+" Days" ); 
+            $('#bestimate').text(bestimate+" Days of work" ); 
         
         if(consumed > 0)
-            $('#consumed').text(consumed+" Days" );
+            $('#consumed').text(consumed+" Days of work" );
 
         if(remaining > 0)
-            $('#remaining').text(remaining+" Days" );
+            $('#remaining').text(remaining+" Days of work" );
     }
     //$('#progress').text(data['progress']+" %" ); 
     $('#status').html("<img width='80px' src='/images/"+data['status']+".png'></img>"); 
