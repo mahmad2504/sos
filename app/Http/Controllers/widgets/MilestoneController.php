@@ -13,21 +13,7 @@ use App\Utility;
 use App\ProjectTree;
 
 class MilestoneController extends Controller
-{
-	function __get($field)
-	{
-		switch($field)
-		{
-			case 'isloggedin':
-				$isloggedin = Auth::check();
-				if($isloggedin)
-					return 1;
-				else
-					return 0;
-				break;
-		}
-	}
-	
+{	
 	private function Sort($a,$b) 
 	{
 		$statusa = $a[9];

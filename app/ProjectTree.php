@@ -1417,9 +1417,9 @@ class ProjectTree
 		}
 		if(($task->risk_severity != 'None')&&($task->status != 'RESOLVED'))
 		{
-			if($task->oissuetype == 'Risk')
+			if($task->oissuetype == 'Issue')
 				$this->issues[$task->risk_severity][$task->key] = $task->risk_severity;
-			else if($task->oissuetype == 'Issue')
+			else if($task->oissuetype == 'Risk')
 				$this->risks[$task->risk_severity][$task->key] = $task->risk_severity;
 		}
 		if(($task->priority == 1)&&($task->status != 'RESOLVED'))

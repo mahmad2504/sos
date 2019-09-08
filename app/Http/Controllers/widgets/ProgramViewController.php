@@ -40,7 +40,9 @@ class ProgramViewController extends Controller
 			}
 			$i++;
 		}
-		dd($data);
+		$isloggedin = $this->isloggedin;
+		return view('program.summary',compact('data','user','isloggedin'));
+		//dd($data);
 		//$data = json_decode($projects);
         //dd($projects);
     }
