@@ -52,13 +52,18 @@ body { font-family: Arial, Helvetica, sans-serif;font-size: 11px;}
 }
 @endsection
 @section('content')
-<div id="container" style="width:70%; margin-left: auto; margin-right: auto; display:block" class="center">
+
+
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+    <h3>{{ $project->name}}</h3>
     <select rel="tooltip" title="Select Year" class="select-css" id="select_year" name="year"></select>
     <select rel="tooltip" title="Select Week Number" style="width: 8%;" class="select-css" id="select_week" name="week"></select>
     <button id="viewreport" type="button" class="btn-outline  btn-primary">View Report</button>
     <span style="color:red" id="error"></span>
-    <div class="box">
-        <h1 style="margin-top:40px;font-weight: bold; color:CornflowerBlue;font-size:20px;"><span id="key"></span><span id="message"></span><span id="from"></span>&nbsp-&nbsp<span id="to"></span></h1> 
+    <div style="margin-top:10px;" class="mainpanel">
+        <div style="background-color:#F0F0F0">
+            <h1 style="margin-top:10px;font-weight: bold; color:CornflowerBlue;font-size:20px;"><span id="key"></span><span id="message"></span><span id="from"></span>&nbsp-&nbsp<span id="to"></span></h1> 
+        </div>
         <hr>
         <div id="content">
          <h1 style="font-weight: bold; color:CornflowerBlue;font-size:20px;"></h1>

@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="{{ asset('css/logger.css') }}" />
 @endsection
 @section('style')
+
 .progress {height: 5px;}
 label {
   display: block;
@@ -16,34 +17,41 @@ input {
   position: relative;
   *overflow: hidden;
 }
+
 @endsection
 @section('content')
 
-<div class="container">
+<div style="width:90%;" class="container-fluid">
 	@if($admin)
-		<h3>Program Dashboard - {{$user->name}}</h3>
+		<h3>Projects of - {{$user->name}}</h3>
 	@else
-		<h3>Program Board</h3>
+		<h3>Projects</h3>
 	@endif
+	<div class="mainpanel">
+		<div  style="background-color:#F0F0F0">
+			<button id="new_project" title="Create New Project" type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#psettings_modal">New Project</button>
+			
+			<!--<label style="margin-top:-5px;padding-left: 0px;text-indent: 0px;" class="float-right" for="show_closed_projects">Show Archived Projects</label>
+			<input style="margin-left:5px;"id="show_closed_projects" class="reload" type="checkbox" name="show_closed_projects" value="0"></input> -->
 	
-	<div class="d-flex  mb-3">
-		<button rel="tooltip" title="Create New Project" id="new_project" class="mr-auto p-2 btn btn-primary" data-toggle="modal" data-target="#psettings_modal">Add Project</button>
-
-		<label style="margin-top:-5px;padding-left: 0px;text-indent: 0px;" class="float-right" for="show_closed_projects">Show Archived Projects</label>
-		<input style="margin-left:5px;"id="show_closed_projects" class="reload" type="checkbox" name="show_closed_projects" value="0"></input>
-	</div>
-
-	<a class="float-right" href="{{route('programsummary',[$user->name])}}">
-		Summary
-	</a> 
-
-	@if($user->role == 'admin')
-	<a href="/admin" style="margin-left:5px;" class="btn btn-info" role="button">Admin</a>
-	@endif
-	
-	<br>
-	<br>
-	<div class="card_container">
+			<a class="float-right " id="activeprojects" href="#">
+				Active Projects
+			</a>
+			<a class="float-right" id="inactiveprojects" href="#">
+				Inactive Projects |
+			</a>
+			<a class="float-right" href="{{route('programsummary',[$user->name])}}">
+				Summary |
+			</a> 
+		</div>
+		@if($user->role == 'admin')
+		<a href="/admin" style="margin-left:5px;" class="btn btn-info" role="button">Admin</a>
+		@endif
+		
+		<br>
+		<br>
+		<div class="card_container">
+		</div>
 	</div>
 </div>
 <!-- Edit Modal -->
@@ -158,6 +166,7 @@ input {
 var username = "{{$user->name}}";
 var userid = "{{$user->id}}";
 var projects = null;
+var showclosedprojects =0;
 
 function ShowPsettingsModalButtons(create=0,update=0,delete_button=0)
 {
@@ -410,17 +419,14 @@ function OnProjectsDataLoad(response)
 	projects = response;
 	console.log(projects);
 	PopulateCard(projects);
-	$('.reload').on('click', OnReload); 
+	$('#activeprojects').on('click', LoadActiveProjects);
+	$('#inactiveprojects').on('click', LoadInActiveProjects);
 	$('.editbutton').on('click', OnEdit); 
 	$('.syncbutton').on('click', OnSync);
 	HideLoading();
 }
 function LoadProjectsData(onsuccess,onfail)
 {
-	showclosedprojects =0
-	if($('#show_closed_projects').prop('checked'))
-		showclosedprojects=1;
-
 	data = {};
 	data.user_id = userid;
 	data.showclosedprojects=showclosedprojects;
@@ -564,8 +570,14 @@ function OnSyncModalClosed()
 	LoadProjectsData(OnProjectsDataLoad,null);
 
 }
-function OnReload(event)
+function LoadActiveProjects(event)
 {
+	showclosedprojects =0;
+	LoadProjectsData(OnProjectsDataLoad,null);
+}
+function LoadInActiveProjects(event)
+{
+	showclosedprojects =1;
 	LoadProjectsData(OnProjectsDataLoad,null);
 }
 $(document).ready(function()

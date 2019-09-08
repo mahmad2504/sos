@@ -6,8 +6,13 @@
 
 @endsection
 @section('content')
-<div class="center" style="background-color:AliceBlue ;">
-	<h4 id="summary" style="margin-bottom:-17px;">Milestones</h4>
+
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	<h3>{{ $project->name}}</h3>
+	<div class="mainpanel">
+	<div style="background-color:#F0F0F0">
+		<h4 id="summary" style="margin-bottom:-17px;">Milestones</h4>
+	</div>
 	<table class="zui-table">
 		<thead>
 			<tr>
@@ -38,6 +43,7 @@
 		@endfor		
 	</tbody>
     </table>
+	</div>
 </div>
 
 <script src="{{ asset('js/msc-script.js') }}" ></script>

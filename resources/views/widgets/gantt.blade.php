@@ -14,8 +14,12 @@
 @endsection
 @section('content')
 <?php $selected = 0;?>
-<div id="container" style="width:95%; margin-left: auto; margin-right: auto; display:block" class="center">
-	<select style="margin-left:10px;" class="form-control-sm" id="milestones" name="jirauri">
+
+
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	
+	<h3>{{ $project->name}}</h3>
+	<select style="margin-left:0px;" class="form-control-sm" id="milestones" name="jirauri">
 		@for($i=0;$i<count($milestones);$i++)
 			@if (strcmp($milestones[$i]->key,$key)==0)
 				<option value="i" selected="selected">{{$milestones[$i]->summary}}</option>
@@ -29,12 +33,15 @@
 			<option value="i" selected="selected">{{$key}}</option>
 		@endif
 	</select>
-	<hr>
-	<div class="loading">Loading&#8230;</div>
-
+	
 	<!-- <button id="chart" style="display:hidden" type="button" class="float-right btn btn-outline-success btn-sm">Hide Chart</button> -->
 	<!--<p id='description'>Description</p>-->
-	<div style="border:1px solid black; position:relative" class="gantt" id="GanttChartDIV"></div>
+	<div style="margin-top:5px;" class="mainpanel">
+	<div style="background-color:#F0F0F0">
+		<h3>Gantt Chart</h3>
+	</div>
+		<div class="gantt" id="GanttChartDIV">Loading ...</div>
+	</div>
 </div>
 
 

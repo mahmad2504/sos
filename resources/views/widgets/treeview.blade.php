@@ -8,9 +8,12 @@
 .progress {height: 10px;}
 @endsection
 @section('content')
-<div id="container" style="width:95% ; margin-left: auto; margin-right: auto; display:none;!important" class="center">
-	<div class="loading">Loading&#8230;</div>
-	<p id='description'></p>
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	<h3>{{ $project->name}}</h3>
+	<div class="mainpanel">
+	<div style="background-color:#F0F0F0">
+	<h3>Tree View</h3>
+	</div>
 	<table id="treetable" style="display:none;  box-shadow: 10px 5px 5px grey;" class="table">
 		<caption style="caption-side:top;text-align: center">
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
@@ -54,6 +57,7 @@
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Defect<span style="margin-top:20px;padding:5px;" class="DEFECT">&nbsp&nbsp&nbsp</span></span>
 	</div>
+	</div>
 </div>
 <script src="{{ asset('js/jquery.treetable.js') }}" ></script>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
@@ -79,7 +83,7 @@ var estimate_units = '';
 function OnProjectDataReceived(response)
 {
 	console.log(response.description);
-	$('#description').append(response.description);
+	//$('#description').append(response.description);
 	if(response.estimation == 0)
 	{
 		header = 'Story Points';

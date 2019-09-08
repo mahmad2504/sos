@@ -8,8 +8,14 @@
  
 @endsection
 @section('content')
-<div class="center" style="background-color:AliceBlue ;">
-        <h4 class="d-flex;" id="summary" style="margin-bottom:-17px;"></h4>
+
+
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+<h3>{{ $project->name}}</h3>
+    <div class="mainpanel">
+        <div style="background-color:#F0F0F0">
+            <h4 class="d-flex;" id="summary" style="margin-bottom:-17px;"></h4>
+        </div>
         <span id="riskcount" class="d-flex float-right badge"></span>
         <span class="d-flex float-right" >&nbsp&nbsp</span>
         <span id="issuecount" class="d-flex float-right badge"></span>
@@ -59,8 +65,7 @@
            
         </tbody>
     </table>
-   
-	
+	</div>
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
 <script src="{{ asset('js/radialIndicator.min.js') }}" ></script>
@@ -174,7 +179,7 @@ $(function()
 {
     if(data['summary'] === undefined)
         return;
-    $('#summary').text('Status '+data['summary']);
+    $('#summary').text(data['summary']);
 
     var weekdate = ConvertDateFormat(data['tstart']);
     $('#tstart').html(ConvertDateToString(data['tstart'])+"<br><small class='grey-text'>"+weekdate+"</small>");

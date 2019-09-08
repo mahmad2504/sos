@@ -9,10 +9,11 @@
 @section('content')
 <?php $selected = 0;?>
 
-<div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	<h3>{{ $project->name}}</h3>
 	<div class="d-flex form-group">
-			<label style="margin-top:3px;" for="jirauri">Milestones</label>
-			<select style="margin-left:10px;" class="form-control-sm" id="milestones" name="jirauri">
+			<label  for="jirauri"></label>
+			<select class="form-control-sm" id="milestones" name="jirauri">
 				@for($i=0;$i<count($milestones);$i++)
 					@if (strcmp($milestones[$i]->key,$key)==0)
 						<option value="i" selected="selected">{{$milestones[$i]->summary}}</option>

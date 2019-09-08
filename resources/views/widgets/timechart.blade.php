@@ -5,11 +5,18 @@
 <link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
 @endsection
 @section('style')
-body { background-color: #C0C0C0 ;}
+body { background-color: #f1f1f1 ;}
 @endsection
 @section('content')
-<div id="container" style="width:95%; margin-left: auto; margin-right: auto; display:block" class="center">
-	 <div class="gantt"></div>
+
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	<h3>{{ $project->name}}</h3>
+	<div class="mainpanel">
+		<div style="background-color:#F0F0F0">
+			<h3>Time Chart</h3>
+		</div>
+		<div class="gantt"></div>
+	</div>
 </div>
 <script src="{{ asset('js/jquery.fn.gantt.js') }}" ></script>
 <script src="{{ asset('js/msc-script.js') }}" ></script>

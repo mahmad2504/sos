@@ -30,9 +30,3 @@
 .small {
     font: normal 13px Arial, sans-serif;
 }
-.center {
-    margin: auto;
-    width: 90%;
-    border: 3px solid grey;
-    padding: 10px;
-  }

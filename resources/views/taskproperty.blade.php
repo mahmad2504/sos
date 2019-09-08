@@ -8,14 +8,18 @@
 @section('style')
 .progress {height: 10px;}
 }
+
 @endsection
 @section('content')
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
-	<div class="loading">Loading&#8230;</div>
-	<h3 id='description'>Milestone Configuration</h3>
-	<div id="selectedtable"></div><br>
-	<input id="showall"  field="all"  type="checkbox" false>Show All Project Tasks</input> 
-	<table id="treetable" style="display:none;" class="table">
+	<h3>{{ $project->name}}</h3>
+	<div class="mainpanel">
+	<div style="background-color:#F0F0F0" class="d-flex mb-3">
+		<h5 style="margin-left:10px;margin-top:15px;" id='description' class="mr-auto">Milestone Configuration</h5>
+    	 <label style="margin-top:15px;padding-right: 5px;text-indent: 0px;" class="float-right" for="checkbox">Show All Task</label>
+		<input  style="margin-top:18px;margin-right:20px" class="float-right" id="showall"  field="all"  type="checkbox" false></input> 
+	</div>
+	<table id="treetable" style="margin-top:-25px;display:none;" class="table">
 		<caption style="caption-side:top;text-align: center">
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
 		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
@@ -57,6 +61,7 @@
 		<span>Task<span style="margin-top:20px;padding:5px;" class="TASK">&nbsp&nbsp&nbsp</span></span>
 		<span style="margin-top:20px;padding:15px;"></span>
 		<span>Defect<span style="margin-top:20px;padding:5px;" class="DEFECT">&nbsp&nbsp&nbsp</span></span>
+	</div>
 	</div>
 </div>
 <script src="{{ asset('js/tabulator.table.js') }}" ></script>
@@ -187,6 +192,10 @@ function ShowTree(response,showall)
 
 		var pid = row['pextid'];
 		var isconfigured = row['isconfigured'];
+		if(isconfigured == 'true')
+			isconfigured = true;
+		if(isconfigured == 'false')
+			isconfigured = false;
 		if(showall == false)
 		{
 			if( isconfigured != true)
@@ -374,6 +383,7 @@ function UpdateRow(extid)
 
 	if((row.isconfigured == true)||(row.isconfigured == 'true'))
 	{
+		console.log(data[extid]);
 		isconfigured.prop('checked', true);
 		ismilestone.prop('disabled', false);
 		atext.prop('disabled', false);

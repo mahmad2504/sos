@@ -10,10 +10,12 @@
 @endsection
 @section('content')
 
-<div>
-	<!-- <h4 class="center" id="summary" style="width:60%;margin-bottom:-17px;">Projects Status</h4> -->
 
-	<table style="width:70%;" class="center zui-table">
+<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	<!-- <h4 class="center" id="summary" style="width:60%;margin-bottom:-17px;">Projects Status</h4> -->
+	<h3>Projects of {{ $user->name}}</h3>
+	<div class="mainpanel">
+	<table  class="zui-table">
 		<thead>
 			<tr>
 				<th width="29%"  style="text-align: left;">Project</th>
@@ -38,6 +40,7 @@
 	</tbody>
 	
     </table>
+	</div>
 </div>
 
 <script src="{{ asset('js/msc-script.js') }}" ></script>

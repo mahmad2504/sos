@@ -146,13 +146,18 @@
 </div>
 
 
-<div style="width:80%; margin-left: auto; margin-right: auto; color:grey" class="center">
-	<h3>Jira Resources</h3>
-	<div id="table"></div><br>
-	
-	<div id="openairtags" style="display:none">
-		<h3 >Open Air Resources</h3>
-		<div id="openair"></div>
+<div style="width:90%; margin-left: auto; margin-right: auto" class="center">
+	<h3>{{ $project->name}}</h3>
+	<div class="mainpanel">
+		<div style="background-color:#F0F0F0">
+			<h3>Manage Resources</h3>
+		</div>
+		<div id="table"></div><br>
+		
+		<div id="openairtags" style="display:none">
+			<h3 >Open Air Resources</h3>
+			<div id="openair"></div>
+		</div>
 	</div>
 </div>
 <script src="{{ asset('js/bootstrap-datepicker.min.js') }}" ></script>
