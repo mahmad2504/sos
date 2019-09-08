@@ -138,7 +138,19 @@ class MilestoneController extends Controller
 			abort(403, 'Key '.$key.' Not Found');
 			
 		$isloggedin = $this->isloggedin;
-		return View('widgets.status',compact('user','project','isloggedin','data','key'));
+		$projecttree = new ProjectTree($project);
+
+		$ms =  $projecttree->GetMilestones($projecttree->tree);
+		$milestones =  array();
+		foreach($ms as $m)
+		{
+			$milestone = new \StdClass();
+			$milestone->summary = $m->_summary;
+			$milestone->key = $m->key;
+			$milestones[] = $milestone;
+		}
+
+		return View('widgets.status',compact('user','project','isloggedin','data','key','milestones'));
 	}
 	
 }

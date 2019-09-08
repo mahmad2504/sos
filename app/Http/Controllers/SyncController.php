@@ -62,8 +62,13 @@ class SyncController extends Controller
 			return; 
 		}
 		$tree  =  new ProjectTree($project);
-		$tree->SyncJira($request->rebuild,$request->worklogs);
-
+		$retval = $tree->SyncJira($request->rebuild,$request->worklogs);
+		if($retval  == -1)
+		{
+			Utility::ConsoleLog(time(),"Error::Empty Project or Jira error");
+			return;
+		}
+		
 
 		//$project = Project::where('id',$projectid)->first();
 		//$projecttree = new ProjectTree($project);

@@ -11,6 +11,7 @@ use App\Utility;
 use Auth;
 use App\ProjectTree;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SyncController;
 use App;
 
 class SyncProjects extends Command
@@ -53,14 +54,21 @@ class SyncProjects extends Command
 			$request = new Request();
 			$request->user_id = $user->id;
 			$request->local = 1;
-			$pc = new ProjectController();
-			$activeprojects = $pc->GetProjects($request);
+            $pc = new ProjectController();
+            $activeprojects = $pc->GetProjects($request);
+            $i=0;
 			foreach($activeprojects as $project)
 			{
-				$tree = new ProjectTree($project);
-				$tree->SyncJira(1);
+                //if($i++ ==  3)
+                {
+                    $sc = new SyncController();
+                    $request->projectid = $project->id;
+                    $request->rebuild = 1;
+                    $request->debug = 1;
+                    $sc->SyncJira($request);
+                    //break;
+                }
 			}
-			
 		}
 		/*$projects = Project::all();
 		foreach($projects as $project)

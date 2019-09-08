@@ -418,7 +418,8 @@ class Task
 			$structure_id = explode('structure=',$this->query)[1];
 			Utility::ConsoleLog(time(),'Wait::Reading Structure '.$structure_id);
 			$objects = Jira::GetStructure($structure_id);
-
+			if($objects == null)
+				return -1;
 			$query = 'id in (' ;
 			$del = "";
 
@@ -429,6 +430,8 @@ class Task
 			}
 			$query = $query.")";
 			$tasks = $this->SearchInJira($query,$jiraconf);
+			if($tasks == null)
+				return -1;
 			foreach($tasks as $key=>$jtask)
 			{
 				$objects[$jtask->id]->data=$jtask;
@@ -453,6 +456,9 @@ class Task
 		{
 			Utility::ConsoleLog(time(),"Running Query ".$this->query);
 			$tasks = $this->SearchInJira($this->query,$jiraconf,'ORDER BY Rank ASC');
+			if($tasks == null)
+				return -1;
+
 			$j=0;
 
 			$sprintno = 0;
@@ -545,11 +551,18 @@ class ProjectTree
 	}
 	function Populate($task)
 	{
-		if($task->ExecuteQuery($this->jiraconfig)==1)
+		$restval = $task->ExecuteQuery($this->jiraconfig);
+		if($restval==1)
 		{
 			foreach($task->children as $stask)
-				$this->Populate($stask);
+			{
+				$restval = $this->Populate($stask);
+				if($restval == -1)
+					return -1;
+			}
 		}
+		else if($restval == -1)
+			return -1;
 	}
 	function ComputeStatus($task)
 	{
@@ -787,7 +800,8 @@ class ProjectTree
 			$task = new Task($this,1,0,0,$this->project->name,$queries[0]);
 
 
-		$this->Populate($task);
+		if($this->Populate($task)==-1)
+			return -1;
 
 		$otasks = $this->tasks;
 

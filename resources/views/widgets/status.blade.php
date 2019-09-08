@@ -11,11 +11,25 @@
 
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
-<h3>{{ $project->name}}</h3>
+    <h3>{{ $project->name}}</h3>
+    <select style="margin-bottom:5px;" class="form-control-sm" id="milestones" name="jirauri">
+		@for($i=0;$i<count($milestones);$i++)
+			@if (strcmp($milestones[$i]->key,$key)==0)
+				<option value="i" selected="selected">{{$milestones[$i]->summary}}</option>
+				{{ $selected = 1}}
+			@else
+				<option value="i">{{$milestones[$i]->summary}}</option>
+			@endif
+		@endfor
+
+		@if ($selected == 0)
+			<option value="i" selected="selected">{{$key}}</option>
+		@endif
+	</select>
     <div class="mainpanel">
-        <div style="background-color:#F0F0F0">
+        <!--<div style="background-color:#F0F0F0">
             <h4 class="d-flex;" id="summary" style="margin-bottom:-17px;"></h4>
-        </div>
+        </div>-->
         <span id="riskcount" class="d-flex float-right badge"></span>
         <span class="d-flex float-right" >&nbsp&nbsp</span>
         <span id="issuecount" class="d-flex float-right badge"></span>
@@ -76,7 +90,9 @@ var user = @json($user);
 var project =  @json($project);
 var isloggedin = {{$isloggedin}};
 var data = @json($data);
+var milestones = @json($milestones);
 var key = '{{$key}}';
+var baseurl = '{{route('showwmilestonestatus',[$user->name,$project->name])}}';
 
 
 'use strict';
@@ -179,7 +195,7 @@ $(function()
 {
     if(data['summary'] === undefined)
         return;
-    $('#summary').text(data['summary']);
+    //$('#summary').text(data['summary']);
 
     var weekdate = ConvertDateFormat(data['tstart']);
     $('#tstart').html(ConvertDateToString(data['tstart'])+"<br><small class='grey-text'>"+weekdate+"</small>");
@@ -277,6 +293,15 @@ $(function()
         roundCorner : true,
         percentage: true
     });
+    $('#milestones').on('change', '', function (e) {
+		var optionSelected = $('#milestones').prop('selectedIndex');
+		console.log(optionSelected);
+		milestone = milestones[optionSelected];
+		url = baseurl+"/"+milestone.key;
+        console.log(url);
+        window.location.href = url;
+
+	});
 
 });
 @endsection

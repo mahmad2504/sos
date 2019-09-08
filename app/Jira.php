@@ -1,7 +1,7 @@
 <?php
 namespace App;
 use App\Utility;
-
+use App;
 
 $estimation_method = 1; //'STORYPOINTS';
 $estimation_method = 2; //'TIME ESATIMATE';
@@ -51,6 +51,9 @@ class Jira
 		$utasks =  self::GetJiraResource($resource);
 		//print_r($tasks);
 
+		if($utasks == null)
+			return null;
+
 		foreach($utasks as $key=>$utask)
 			$tasks->$key = $utask;
 
@@ -83,6 +86,8 @@ class Jira
 		if ($ch_error)
 		{
 			Utility::ConsoleLog(time(),'Error::'.$ch_error);
+			if(App::runningInConsole())
+				return null;
 			exit();
 			return [];
 		}
@@ -120,6 +125,8 @@ class Jira
 			//dd($result);
 			Utility::ConsoleLog(time(),"Error::Code - ".$code);
 			Utility::ConsoleLog(time(),"Check Jira Query");
+			if(App::runningInConsole())
+				return null;
 			exit();
 			return [];
 		}
@@ -169,6 +176,8 @@ class Jira
 		$jdata = '{"forests":[{"spec":{"type":"clipboard"},"version":{"signature":898732744,"version":0}},{"spec":{"structureId":'.$structid.',"title":true},"version":{"signature":0,"version":0}}],"items":{"version":{"signature":-157412296,"version":43401}}}';
 		$resource=self::$url.'/rest/structure/2.0/poll';
 		$formula = self::GetJiraResource($resource,$jdata );
+		if($formula == null)
+			return null;
 		$formula_array = explode(",",$formula);
 		$objects = array();
 		foreach($formula_array as $formula)
