@@ -132,6 +132,8 @@ class TaskPropertyController extends Controller
 	}
 	private function FormatForTreeView($task,$first=0)
     {
+		if($first)
+			$this->treedata = [];
     	$row = [];
 		$row['extid'] = $task->extid;
     	$row['pextid'] = $task->pextid;

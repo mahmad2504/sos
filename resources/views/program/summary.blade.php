@@ -13,14 +13,14 @@
 <div>
 	<!-- <h4 class="center" id="summary" style="width:60%;margin-bottom:-17px;">Projects Status</h4> -->
 
-	<table style="width:60%;" class="center zui-table">
+	<table style="width:70%;" class="center zui-table">
 		<thead>
 			<tr>
-				<th width="25%"  style="text-align: left;">Project</th>
+				<th width="29%"  style="text-align: left;">Project</th>
 				<th width="17%" >Blockers</th>
 				<th width="17%" >Risks</th>
 				<th width="17%" >Issues</th> 
-				<th width="14%" >Progress</th> 
+				<th width="10%" >Progress</th> 
 				<th width="10%" >Status</th>
 			</tr>
 		</thead>`

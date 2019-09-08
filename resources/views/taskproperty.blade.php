@@ -161,7 +161,7 @@ $(document).ready(function()
 		{
 			$('.loading').hide();
 			console.log(error);  
-			mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){window.location.href = "/";})
+			mscAlert('Error', 'Project Database Missing. Please sync with Jira and try again', function(){})
 		}
 	});
 })
