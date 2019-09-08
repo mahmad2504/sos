@@ -93,7 +93,7 @@ input {
 				<small  class="form-text text-muted"></small>
 			</div>
 			<div class="form-group">
-				<label for="name">Query</label>
+				<label for="name">Query(s)</label>
 				<textarea id="psettings_jiraquery" class="form-control-sm form-control" rows="2" placeholder="Enter Valid Jira Query" name="jiraquery"></textarea>
 				<small  class="form-text text-muted"></small>
 			</div>
