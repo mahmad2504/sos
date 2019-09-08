@@ -94,10 +94,12 @@
                 </div>
             </div>
         </nav>
-		
         <main class="py-4">
 			<div style="display:none;" class="loading">Loading&#8230;</div>
-            @yield('content')
+			@yield('content')
+			<footer style="text-align: center;width:90%;" class="container-fluid">
+				<small style="color:grey">Developed & maintained by <a href="mailto:Mumtaz_Ahmad@mentor.com">Mumtaz Ahmad</a></small>
+			</footer>
         </main>
     </div>
 	<script>
