@@ -81,6 +81,8 @@ class Utility
 	} 
 	public static function GetDataPath($user,$project)
 	{
+		if(strpos(getcwd(),'public')==false)
+			return 'public/storage/'.$user->name.'/'.$project->id;
 		return 'storage/'.$user->name.'/'.$project->id;
 	}
 	public static function Error($message)
