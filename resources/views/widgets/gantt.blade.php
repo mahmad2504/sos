@@ -17,7 +17,6 @@
 
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
-	
 	<h3>{{ $project->name}}</h3>
 	<select style="margin-left:0px;" class="form-control-sm" id="milestones" name="jirauri">
 		@for($i=0;$i<count($milestones);$i++)

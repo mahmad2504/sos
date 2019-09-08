@@ -8,7 +8,7 @@
  
 @endsection
 @section('content')
-
+<?php $selected = 0;?>
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
     <h3>{{ $project->name}}</h3>
