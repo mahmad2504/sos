@@ -97,17 +97,17 @@ input {
 				<textarea id="psettings_jiraquery" class="form-control-sm form-control" rows="2" placeholder="Enter Valid Jira Query" name="jiraquery"></textarea>
 				<small  class="form-text text-muted"></small>
 			</div>
-			<div class="d-flex">
+			<div class="d-flex form-group">
 				<!--Date picker -->
-				<div class="form-group">
+				
 					<label for="sdate">Start&nbsp&nbsp</label>
-					<input class="form-control-sm" id="psettings_sdate" type="date" name="sdate"></input>
-				</div>
+					<input style="width:100%;" class="form-control-sm" id="psettings_sdate" type="date" name="sdate"></input>
+			
 				<!--Date picker -->
-				<div style="margin-left: 50px;" class="form-group">
-					<label for="edate">End&nbsp&nbsp</label>
-					<input class="form-control-sm" id="psettings_edate" type="date" name="edate"></input>
-				</div>
+				
+					<label style="margin-left:20px;" for="edate">End&nbsp&nbsp</label>
+					<input style="width:100%;" class="form-control-sm" id="psettings_edate" type="date" name="edate"></input>
+				
 			</div>
 			<div class="form-group d-flex">
 				<label style="margin-top:5px;" for="name">Estimation</label>&nbsp&nbsp
