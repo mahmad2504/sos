@@ -99,6 +99,12 @@
 			@yield('content')
 			<footer style="text-align: center;width:90%;" class="container-fluid">
 				<small style="color:grey">Developed & maintained by <a href="mailto:Mumtaz_Ahmad@mentor.com">Mumtaz Ahmad</a></small>
+				 <a href="https://www.linkedin.com/in/mumtazahmad2">
+					<i class="fab fa-linkedin"></i>
+				</a>
+				<a href="https://github.com/mahmad2504/sos">
+					<i class="fab fa-github"></i>
+				</a>
 			</footer>
         </main>
     </div>
