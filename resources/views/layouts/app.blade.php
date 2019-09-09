@@ -40,9 +40,9 @@
                 <a id="home_menuitem" class="navbar-brand" href="{{ url('/') }}">
                     <img style="height:30px;" src="/images/logo.png"></img>
                 </a>
-				<a id="dashboard_menuitem" style="display:none" class="navbar-brand" href="{{ url('/') }}">
+				<!-- <a id="dashboard_menuitem" style="display:none" class="navbar-brand" href="{{ url('/') }}">
                     Dashboard
-                </a>
+                </a> -->
 				<a id="calendar_menuitem" style="display:none" class="navbar-brand" href="{{ url('/calendars') }}">
                     Calendars
                 </a>
