@@ -38,7 +38,7 @@
 			<th>Title</th>
 			<th>Jira</th>
 			<th id='estimatecolumn'></th>
-			<th>Alternate</th>
+			<th>Alternate Text</th>
 			<th>Start Constraint</th>
 			<th>Duedate</th>
 			<th>Milestone</th>
@@ -202,6 +202,9 @@ function ShowTree(response,showall)
 				continue;
 		}
 		var atext = row['atext'];
+		console.log(atext);
+		if((atext == 'null') || (atext == null))
+		  atext = '';
 		var tend  = row['tend'];
 		var tstart  = row['tstart'];
 		var _class =row['issuetype'];
@@ -213,6 +216,10 @@ function ShowTree(response,showall)
 		var status=row['status'];
 		var priority=row['priority'];
 		var ismilestone = row['ismilestone'];
+		if(ismilestone == 'true')
+			ismilestone = true;
+		if(ismilestone == 'false')
+			ismilestone = false;
 		var duplicate=row['duplicate'];
 		//data_array.push(row);
 		var progressbar_animation_class = 'progress-bar-striped progress-bar-animated';

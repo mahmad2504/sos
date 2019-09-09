@@ -53,7 +53,8 @@ class SyncController extends Controller
     	{
     		Utility::ConsoleLog(time(),'Project does not exist');
 			exit();
-    	}
+		}
+		Utility::ConsoleLog(time(),"Syncing ".$project->name." with Jira");
 		//$user = User::where('id',$project->user_id)->first();
 		if($project->edate < Utility::GetToday('Y-m-d'))
 		{
@@ -61,11 +62,12 @@ class SyncController extends Controller
 			Utility::ConsoleLog(time(),'Error::Check Project Settings');
 			return; 
 		}
+		
 		$tree  =  new ProjectTree($project);
 		$retval = $tree->SyncJira($request->rebuild,$request->worklogs);
 		if($retval  == -1)
 		{
-			Utility::ConsoleLog(time(),"Error::Empty Project or Jira error");
+			Utility::ConsoleLog(time(),"Error::Cannot Sync due to Jira error");
 			return;
 		}
 		
