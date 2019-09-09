@@ -149,7 +149,8 @@
 <div style="width:90%; margin-left: auto; margin-right: auto" class="center">
 	<h3>{{ $project->name}}</h3>
 	<div class="mainpanel">
-		<div style="background-color:#F0F0F0">
+		<div class="paneltitle">
+			<a href="{{route('dashboard',[$user->name,$project->name])}}"style="margin-top:5px;margin-right:10px;"  rel="tooltip" title="Dashboard" class="float-right">Dashboard</a>
 			<h3>Manage Resources</h3>
 		</div>
 		<div id="table"></div><br>

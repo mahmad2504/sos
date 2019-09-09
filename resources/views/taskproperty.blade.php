@@ -14,11 +14,12 @@
 <div id="container" style="width:90%; margin-left: auto; margin-right: auto; display:block" class="center">
 	<h3>{{ $project->name}}</h3>
 	<div class="mainpanel">
-	<div style="background-color:#F0F0F0" class="d-flex mb-3">
-		<h5 style="margin-left:10px;margin-top:15px;" id='description' class="mr-auto">Milestone Configuration</h5>
-    	 <label style="margin-top:15px;padding-right: 5px;text-indent: 0px;" class="float-right" for="checkbox">Show All Task</label>
-		<input  style="margin-top:18px;margin-right:20px" class="float-right" id="showall"  field="all"  type="checkbox" false></input> 
+	<div class="paneltitle">
+		<a href="{{route('dashboard',[$user->name,$project->name])}}"style="margin-top:5px;margin-right:10px;"  rel="tooltip" title="Dashboard" class="float-right">Dashboard</a>
+		<h3 style="margin-left:10px;margin-top:15px;" id='description' class="mr-auto">Milestone Configuration</h3>
 	</div>
+	<label style="margin-top:-5px;padding-right: 5px;text-indent: 0px;" class="float-right" for="checkbox">Show All Task</label>
+	<input  style="margin-top:0px;margin-right:10px" class="float-right" id="showall"  field="all"  type="checkbox" false></input> 
 	<table id="treetable" style="margin-top:-25px;display:none;" class="table">
 		<caption style="caption-side:top;text-align: center">
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|

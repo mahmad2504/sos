@@ -12,7 +12,12 @@ use App\OA;
 use Redirect,Response;
 class TaskPropertyController extends Controller
 {
-    //
+	//
+	public function __construct()
+    {
+        $this->middleware('auth');
+    }
+	
 	public function Show($projectid)
 	{
 		$project = Project::where('id',$projectid)->first();

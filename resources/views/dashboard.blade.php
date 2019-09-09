@@ -24,13 +24,27 @@ figure figcaption {
     text-align: center;
 	font-weight:bold;
 }
+.isDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.isDisabled > a {
+  color: currentColor;
+  display: inline-block;  /* For IE11/ MS Edge bug */
+  pointer-events: none;
+  text-decoration: none;
+}
 @endsection
 @section('content')
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
 	<h3>{{ $project->name}}</h3>
 	<div class="mainpanel">
-	<div style="background-color:#F0F0F0">
+	<div class="paneltitle">
+		<a href="#" style="margin-top:5px;margin-right:10px;"  rel="tooltip" title="Not Available" class="isDisabled float-right" disabled>Settings</a>
+		<a href="#" style="margin-top:5px;margin-right:10px;"  rel="tooltip" title="Not Available" class="isDisabled float-right">Sync</a>
+		<a href="{{route('showtaskproperties',[$project->id])}}" style="margin-top:5px;margin-right:10px;"  rel="tooltip" title="Configure Milestones" class="float-right">Milestones</a>
+		<a href="{{route('showprojectresources',[$project->id])}}"style="margin-top:5px;margin-right:10px;"  rel="tooltip" title="Configure Resources" class="float-right">Resources</a>
 		<h3>Dashboard</h3>
 	</div>
 	<hr>
