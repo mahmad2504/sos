@@ -220,6 +220,8 @@ class Task
 		global $unestimated_count;
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
+		$link_implemented_by  = $jiraconf['link_implemented_by'];
+		
 		$sprint = $jiraconf['sprint']; // custom field
 
 		$ntask = new Task($this->parent,$level,$pextid,$pos);
@@ -312,7 +314,7 @@ class Task
 		}
 		$ntask->query = null;
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
-			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","implemented by")';
+			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'")';
 		if($ntask->issuetype == 'EPIC')
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
@@ -557,12 +559,8 @@ class ProjectTree
 			foreach($task->children as $stask)
 			{
 				$restval = $this->Populate($stask);
-				if($restval == -1)
-					return -1;
 			}
 		}
-		else if($restval == -1)
-			return -1;
 	}
 	function ComputeStatus($task)
 	{
@@ -800,9 +798,11 @@ class ProjectTree
 			$task = new Task($this,1,0,0,$this->project->name,$queries[0]);
 
 
-		if($this->Populate($task)==-1)
+		$this->Populate($task);
+		
+		if(Jira::$error==1)
 			return -1;
-
+		
 		$otasks = $this->tasks;
 
 		$this->tasks = [];
@@ -891,24 +891,24 @@ class ProjectTree
 				}
 				if(isset($t->worklogs))
 				{
-					foreach($t->worklogs as $date=>$userdata)
-					{
-						foreach($userdata as $user=>$data)
+						foreach($t->worklogs as $date=>$userdata)
 						{
-							if(!isset($this->resources[$user]))
+							foreach($userdata as $user=>$data)
 							{
-								$resource =  new Resource;
-								$resource->name = $data->name;
-								$resource->displayname =$data->displayname;
-								$resource->email = $data->email;
-								$resource->timeZone = $data->timeZone;
-								$this->resources[$user]	= $resource;
+								if(!isset($this->resources[$user]))
+								{
+									$resource =  new Resource;
+									$resource->name = $data->name;
+									$resource->displayname =$data->displayname;
+									$resource->email = $data->email;
+									$resource->timeZone = $data->timeZone;
+									$this->resources[$user]	= $resource;
+								}
 							}
 						}
 					}
 				}
 			}
-		}
 
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		foreach($allresources as $resource)

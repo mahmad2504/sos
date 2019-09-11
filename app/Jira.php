@@ -17,6 +17,7 @@ class Jira
 	static $rebuild=0;
 	static $user = null;
 	static $pass =  null;
+	static $error = 0;
 	public static function Initialize($jiraconfig,$path,$rebuild=0)
 	{
 		$url = $jiraconfig['uri'];
@@ -28,6 +29,7 @@ class Jira
 		self::$rebuild = $rebuild;
 		self::$user = $user;
 		self::$pass = $pass;
+		self::$error = 0;
 	}
 	public static function Search($query,$maxresults=1000,$fields=null,$order=null)
 	{
@@ -64,6 +66,7 @@ class Jira
 	public static  function GetJiraResource($resource,$data=null)
 	{
 		//echo $resource."<br>";
+		self::$error = 0;
 		$curl = curl_init();
 		//curl_reset($curl);
 		curl_setopt_array($curl, array(
@@ -71,7 +74,7 @@ class Jira
 		CURLOPT_URL =>$resource,
 		CURLOPT_RETURNTRANSFER => true,
 		CURLOPT_HTTPHEADER => array('Content-type: application/json')));
-
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		if($data != null)
 		{
 			curl_setopt_array($curl, array(
@@ -86,8 +89,8 @@ class Jira
 		if ($ch_error)
 		{
 			Utility::ConsoleLog(time(),'Error::'.$ch_error);
-			if(App::runningInConsole())
-				return null;
+			self::$error = 1;
+			return null;
 			exit();
 			return [];
 		}
@@ -110,8 +113,10 @@ class Jira
 
 				foreach($data["issues"] as $task)
 				{
+					//echo $task['key']."\n";
 					$tasks[$task['key']] = $task;
 				}
+	
 				return $tasks;
 			}
 			else if(isset($data['forestUpdates']))
@@ -126,7 +131,7 @@ class Jira
 			Utility::ConsoleLog(time(),"Error::Code - ".$code);
 			Utility::ConsoleLog(time(),"Check Jira Query");
 			if(App::runningInConsole())
-				return null;
+			return null;
 			exit();
 			return [];
 		}
