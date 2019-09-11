@@ -78,7 +78,8 @@ $(function()
 		$('#tend'+i).html(ConvertDateToString(data[i]['tend'])+"<br><small class='grey-text'>"+weekdate+"</small>");
 
 		var weekdate = ConvertDateFormat(data[i]['end']);
-		$('#end'+i).html(ConvertDateToString(data[i]['end'])+"<br><small class='grey-text'>"+weekdate+"</small>");
+		if(data[i]['end'] != 'RESOLVED')
+			$('#end'+i).html(ConvertDateToString(data[i]['end'])+"<br><small class='grey-text'>"+weekdate+"</small>");
 
 		if(project.estimation == 0)
 			units = 'Points';
