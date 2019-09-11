@@ -84,10 +84,12 @@ $(function()
 			units = 'Points';
 		else
 			units = 'Days of work';
-		
-		$('#estimate'+i).html(data[i]['estimate']+"<br><small class='grey-text'>"+units+"</small>" );
-		$('#bestimate'+i).html(data[i]['bestimate']+"<br><small class='grey-text'>"+units+"</small>");
-		$('#remaining'+i).html(data[i]['remaining']+"<br><small class='grey-text'>"+units+"</small>");
+		if(data[i]['estimate'] > 0)
+			$('#estimate'+i).html(data[i]['estimate']+"<br><small class='grey-text'>"+units+"</small>" );
+		if(data[i]['bestimate'] > 0)
+			$('#bestimate'+i).html(data[i]['bestimate']+"<br><small class='grey-text'>"+units+"</small>");
+		if(data[i]['remaining'] > 0)
+			$('#remaining'+i).html(data[i]['remaining']+"<br><small class='grey-text'>"+units+"</small>");
 
 		$('#progress'+i).text(data[i]['progress']+" %" );
 		$('#status'+i).html("<img width='80px' src='/images/"+data[i]['status']+".png'></img>"); 
