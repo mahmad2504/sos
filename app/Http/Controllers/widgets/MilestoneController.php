@@ -147,6 +147,7 @@ class MilestoneController extends Controller
 			$milestone = new \StdClass();
 			$milestone->summary = $m->_summary;
 			$milestone->key = $m->key;
+			$milestone->status = $m->status; 
 			$milestones[] = $milestone;
 		}
 
