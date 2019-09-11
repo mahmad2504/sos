@@ -65,10 +65,11 @@ if(isloggedin)
 
 $(function() 
 {
+	console.log(data);
 	for(i=0;i<data.length;i++)
 	{
 		var summary = data[i]['summary'];
-		console.log(summary);
+		
 		$('#desc'+i).text(summary);
 
 		var weekdate = ConvertDateFormat(data[i]['bend']);
