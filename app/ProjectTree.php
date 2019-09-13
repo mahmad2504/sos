@@ -197,7 +197,7 @@ class Task
 		if(($status=='Verified')||($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
 
-		if(($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
+		if(($status == 'Monitored')||($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
 			return 'INPROGRESS';
 		Utility::ConsoleLog(time(),"Unmapped status=".$status);
 		return 'OPEN';
@@ -234,8 +234,9 @@ class Task
 			$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
 		//echo $ntask->key." ".$ntask->closedon."<br>";
 		$ntask->status = $this->MapStatus($task->fields->status->name);
-		if(($ntask->status == 'RESOLVED') and ($ntask->closedon == null))
+		if(($ntask->status == 'RESOLVED') && ($ntask->closedon == null) && !isset($this->parent->tempflag))
 		{
+			$this->parent->tempflag = 1;
 			Utility::ConsoleLog(time(),"Error::"." Closedon date missing for resolved task. Check Your Jira Configurations");
 			Utility::ConsoleLog(time(),"Error::"." Burnup Charts may not be accurate");
 			$ntask->closedon = $ntask->updated;
