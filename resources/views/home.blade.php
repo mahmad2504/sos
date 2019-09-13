@@ -307,9 +307,9 @@ function AddCard(project,row)
 		headerstr   +='</div>';
 		headerstr   +=progress;
 	var header = $(headerstr);
-	var body=$('<div class="card-body">');
-	var desc=$('<p  rel="tooltip" title="Description" class="card-text" style="font-size:100%;">'+project.description+'</p>');
-	var query=$('<p  rel="tooltip" title="Seed Jira Query" class="card-text" style="font-size:100%;">'+project.jiraquery+'</p>');
+	var body=$('<div username="'+username+'" projectname="'+project.name+'" class="card-body card-body-all">');
+	var desc=$('<p  username="'+username+'" projectname="'+project.name+'" rel="tooltip" title="Description" class="card-text card-body-all" style="font-size:100%;">'+project.description+'</p>');
+	var query=$('<p  username="'+username+'" projectname="'+project.name+'" rel="tooltip" title="Seed Jira Query" class="card-text card-body-all" style="font-size:100%;">'+project.jiraquery+'</p>');
 	var footerstr='<div class="card-footer bg-transparent">';
 	footerstr+='<i projectid="'+project.id+'" class="editbutton far fa-edit icon float-left" rel="tooltip" title="Edit Project" data-toggle="modal" data-target="#editmodal"></i>';
 	footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Sync With Jira" class="syncbutton fas fa-sync icon float-left ml-1"></i>';
@@ -390,7 +390,17 @@ function OnEdit(event) // when edit button is pressed on card to show edit dialo
 	SetPsettingsModalFields(settings);
 	$('#psettings_modal').modal('show');
 }
-
+function OnCardBodyClicked(event)
+{
+	console.log($(event.target));
+	element  = $(event.target);
+	projectname  = element.attr('projectname');
+	username = element.attr('username');
+	console.log(projectname);
+	console.log(username);
+	ShowLoading();
+	window.location.href = '/dashboard/'+username+'/'+projectname;
+}
 function OnSync(event)
 {
 	event.preventDefault(); 
@@ -425,6 +435,7 @@ function OnProjectsDataLoad(response)
 	$('#inactiveprojects').on('click', LoadInActiveProjects);
 	$('.editbutton').on('click', OnEdit); 
 	$('.syncbutton').on('click', OnSync);
+	$('.card-body-all').on('click', OnCardBodyClicked);
 	HideLoading();
 }
 function LoadProjectsData(onsuccess,onfail)
