@@ -279,10 +279,12 @@ function AddCard(project,row)
 		headerstr +='<div class="d-flex">';
 		projectend  = new Date(project.edate);
 		today = new Date();
+v		todate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 		com = 0;
 		console.log(projectend.getTime());
+		
 		console.log(today.getTime());
-		if(projectend.getTime() >= today.getTime())
+		if(project.edate >= todate)
 			com = 1;
 		if(project.archived==1)
 			headerstr   +='<img src="/images/inactive.jpg" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
