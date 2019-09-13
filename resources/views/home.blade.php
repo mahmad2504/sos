@@ -280,13 +280,15 @@ function AddCard(project,row)
 		projectend  = new Date(project.edate);
 		today = new Date();
 		com = 0;
+		console.log(projectend.getTime());
+		console.log(today.getTime());
 		if(projectend.getTime() >= today.getTime())
 			com = 1;
 		if(project.archived==1)
 			headerstr   +='<img src="/images/inactive.jpg" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 		else
 		{
-			if(com === 1)
+			if(com == 1)
 				headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 			else
 				headerstr   +='<img src="/images/redpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
