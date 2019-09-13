@@ -140,7 +140,7 @@ td.gspanning {
 
 .gtaskname {
   min-width: 170px;
-  max-width: 180px;
+  max-width: 230px;
   
   font-size: 9px;
   border-left: none;
@@ -828,7 +828,7 @@ td.gspanning div {
 
 .gmainleft {
   overflow: hidden;
-  flex: 0 0 30%;
+  flex: 0 0 33%;
 }
 
 .gtasktableh tr,
