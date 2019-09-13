@@ -284,7 +284,8 @@ function AddCard(project,row)
 		{
 			console.log("***********");
 			console.log(project.edate);
-			console.log((new Date(project.edate),new Date()));
+			console.log((new Date(project.edate));
+			console.log((new Date(new Date());
 			console.log(com);
 
 			if(com === 1)
