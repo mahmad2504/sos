@@ -277,17 +277,15 @@ function AddCard(project,row)
 	
 	var headerstr ='<div  class="card-header border-success" style="background-color: #FFFAFA;">';
 		headerstr +='<div class="d-flex">';
-		com = dates.compare(new Date(project.edate),new Date());
+		projectend  = new Date(project.edate);
+		today = new Date();
+		com = 0;
+		if(projectend.getTime() >= today.getTime())
+			com = 1;
 		if(project.archived==1)
 			headerstr   +='<img src="/images/inactive.jpg" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 		else
 		{
-			console.log("***********");
-			console.log(project.edate);
-			console.log(new Date(project.edate));
-			console.log(new Date(new Date()));
-			console.log(com);
-
 			if(com === 1)
 				headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 			else
