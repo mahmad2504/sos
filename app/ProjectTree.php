@@ -373,7 +373,7 @@ class Task
 			//echo $ntask->key." ".$task->fields->timespent." ".$ntask->timespent."<br>";
 			$ntask->otimespent = $ntask->timespent;
 		}
-		if(isset($task->fields->duedate))
+		if(isset($task->fields->duedate)&&($ntask->status != 'RESOLVED'))
 		{
 			$ntask->duedate = $task->fields->duedate;
 			if( $ntask->duedate < Utility::GetToday('Y-m-d'))
