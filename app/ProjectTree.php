@@ -237,8 +237,7 @@ class Task
 		if(($ntask->status == 'RESOLVED') && ($ntask->closedon == null) && !isset($this->parent->tempflag))
 		{
 			$this->parent->tempflag = 1;
-			Utility::ConsoleLog(time(),"Error::"." Closedon date missing for resolved task. Check Your Jira Configurations");
-			Utility::ConsoleLog(time(),"Error::"." Burnup Charts may not be accurate");
+			Utility::ConsoleLog(time(),"Error::"."Warning::Closedon date missing for resolved task. Check Your Jira Configurations");
 			$ntask->closedon = $ntask->updated;
 			//dd($task);
 		}

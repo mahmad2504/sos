@@ -282,6 +282,10 @@ function AddCard(project,row)
 			headerstr   +='<img src="/images/inactive.jpg" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 		else
 		{
+			console.log("***********");
+			console.log(project.edate);
+			console.log(com);
+
 			if(com == 1)
 				headerstr   +='<img src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
 			else
