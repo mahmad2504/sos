@@ -171,7 +171,7 @@ class Task
 
 	function MapIssueType($issuetype,$key)
 	{
-		if(($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
+		if(($issuetype=='Feature')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 
 		if(($issuetype=='Workpackage')||($issuetype=='Project')||($issuetype=='Subproject'))
@@ -221,6 +221,7 @@ class Task
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$link_implemented_by  = $jiraconf['link_implemented_by'];
+		$link_parentof = $jiraconf['link_parentof']; 
 		
 		$sprint = $jiraconf['sprint']; // custom field
 
@@ -292,14 +293,17 @@ class Task
 		{
 			$resource =  new Resource;
 			$resource->name = str_replace (".", "_", $task->fields->assignee->name);
+			//echo $resource->name;
 			$resource->displayname = $task->fields->assignee->displayName;
+			//$resource->displayname = str_replace (".", "_", $task->fields->assignee->displayName);
+			
 			$resource->email = '';
 			if(isset($task->fields->assignee->emailAddress))
 				$resource->email = $task->fields->assignee->emailAddress;
 			$resource->timeZone = $task->fields->assignee->timeZone;
 
 			$this->parent->resources[$task->fields->assignee->name]	= $resource;
-			$ntask->assignee = $task->fields->assignee->name;
+			$ntask->assignee = $resource->name;
 		}
 		else
 		{
@@ -314,7 +318,7 @@ class Task
 		}
 		$ntask->query = null;
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
-			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'")';
+			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'")';
 		if($ntask->issuetype == 'EPIC')
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
@@ -973,7 +977,7 @@ class ProjectTree
 
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
-		//dd($this->tasks);
+	    //dd($this->tasks);
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
 	function ReadBaseline()
