@@ -171,7 +171,7 @@ class Task
 
 	function MapIssueType($issuetype,$key)
 	{
-		if(($issuetype=='Feature')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
+		if(($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 
 		if(($issuetype=='Workpackage')||($issuetype=='Project')||($issuetype=='Subproject'))
@@ -183,7 +183,7 @@ class Task
 		if($issuetype=='Epic')
 			return 'EPIC';
 
-		if(($issuetype=='Action')||($issuetype=='Dependency')||($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
+		if(($issuetype=='Documentation')||($issuetype=='Action')||($issuetype=='Dependency')||($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
 
 		Utility::ConsoleLog(time(),"Error::Unmapped type=[".$key." ".$issuetype."]");
@@ -221,7 +221,6 @@ class Task
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$link_implemented_by  = $jiraconf['link_implemented_by'];
-		$link_parentof = $jiraconf['link_parentof']; 
 		
 		$sprint = $jiraconf['sprint']; // custom field
 
@@ -293,17 +292,14 @@ class Task
 		{
 			$resource =  new Resource;
 			$resource->name = str_replace (".", "_", $task->fields->assignee->name);
-			//echo $resource->name;
 			$resource->displayname = $task->fields->assignee->displayName;
-			//$resource->displayname = str_replace (".", "_", $task->fields->assignee->displayName);
-			
 			$resource->email = '';
 			if(isset($task->fields->assignee->emailAddress))
 				$resource->email = $task->fields->assignee->emailAddress;
 			$resource->timeZone = $task->fields->assignee->timeZone;
 
 			$this->parent->resources[$task->fields->assignee->name]	= $resource;
-			$ntask->assignee = $resource->name;
+			$ntask->assignee = $task->fields->assignee->name;
 		}
 		else
 		{
@@ -318,7 +314,7 @@ class Task
 		}
 		$ntask->query = null;
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
-			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'")';
+			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'")';
 		if($ntask->issuetype == 'EPIC')
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
@@ -436,6 +432,7 @@ class Task
 			}
 			$query = $query.")";
 			$tasks = $this->SearchInJira($query,$jiraconf);
+			
 			if($tasks == null)
 				return -1;
 			foreach($tasks as $key=>$jtask)
@@ -455,7 +452,6 @@ class Task
 				//echo $ntask->key."  ".$level."<br>";
 				$taskatlevel[$level] = $ntask;
 			}
-			//dd($this);
 			return 0;
 		}
 		else
