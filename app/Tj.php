@@ -61,6 +61,9 @@ class Tj
 			{
 				//depends !!!t1.t1a1.t1a1a1,!!!t1.t1a2.t1a2a1 
 				//echo $stask->ExtId." ";
+				if(!array_key_exists($skey,$task->parent->tasks))
+					continue;
+				
 				$stask = $task->parent->tasks[$skey];
 				$post = "";
 				$codes = explode(".",$stask->extid);

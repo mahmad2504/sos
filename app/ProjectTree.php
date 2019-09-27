@@ -171,7 +171,7 @@ class Task
 
 	function MapIssueType($issuetype,$key)
 	{
-		if(($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
+		if( ($issuetype=='Feature')||($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 
 		if(($issuetype=='Workpackage')||($issuetype=='Project')||($issuetype=='Subproject'))
@@ -221,6 +221,7 @@ class Task
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$link_implemented_by  = $jiraconf['link_implemented_by'];
+		$link_parentof = $jiraconf['link_parentof']; 
 		
 		$sprint = $jiraconf['sprint']; // custom field
 
@@ -299,7 +300,7 @@ class Task
 			$resource->timeZone = $task->fields->assignee->timeZone;
 
 			$this->parent->resources[$task->fields->assignee->name]	= $resource;
-			$ntask->assignee = $task->fields->assignee->name;
+			$ntask->assignee = $resource->name;
 		}
 		else
 		{
@@ -313,8 +314,9 @@ class Task
 			$ntask->assignee = 'unassigned';
 		}
 		$ntask->query = null;
+		$link_parentof = 'Is Parent of';
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
-			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'")';
+			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'")';
 		if($ntask->issuetype == 'EPIC')
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
@@ -724,6 +726,11 @@ class ProjectTree
 				$head->blockers_present = 1;
 
 			$del = [];
+			if(($task->duplicate == 1)||($task->status == 'RESOLVED'))
+			{
+				$task->dependson = [];
+				
+			}
 			for($i=0;$i<count($task->dependson);$i++)
 			{
 				$key = $task->dependson[$i];
