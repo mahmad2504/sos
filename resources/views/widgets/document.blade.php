@@ -37,7 +37,7 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 		if($task->status == 'RESOLVED')
 			$badge = 'badge-success';
 		$header_tag = 'h5';
-		$parent='';
+		
 		$child_html = '';
 		$count  = 0;
 		foreach($task->children as $childtask)
@@ -51,8 +51,11 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 			if($count%15==0)
 				$child_html .= "<br>";
 		}
-		if($task->isparent)
-			$parent='Parent';
+		
+		//if(($task->type != 'TASK')&&($task->type != 'DEFECT'))
+		//	if($task->isparent == 0)
+		//		dd($task);
+		
 		echo 
 			"<".$header_tag.
 			" id='".$level."'>".$level."   ".
@@ -60,7 +63,10 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 			"<small title='Jira Task Status' style='margin-left:5px;float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->status."</small>".''."</a>".
 			"<small title='Jira Link' style='float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->key."</small>".''."</a>".
 		    "<br><br>";
-		echo $task->description."<br>";
+		if(strlen(trim($task->description))==0)
+			echo 'No Description'."<br>";
+		else
+			echo $task->description."<br>";
 		echo $child_html."<br><br>";
 		//echo $child_html;
 		echo '<br><br><br>';
@@ -87,6 +93,9 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 		if($task->isparent == 0)
 			$color = '#2A3439';
 		
+		//if(($task->issuetype != 'TASK')&&($task->issuetype != 'DEFECT'))
+		//	if($task->isparent == 0)
+		//		$color = 'Red';
 		//$color = 'Red';
 		echo '<li><a style="color:'.$color.'" href="#'.$level.'">'.
 			$level.'         -'.$task->_summary.''.'<span style="float:right">'.$task->ostatus.'</span>'.
