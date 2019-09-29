@@ -26,7 +26,7 @@
 @endsection
 @section('content')
 <?php
-$url = $project->jiraurl."/summary/";
+$url = $project->jiraurl."/browse/";
 function SpitTaskData($url,$task,$level,$firstcall=0)
 {
 	$i=1;
