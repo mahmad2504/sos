@@ -41,9 +41,15 @@ class ReportController extends Controller
             $isloggedin = 0;
 		
 		$projecttree = new ProjectTree($project);
-		 
-		$data = [];
-		return View('widgets.document',compact('user','project','projecttree','isloggedin','data'));
+		foreach($projecttree->tasks as $task)
+		{
+			if($task->_summary == 'Product Requirements')
+			{
+				return View('widgets.document',compact('user','project','task','isloggedin'));
+			}
+		}
+		abort(403, 'Product Requirements Tag Not Found');
+		//return View('widgets.document',compact('user','project','projecttree','isloggedin','data'));
 	}
 	
     public function ShowWeeklyReport(Request $request,$user, $project)

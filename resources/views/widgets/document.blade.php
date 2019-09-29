@@ -122,13 +122,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 				</li>-->
 				<li><a href="#product_requirement">1 Product Requirement</a>
 				<?php
-					foreach($projecttree->tasks as $task)
-					{
-						if($task->_summary == 'Product Requirements')
-						{
-							SpitSummaryTaskData($task,1,1,0);
-						}
-					}
+					SpitSummaryTaskData($task,1,1,0);
 				?>
 				</li>
 			</ul>
@@ -136,14 +130,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 	
 	<h2 id="product_requirement">1 Product Requirement - Details</h2>
 	<?php
-		foreach($projecttree->tasks as $task)
-		{
-			
-			if($task->_summary == 'Product Requirements')
-			{
-				SpitTaskData($url,$task,1,1);
-			}
-		}
+		SpitTaskData($url,$task,1,1);
 	?>
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
@@ -152,7 +139,6 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 var user = @json($user);
 var project =  @json($project);
 var isloggedin = {{$isloggedin}};
-var data = @json($data);
 if(isloggedin)
 {
 	$('.navbar').removeClass('d-none');
