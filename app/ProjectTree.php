@@ -163,6 +163,7 @@ class Task
 		$this->sprintno = -1;
 		$this->issuetype = 'PROJECT';
 		$this->assignee = 'unassigned';
+		$this->description = '';
 		$this->risk_severity = 'None';
 		$this->dependencies_present = 0; // valid only for head
 		$this->blockers_present = 0; // valid only for head
@@ -211,8 +212,11 @@ class Task
 		
 		$sprint = $jiraconf['sprint']; // custom field
 		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
+		if($this->parent->project->task_description==1)
+			$fields .= ',description';
+		
 		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint,$order);
-			
+		//dd($tasks);
 		return $tasks;
 	}
 	public function CreateTask($jiraconf,$task,$level,$pextid,$pos)
@@ -229,7 +233,7 @@ class Task
 		
 		$ntask->key = $task->key;;
 		$ntask->id = $task->id;
-		$ntask->otatus = $task->fields->status->name;
+		$ntask->ostatus = $task->fields->status->name;
 		$ntask->updated = $task->fields->updated;
 		if(isset($task->fields->resolutiondate))
 			$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
@@ -321,7 +325,10 @@ class Task
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
 			$ntask->query = "parent=".$ntask->key;
-
+		
+		if(isset($task->fields->description))
+			$ntask->description = $task->fields->description;
+		
 		if(isset($task->fields->timeoriginalestimate))
 			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);
 		if(isset($task->fields->$story_points))
@@ -527,6 +534,7 @@ class ProjectTree
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));
 			$this->FindDuplicates($this->tree);
+			//dd($this->tasks);
 			//echo "ff";
 			//dd($this->tree->oa);
 		}
@@ -981,6 +989,7 @@ class ProjectTree
 		$last_synced = date ("Y/m/d H:i" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
 	    //dd($this->tasks);
+		//dd($this->tasks);
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
 	function ReadBaseline()

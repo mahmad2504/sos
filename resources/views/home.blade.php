@@ -112,6 +112,8 @@ input {
 					<option value="0">Story Points</option>
 					<option value="1">Time</option>
 				</select>
+				<label style="margin-left:2px;margin-top:3px;" for="jirauri">Pull Description</label>
+				<input id="psettings_task_description" style="margin-top:10px;margin-left:10px;" class="" type="checkbox" name="task_description" value="0"></input>
 			</div>
 			<small  id="psettings_error" class="text-danger form-text"></small><br>
 			<button id="create_project" type="submit" class="btn btn-primary d-none">Create</button>
@@ -195,6 +197,7 @@ function SetPsettingsModalFields(settings)
 	$('#psettings_sdate').val(settings.sdate);
 	$('#psettings_edate').val(settings.edate);
 	$('#psettings_jiradependencies').prop('checked', settings.jira_dependencies);
+	$('#psettings_task_description').prop('checked', settings.task_description);
 }
 function OnNewProject(event)
 {
@@ -463,8 +466,8 @@ function OnUpdateProject(event)
 	if(ValidateFormData(form.serializeArray())==-1)
 		return;
 	var serializedData = form.serialize();
-	console.log("*****************");
-	console.log($('#psettings_jiradependencies').prop('checked'));
+	//console.log("*****************");
+	//console.log($('#psettings_jiradependencies').prop('checked'));
 	data = {};
 	$(form.serializeArray()).each(function(i, field)
 	{
@@ -474,6 +477,9 @@ function OnUpdateProject(event)
 	if($('#psettings_jiradependencies').prop('checked'))
 		data.jira_dependencies = 1;
 	
+	if($('#psettings_task_description').prop('checked'))
+		data.task_description = 1;
+		
 	data.estimation = $('#psettings_estimation').prop('selectedIndex');
 	console.log(data.estimation);
 	data.jirauri =  $('#psettings_jirauri').val();

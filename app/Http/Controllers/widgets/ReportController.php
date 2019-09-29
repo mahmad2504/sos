@@ -14,6 +14,38 @@ use App\ProjectTree;
 
 class ReportController extends Controller
 {
+	public function ShowDocument($user,$project)
+	{
+		$user = User::where('name',$user)->first();
+		if($user==null)
+    	{
+    		abort(403, 'Account Not Found');
+    	}
+		if(is_numeric($project))
+		{
+			
+			$project = $user->projects()->where('id',$project)->first();
+		}
+		else
+		{
+			$project = $user->projects()->where('name',$project)->first();
+		}
+		if($project==null)
+    	{
+    		abort(403, 'Project Not Found');
+        }
+		$isloggedin = Auth::check();
+		if($isloggedin)
+			$isloggedin = 1;
+		else
+            $isloggedin = 0;
+		
+		$projecttree = new ProjectTree($project);
+		 
+		$data = [];
+		return View('widgets.document',compact('user','project','projecttree','isloggedin','data'));
+	}
+	
     public function ShowWeeklyReport(Request $request,$user, $project)
     {
         $user = User::where('name',$user)->first();

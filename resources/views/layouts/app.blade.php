@@ -98,13 +98,14 @@
 			<div style="display:none;" class="loading">Loading&#8230;</div>
 			@yield('content')
 			<footer style="text-align: center;width:90%;" class="container-fluid">
-				<small style="color:grey">Developed & maintained by <a href="mailto:Mumtaz_Ahmad@mentor.com">Mumtaz Ahmad</a></small>
+				<small style="color:grey" >Stay On Schedule &#169; <a style="color:grey" href="mailto:Mumtaz_Ahmad@mentor.com">Mumtaz Ahmad</a>
 				 <a href="https://www.linkedin.com/in/mumtazahmad2">
 					<i class="fab fa-linkedin"></i>
 				</a>
-				<a href="https://github.com/mahmad2504/sos">
+				<a href="https://github.com/mahmad2504/sos"> <span style="color:grey">Code</span>  
 					<i class="fab fa-github"></i>
 				</a>
+				</small>
 			</footer>
         </main>
     </div>

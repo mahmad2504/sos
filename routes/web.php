@@ -63,6 +63,8 @@ Route::get('/widget/data/timechart/{projectid}','Widgets\TimeChartController@Get
 Route::get('/widget/report/weekly/{user}/{project}','Widgets\ReportController@ShowWeeklyReport')->name('showweeklyreport');// {year?}/{weekno?}/{key?}
 Route::get('/widget/data/report/weekly/{user}/{project}','Widgets\ReportController@GetWeeklyReport')->name('getweeklyreport');//{year?}/{weekno?}/{key?}
 
+//// Report
+Route::get('/widget/document/{user}/{project}','Widgets\ReportController@ShowDocument')->name('showdocument');
 
 //// Burnup
 Route::get('/widget/burnup/{user}/{project}/{key?}','Widgets\BurnupController@Show')->name('showwburnupchart');

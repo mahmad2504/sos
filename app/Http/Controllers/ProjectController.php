@@ -78,7 +78,8 @@ class ProjectController extends Controller
 				$request->description = 'No Description';
 			if ($request->jira_dependencies==null)
 				$request->jira_dependencies = 0;
-		
+			if ($request->task_description==null)
+				$request->task_description = 0;
 			if ($request->sdate==null)
 			{
 				$request->sdate = Utility::GetToday('Y-m-d');
@@ -105,6 +106,7 @@ class ProjectController extends Controller
 			$project['sdate'] = $request->sdate;
 			$project['edate'] = $request->edate;
 			$project['jira_dependencies'] = $request->jira_dependencies;
+			$project['task_description'] = $request->task_description;
 			$project['estimation'] = $request->estimation;
 			$project['progress'] = $request->progress;
 		}
@@ -131,6 +133,8 @@ class ProjectController extends Controller
 				$project['description'] = $request->description;
 			if ($request->jira_dependencies!=null)
 				$project['jira_dependencies'] = $request->jira_dependencies;
+			if ($request->task_description!=null)
+				$project['task_description'] = $request->task_description;
 			if ($request->sdate!=null)
 				$project['sdate'] = $request->sdate;
 			if ($request->edate!=null)
