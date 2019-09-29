@@ -46,7 +46,7 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 			$b = 'badge-secondary';
 			if($childtask->status == 'RESOLVED')
 				$b = 'badge-success';
-			$child_html .= "<span style='font-size:15px;'><a href='".$localurl."' class='badge ".$b."'>".$childtask->linkid."</span></a>&nbsp";
+			$child_html .= "<span style='font-size:15px;'><a title='Child Task' href='".$localurl."' class='badge-pill badge ".$b."'>".$childtask->linkid."</span></a>&nbsp";
 			$count++;
 			if($count%15==0)
 				$child_html .= "<br>";
@@ -57,8 +57,8 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 			"<".$header_tag.
 			" id='".$level."'>".$level."   ".
 			$task->summary.
-			"<small style='margin-left:5px;float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->status."</small>".''."</a>".
-			"<small style='float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->key."</small>".''."</a>".
+			"<small title='Jira Task Status' style='margin-left:5px;float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->status."</small>".''."</a>".
+			"<small title='Jira Link' style='float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->key."</small>".''."</a>".
 		    "<br><br>";
 		echo $task->description."<br>";
 		echo $child_html."<br><br>";
