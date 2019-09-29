@@ -136,11 +136,12 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 				</li>
 			</ul>
 	</div>
-	
+	<div id="toc_container">
 	<h2 id="product_requirement">1 Product Requirement - Details</h2>
 	<?php
 		SpitTaskData($url,$task,1,1);
 	?>
+	</div>
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
 @endsection
