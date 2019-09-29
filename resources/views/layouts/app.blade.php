@@ -99,10 +99,14 @@
 			@yield('content')
 			<footer style="text-align: center;width:90%;" class="container-fluid">
 				<small style="color:grey" >Stay On Schedule &#169; <a style="color:grey" href="mailto:Mumtaz_Ahmad@mentor.com">Mumtaz Ahmad</a>
-				 <a href="https://www.linkedin.com/in/mumtazahmad2">
+				<a href="mailto:Mumtaz_Ahmad@mentor.com">
+					<i  class="far fa-envelope"></i>
+				</a>
+				
+				<a href="https://www.linkedin.com/in/mumtazahmad2">
 					<i class="fab fa-linkedin"></i>
 				</a>
-				<a href="https://github.com/mahmad2504/sos"> <span style="color:grey">Code</span>  
+				<a href="https://github.com/mahmad2504/sos"> <span style="color:grey"></span>  
 					<i class="fab fa-github"></i>
 				</a>
 				</small>
