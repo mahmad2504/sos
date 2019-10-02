@@ -151,6 +151,7 @@ $(document).ready(function()
 			var pid = row['pextid'];
 			var _class =row['issuetype'];
 			var title=row['summary'];
+			
 			var link=row['jiraurl'];
 			var linktext=row['key'];
 			var issuetype = row['issuetype'];
@@ -227,6 +228,7 @@ $(document).ready(function()
 			rowstr += "<td title='"+title+"' style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
 			rowstr += title+"</td>";
 			rowstr += "<td>";
+			console.log(rowstr);
 			if(duplicate == 1)
 			{
 				rowstr += '&nbsp&nbsp<span   class="badge badge-warning">Duplicate&nbsp&nbsp&nbsp&nbsp</span>'+"</span>";

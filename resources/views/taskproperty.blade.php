@@ -257,7 +257,7 @@ function ShowTree(response,showall)
 		
 		rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
 		rowstr += "<td  style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
-		rowstr += id+" "+title+"</span></td>";
+		rowstr += title+"</span></td>";
 		
 		////////////////////////////////////////////////// JIRA
 		if(linktext == id)// Not a Jira Task 
