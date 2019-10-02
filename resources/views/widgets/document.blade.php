@@ -156,7 +156,7 @@ if(isloggedin)
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 }
 $(function() {
-  
+       
 });
 
 @endsection

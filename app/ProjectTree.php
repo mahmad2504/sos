@@ -330,7 +330,7 @@ class Task
 			$ntask->description = $task->fields->description;
 		
 		if(isset($task->fields->timeoriginalestimate))
-			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),1);
+			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),3);
 		if(isset($task->fields->$story_points))
 			$ntask->storypoints = $task->fields->$story_points;
 
@@ -373,7 +373,7 @@ class Task
 		if(isset($task->fields->timespent))
 		{
 			//echo $ntask->key." ".$task->fields->timespent."<br>";
-			$ntask->timespent =  round($task->fields->timespent/(28800),1);
+			$ntask->timespent =  round($task->fields->timespent/(28800),2);
 			if(($task->fields->timespent > 0)&&($ntask->timespent==0))
 			{
 				$ntask->timespent = round($task->fields->timespent/(28800),3);

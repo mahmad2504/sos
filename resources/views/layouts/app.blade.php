@@ -304,6 +304,10 @@
 		{
             return  Math.round( val * 10 ) / 10;
 		}
+		function Round2(val)
+		{
+            return  Math.round( val * 100 ) / 100;
+		}
 		function ConvertDateToString(datestr)
 		{
 			var d = new Date(datestr);

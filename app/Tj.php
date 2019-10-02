@@ -234,8 +234,11 @@ class Tj
 				$header = $header.'       leaves annual '.$obj->startDate." +".$days."d\n"; 
 			}
 
-			$presource->efficiency = round($presource->efficiency/100,1);
-			$header = $header.'       efficiency '.$presource->efficiency."\n"; 			
+			//$presource->efficiency = $presource->efficiency/100;
+			$weekhours = $presource->efficiency/100*40;
+			//$header = $header.'       efficiency '.$presource->efficiency."\n"; 
+			$header = $header.'        limits { weeklymax  '.$weekhours.'h}'."\n";
+ 			//$header = $header.'        limits { dailymax  450min}'."\n";
 			$header = $header.'    }'."\n";
 		}
 		$header = $header.'}'."\n";
@@ -273,7 +276,7 @@ class Tj
 		$header = $header.'   timeformat "%Y-%m-%d"'."\n";
 		$header = $header.'   numberformat "-" "" "," "." 1 '."\n";
 		$header = $header.'   currencyformat "(" ")" "," "." 0 '."\n";
-		$header = $header.'   now 2017-07-21-01:00'."\n";
+		//$header = $header.'   now 2019-10-01-01:00'."\n";
 		$header = $header.'   currency "USD"'."\n";
 		$header = $header.'   scenario plan "Plan" {}'."\n";
 		$header = $header.'   extend task { text Jira "Jira"}'."\n";
@@ -335,6 +338,15 @@ class Tj
 			hideresource @all
 		}
 		
+		taskreport dayreporthtml \"dayreporthtml\" {
+			formats html
+			columns bsi, name, start, end, effort,resources, complete,Jira, daily
+			# For this report we like to have the abbreviated weekday in front
+			# of the date. %a is the tag for this.
+			timeformat \"%Y-%m-%d\"
+			loadunit hours
+			hideresource @all
+		}
 	
 		
 		resourcereport resourcegraphhtm \"resourcehtml\" {

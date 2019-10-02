@@ -87,7 +87,9 @@ function ShowGantt(data)
 			data[i].pJira = '';
 
 		style = '';
-		data[i].pEstimate = Math.round(data[i].pEstimate);
+		
+		//data[i].pEstimate = data[i].pEstimate*8;
+		data[i].pEstimate = Round2(data[i].pEstimate);
 		
 		if(data[i].pStatus == 'RESOLVED')
 		{
