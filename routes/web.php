@@ -65,6 +65,9 @@ Route::get('/widget/data/report/weekly/{user}/{project}','Widgets\ReportControll
 
 //// Report
 Route::get('/widget/document/{user}/{project}','Widgets\ReportController@ShowDocument')->name('showdocument');
+Route::get('/widget/report/baseline/{user}/{project}','Widgets\ReportController@ShowBaselineReport')->name('showbaselinereport');
+
+
 
 //// Burnup
 Route::get('/widget/burnup/{user}/{project}/{key?}','Widgets\BurnupController@Show')->name('showwburnupchart');

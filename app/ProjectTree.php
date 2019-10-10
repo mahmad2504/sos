@@ -172,7 +172,7 @@ class Task
 
 	function MapIssueType($issuetype,$key)
 	{
-		if( ($issuetype=='Feature')||($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
+		if(($issuetype=='Cluster')||($issuetype=='Feature')||($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 
 		if(($issuetype=='Workpackage')||($issuetype=='Project')||($issuetype=='Subproject'))
@@ -195,7 +195,7 @@ class Task
 	{
 		if( ($status=='Created')||($status=='Blocked')||($status=='To Do')||($status=='Requested')||($status=='Open')||($status == 'Committed')||($status == 'Draft')||($status == 'Withdrawn')||($status == 'Reopened')||($status == 'New'))
 			return 'OPEN';
-		if(($status=='Verified')||($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
+		if(($status == 'Completed')||($status=='Verified')||($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
 
 		if(($status == 'Monitored')||($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
@@ -226,6 +226,7 @@ class Task
 		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$link_implemented_by  = $jiraconf['link_implemented_by'];
 		$link_parentof = $jiraconf['link_parentof']; 
+		$link_testedby = $jiraconf['link_testedby'];
 		
 		$sprint = $jiraconf['sprint']; // custom field
 
@@ -320,7 +321,7 @@ class Task
 		$ntask->query = null;
 		$link_parentof = 'Is Parent of';
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
-			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'")';
+			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
 		if($ntask->issuetype == 'EPIC')
 			$ntask->query = "'Epic Link'=".$ntask->key;
 		if(count($task->fields->subtasks)>0)
@@ -389,8 +390,8 @@ class Task
 				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (Expired)");
 			else if($ntask->duedate < $ntask->_project_start)
 				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (Before Project start)");
-			else if($ntask->duedate < $ntask->_project_end)
-				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (After Project end)");	
+			else if($ntask->duedate > $ntask->_project_end)
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (After Project end)  ");	
 		}
 
 

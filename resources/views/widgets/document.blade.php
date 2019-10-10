@@ -42,6 +42,8 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 		$count  = 0;
 		foreach($task->children as $childtask)
 		{
+			if($childtask->issuetype != 'REQUIREMENT')
+				continue;
 			$localurl = '#'.$childtask->linkid;
 			$b = 'badge-secondary';
 			if($childtask->status == 'RESOLVED')

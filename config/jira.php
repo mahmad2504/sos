@@ -10,6 +10,7 @@ return
 		 'risk_severity' => 'customfield_12733',
 		 'link_implemented_by' => 'implemented by',
 		 'link_parentof' => 'Is Parent of',
+		 'link_testedby' => 'is tested by'
 		],
 		['uri'=>'http://ies-iesd-jira.ies.mentorg.com:8080',
 		 'username' => env('JIRA_IESD_USERNAME'),
@@ -19,6 +20,7 @@ return
 		 'risk_severity' => 'customfield_12733',
 		 'link_implemented_by' => 'implemented by',
 		 'link_parentof' => 'Is Parent of',
+		 'link_testedby' => 'is tested by'
 		],
 		['uri'=>'https://mentorgraphics.atlassian.net',
 		 'username' => env('JIRA_ATTLASSIAN_USERNAME'),
@@ -28,6 +30,7 @@ return
 		 'risk_severity' => 'customfield_12733',
 		 'link_implemented_by' => 'is implemented by',
 		 'link_parentof' => 'Is Parent of',
+		 'link_testedby' => 'is tested by'
 		]
 	]
 ];
