@@ -128,6 +128,17 @@ class TreeViewController extends Controller
 		$row['sprintstate'] = $task->sprintstate;
 		$row['sprintid'] = $task->sprintid;
 		$row['assignee'] = $task->assignee;
+		$row['versions']  = '';
+		if(isset($task->fixVersions ))
+		{
+			if(count($task->fixVersions)>0)
+				$row['versions'] = implode(",",$task->fixVersions);
+			else
+				$row['versions'] = $task->other_field;
+		}
+		//$row['versions']  = count($task->fixVersions);
+	
+		
 		$row['risk_severity'] = $task->risk_severity;
 		if($first)
 		{

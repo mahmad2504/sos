@@ -163,8 +163,11 @@ class Task
 		$this->sprintno = -1;
 		$this->issuetype = 'PROJECT';
 		$this->assignee = 'unassigned';
+		$this->fixVersions = [];
+		$this->labels = [];
 		$this->description = '';
 		$this->risk_severity = 'None';
+		$this->other_field = '';
 		$this->dependencies_present = 0; // valid only for head
 		$this->blockers_present = 0; // valid only for head
 		$this->dependson = [];
@@ -209,13 +212,14 @@ class Task
 		//echo $query."<br>";
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
+		$other_field = $jiraconf['other']; // custom field
 		
 		$sprint = $jiraconf['sprint']; // custom field
-		$fields = 'updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,';
+		$fields = 'labels,updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,fixVersions';
 		if($this->parent->project->task_description==1)
 			$fields .= ',description';
 		
-		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint,$order);
+		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint.",".$other_field,$order);
 		//dd($tasks);
 		return $tasks;
 	}
@@ -227,6 +231,7 @@ class Task
 		$link_implemented_by  = $jiraconf['link_implemented_by'];
 		$link_parentof = $jiraconf['link_parentof']; 
 		$link_testedby = $jiraconf['link_testedby'];
+		$other_field = $jiraconf['other'];
 		
 		$sprint = $jiraconf['sprint']; // custom field
 
@@ -318,6 +323,18 @@ class Task
 			$this->parent->resources['unassigned']	= $resource;
 			$ntask->assignee = 'unassigned';
 		}
+		if(isset($task->fields->fixVersions))
+		{
+			foreach($task->fields->fixVersions as $fixVersion)
+				$ntask->fixVersions[] = $fixVersion->name;
+			//dd($ntask->fixVersions);
+		}
+		if(isset($task->fields->labels))
+		{
+			foreach($task->fields->labels as $label)
+				$ntask->labels[] = $label;
+		}
+		
 		$ntask->query = null;
 		$link_parentof = 'Is Parent of';
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
@@ -335,11 +352,17 @@ class Task
 		if(isset($task->fields->$story_points))
 			$ntask->storypoints = $task->fields->$story_points;
 
+
 		if(isset($task->fields->$risk_severity))
 		{
 			$ntask->risk_severity = $task->fields->$risk_severity->value;
 		}
-
+		if(isset($task->fields->$other_field))
+		{
+			$ntask->other_field = $task->fields->$other_field;
+		}
+		//echo $ntask->other_field;
+		
 		$ntask->estimate = $ntask->_orig_estimate;
 		$ntask->priority = $task->fields->priority->id;
 		//if($ntask->key == 'IP-72')

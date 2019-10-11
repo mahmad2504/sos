@@ -23,6 +23,12 @@
     list-style: outside none none !important;
 }
 
+th {
+  height: 25px;
+  font-weight: bold;
+  text-align: left;
+  background-color: #cccccc;
+}
 @endsection
 @section('content')
 <?php
@@ -64,24 +70,56 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 			$task->summary.
 			"<small title='Jira Task Status' style='margin-left:5px;float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->status."</small>".''."</a>".
 			"<small title='Jira Link' style='float:right;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$task->key."</small>".''."</a>".
-		    "<br><br>";
+		    "</h5>";
 		if(strlen(trim($task->description))==0)
 			echo 'No Description'."<br>";
 		else
-			echo $task->description."<br>";
-		echo $child_html."<br><br>";
+			echo strip_tags($task->description)."<br>";
+		echo $child_html."";
 		//echo $child_html;
 		echo '<br><br><br>';
 	}
-	foreach($task->children as $child)
+	if($task->show_children)
 	{
-		$next_level = $level.".".$i++;
-		SpitTaskData($url,$child,$next_level);
+		foreach($task->children as $child)
+		{
+			if($child->issuetype != 'REQUIREMENT')
+				continue;
+				
+			$next_level = $level.".".$i++;
+			SpitTaskData($url,$child,$next_level);
+		}
+	}
+	else
+	{
+		echo '<table border="2" style="margin-left:200px;width:60%">';
+		echo '<col width="60%"><col width="20%"><col width="20%">';
+		echo '<tr><th>Feature</th>
+		<th>Jira</th>
+		<th>Status</th>
+		</tr>';
+		foreach($task->children as $child)
+		{
+			$badge = 'badge-secondary';
+			$thisurl  = $url.$child->key;
+			if($child->status == 'RESOLVED')
+				$badge = 'badge-success';
+		
+			if($child->issuetype != 'REQUIREMENT')
+				continue;
+			 echo '<tr>';
+			 echo '<td style="font-size:15px;">'.$child->summary.'</td>';
+			 $key = "<small title='Jira Task' style='margin-left:5px;font-size:13px;'><a href='".$thisurl."' class=' ".$badge."'>".$child->key."</a>".''."</small>";
+			
+			 echo '<td style="">'.$key.'</td>';
+			$status = "<small title='Jira Task Status' style='margin-left:5px;font-size:15px;'><a href='".$thisurl."' class='badge ".$badge."'>".$child->status."</a>".''."</small>";
+			
+			 echo '<td style="">'.$status.'</td>';
+			 echo '</tr>';
+		}
+		echo '</table><br><br>';
 	}
 }
-
-
-
 function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 {
 	$label  = 1;
@@ -108,10 +146,25 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 		$task->linkid = $level;
 		
 	}
-	foreach($task->children as $child)
+	$task->show_children = 1;
+    foreach($task->labels as $label)
 	{
-		$next_level = $level.".".$i++;
-		SpitSummaryTaskData($child,$next_level,0,$count++);
+		if($label == 'format-as-table')
+		{
+			$task->show_children = 0;
+			break;
+		}
+	}
+	if($task->show_children)
+	{
+		foreach($task->children as $child)
+		{
+			if($child->issuetype != 'REQUIREMENT')
+				continue;
+				
+			$next_level = $level.".".$i++;
+			SpitSummaryTaskData($child,$next_level,0,$count++);
+		}
 	}
 }
 

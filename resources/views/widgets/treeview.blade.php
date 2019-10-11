@@ -8,7 +8,7 @@
 .progress {height: 10px;}
 @endsection
 @section('content')
-<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+<div style="width:90%; margin-left: auto; margin-right: auto" class="center">
 	<h3>{{ $project->name}}</h3>
 	<div class="mainpanel">
 	<div style="background-color:#F0F0F0">
@@ -20,13 +20,14 @@
 		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
 		</caption>
 		<col style="width:40%;border-right:1pt solid lightgrey;"> <!--Title  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Type  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Blockers  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Dependecnies  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Sprint  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Resource  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Type  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Blockers  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Dependecnies  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Sprint  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Version  --> 
+		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Resource  --> 
 		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
 		  <tr>
@@ -37,6 +38,7 @@
 			<th class="dependencies">Dependency</th>
 			<th class='sprintcolumn'>Sprint</th>
 			<th id='estimatecolumn'></th>
+			<th>Version</th>
 			<th>Resource</th>
 			<th>Progress</th>
 		  </tr>
@@ -166,6 +168,7 @@ $(document).ready(function()
 			var sprintstate = row['sprintstate'];
 			var sprintname = row['sprintname'];
 			var duplicate=row['duplicate'];
+			var versions=row['versions'];
 			var assignee=row['assignee'];
 			if(assignee == 'unassigned')
 				assignee = '';
@@ -285,7 +288,9 @@ $(document).ready(function()
 				rowstr += "<td>"+estimate+"  "+estimate_units+"</td>";
 			else
 				rowstr += "<td></td>";
-
+			
+			rowstr += '<td>'+versions+'</td>';
+			
 			if(duplicate == 1)
 				rowstr += '<td>Duplicate</td>';
 			else
