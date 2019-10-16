@@ -364,7 +364,30 @@ class Task
 		//echo $ntask->other_field;
 		
 		$ntask->estimate = $ntask->_orig_estimate;
+		if($task->fields->priority->name == 'Blocker')
+			$task->fields->priority->id = 1;
+		
+		if($task->fields->priority->name == 'Critical')
+			$task->fields->priority->id = 2;
+		
+		if($task->fields->priority->name == 'Major')
+			$task->fields->priority->id = 3;
+			
 		$ntask->priority = $task->fields->priority->id;
+		
+		if(($ntask->oissuetype == 'Risk')&&($ntask->risk_severity == 'None'))
+		{
+			if($task->fields->priority->name == 'Blocker')
+				$ntask->risk_severity = 'Critical';
+			
+			if($task->fields->priority->name == 'Critical')
+				$ntask->risk_severity = 'High';
+			
+			if($task->fields->priority->name == 'Major')
+				$ntask->risk_severity = 'Medium';
+		
+		}
+		//echo $ntask->key." ".$ntask->risk_severity."  ".$ntask->priority." ".print_r($task->fields->priority)."\r\n";
 		//if($ntask->key == 'IP-72')
 		//	dd($task);
 		$ntask->dependson = [];
