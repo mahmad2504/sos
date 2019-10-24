@@ -35,7 +35,8 @@
         <span id="issuecount" class="d-flex float-right badge"></span>
         <span class="d-flex float-right" >&nbsp&nbsp</span>
         <span id="blockercount" class="d-flex float-right badge"></span>
-        
+        <span class="d-flex float-right" >&nbsp&nbsp</span>
+        <span id="escalationscount" class="d-flex float-right badge"></span>
     	<table class="zui-table">
         <thead>
             <tr>
@@ -191,6 +192,27 @@ function UpdateBlockersOnUi(severity)
         $('#blockercount').prop('title', 'Blocker  - '+str);
     }
 }
+
+function UpdateEscalationsOnUi()
+{
+    count = 0;
+	escalations = [];
+    for (var key in data['risksissues']['escalations']) 
+    {
+        escalations[count] = key;
+        count++
+    }
+    if(escalations.length > 0)
+    {
+        str = escalations.toString();
+        if(escalations.length == 1)
+            $('#escalationscount').text(escalations.length+" Escalation");
+        else
+            $('#escalationscount').text(escalations.length+" Escalations");
+        $("#escalationscount").addClass( "badge-danger" );
+        $('#escalationscount').prop('title', 'Escalations  - '+str);
+    }
+}
 $(function() 
 {
     if(data['summary'] === undefined)
@@ -284,6 +306,11 @@ $(function()
     if(data['risksissues']['blockers'] !==  undefined)
     {
         UpdateBlockersOnUi(blockers,'Blocker');
+    }
+	// Escalations
+    if(data['risksissues']['escalations'] !==  undefined)
+    {
+        UpdateEscalationsOnUi();
     }
     $('#progress').radialIndicator({
         barColor: '#2E8B57',

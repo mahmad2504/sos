@@ -11,7 +11,7 @@
 @section('content')
 
 
-<div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+<div style="width:90%; margin-left: auto; margin-right: auto" class="center">
 	<!-- <h4 class="center" id="summary" style="width:60%;margin-bottom:-17px;">Projects Status</h4> -->
 	<h3>Projects of {{ $user->name}}</h3>
 	<div class="mainpanel">
@@ -19,10 +19,11 @@
 		<thead>
 			<tr>
 				<th width="29%"  style="text-align: left;">Project</th>
-				<th width="17%" >Blockers</th>
-				<th width="17%" >Risks</th>
-				<th width="17%" >Issues</th> 
-				<th width="10%" >Progress</th> 
+				<th width="15%" >Blockers</th>
+				<th width="15%" >Risks</th>
+				<th width="15%" >Issues</th> 
+				<th width="15%" >Escalations</th> 
+				<th width="13%" >Progress</th> 
 				<th width="10%" >Status</th>
 			</tr>
 		</thead>`
@@ -33,6 +34,7 @@
 			<td id="blockers{{$i}}"></td>
 			<td id="risks{{$i}}"></td>
 			<td id="issues{{$i}}"></td>
+			<td id="escalations{{$i}}"></td>
 			<td id="progress{{$i}}"></td>
 			<td id="status{{$i}}"></td>
 		</tr>
@@ -70,6 +72,8 @@ $(function()
 		blockers = project.risksissues.blockers;
 		risks = project.risksissues.risks;
 		issues = project.risksissues.issues;
+		escalations = project.risksissues.escalations;
+		
 		status = project.status;
 		progress = project.progress;
 		
@@ -178,6 +182,19 @@ $(function()
 		badges += '</h6>' ;
 		
 		$('#issues'+i).html(badges);
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		count=0;
+		title = '';
+		for(var key in escalations)
+		{
+			title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
+			count++;
+		}
+		
+		if(count > 0)
+			$('#escalations'+i).html('<h6><span  title="'+title+'" class="tp badge badge-danger">'+count+' Escalation</span></h6>');
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$('#status'+i).html("<img width='80px' src='/images/"+status+".png'></img>"); 
 	

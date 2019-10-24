@@ -473,7 +473,7 @@ class Tj
 		//." 2>&1"
 		Utility::ConsoleLog(time(),'Wait::Generating Schedule ...');
 
-		$cmd = "tj3 -o ".$this->datapath."  ".$this->planpath." 2>&1";
+		$cmd = "tj3 -o '".$this->datapath."'  '".$this->planpath."' 2>&1";
 		if(App::runningInConsole())
 			$cmd = "public\\tj3 -o ".$this->datapath."  ".$this->planpath." 2>&1";
 		

@@ -158,6 +158,7 @@ class Task
 		$this->progress = 0;
 		$this->oissuetype = '';
 		$this->sprintname = '';
+		$this->escalate = 0;
 		$this->sprintstate = '';
 		$this->sprintid = '';
 		$this->sprintno = -1;
@@ -215,11 +216,13 @@ class Task
 		$other_field = $jiraconf['other']; // custom field
 		
 		$sprint = $jiraconf['sprint']; // custom field
+		$escalate = $jiraconf['escalate']; // custom field
+		
 		$fields = 'labels,updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,fixVersions';
 		if($this->parent->project->task_description==1)
 			$fields .= ',description';
 		
-		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint.",".$other_field,$order);
+		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint.",".$other_field.",".$escalate,$order);
 		//dd($tasks);
 		return $tasks;
 	}
@@ -234,7 +237,8 @@ class Task
 		$other_field = $jiraconf['other'];
 		
 		$sprint = $jiraconf['sprint']; // custom field
-
+		$escalate = $jiraconf['escalate']; // custom field
+		
 		$ntask = new Task($this->parent,$level,$pextid,$pos);
 		
 		$ntask->key = $task->key;;
@@ -261,6 +265,13 @@ class Task
 		$sprintstate = '';
 		$sprintid = '';
 		$sprintno = -1;
+		if(isset($task->fields->$escalate))
+		{
+			if(isset($task->fields->$escalate->value))
+				if($task->fields->$escalate->value == 'Yes')
+					$ntask->escalate = 1;
+			
+		}
 		if(isset($task->fields->$sprint))
 		{
 			$last_sequence = 0;
@@ -1491,6 +1502,7 @@ class ProjectTree
 			$this->risks = array();
 			$this->issues = array();
 			$this->blockers = array();
+			$this->escalations = array();
 		}
 		if(($task->risk_severity != 'None')&&($task->status != 'RESOLVED'))
 		{
@@ -1501,6 +1513,9 @@ class ProjectTree
 		}
 		if(($task->priority == 1)&&($task->status != 'RESOLVED'))
 			$this->blockers[$task->key] =$task->key;
+		
+		if(($task->escalate == 1)&&($task->status != 'RESOLVED'))
+			$this->escalations[$task->key] =$task->key;
 			
 		foreach($task->children as $child)
 		{
@@ -1509,6 +1524,8 @@ class ProjectTree
 		$data['risks'] =  $this->risks;
 		$data['issues'] =  $this->issues;
 		$data['blockers'] =  $this->blockers;
+		$data['escalations'] =  $this->escalations;
+		//dd($data['escalations']);
 		
 		return $data;
 	}
