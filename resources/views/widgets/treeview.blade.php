@@ -19,7 +19,7 @@
 		  <a href="#"  onclick="jQuery('#treetable').treetable('expandAll'); return false;">Expand all</a>&nbsp|
 		  <a href="#" onclick="jQuery('#treetable').treetable('collapseAll'); return false;">Collapse all</a>
 		</caption>
-		<col style="width:40%;border-right:1pt solid lightgrey;"> <!--Title  --> 
+		<col style="width:35%;border-right:1pt solid lightgrey;"> <!--Title  --> 
 		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Type  --> 
 		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Jira  --> 
 		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Blockers  --> 
@@ -27,8 +27,8 @@
 		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Sprint  --> 
 		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Estimates  --> 
 		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Version  --> 
-		<col style="width:8%;border-right:1pt solid lightgrey;"> <!--Resource  --> 
-		<col style="width:10%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
+		<!-- <col style="width:8%;border-right:1pt solid lightgrey;"> --><!--Resource  --> 
+		<col style="width:15%;border-right:1pt solid lightgrey;"> <!--Progress  --> 
 		<thead style="background-color: SteelBlue;color: white;font-size: .8rem;">
 		  <tr>
 			<th>Title</th>
@@ -39,7 +39,7 @@
 			<th class='sprintcolumn'>Sprint</th>
 			<th id='estimatecolumn'></th>
 			<th>Version</th>
-			<th>Resource</th>
+			<!-- <th>Resource</th> -->
 			<th>Progress</th>
 		  </tr>
 		</thead>
@@ -285,16 +285,21 @@ $(document).ready(function()
 				sprints = 1;
 			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
 			if(estimate > 0)
+			{
+				if(timespent > 0)
+					rowstr += "<td>"+timespent+" / "+estimate+"  "+estimate_units+"</td>";
+				else
 				rowstr += "<td>"+estimate+"  "+estimate_units+"</td>";
+			}
 			else
 				rowstr += "<td></td>";
 			
 			rowstr += '<td>'+versions+'</td>';
 			
-			if(duplicate == 1)
+			/*if(duplicate == 1)
 				rowstr += '<td>Duplicate</td>';
 			else
-				rowstr += '<td>'+assignee+'</td>';
+				rowstr += '<td >'+assignee+'</td>';*/
 			var str = '<div class="shadow-lg progress position-relative" style="background-color:grey"><div class="progress-bar '+progressbar_animation_class+'" role="progressbar" style="background-color:'+progressbar_color+' !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
 			rowstr += "<td>"+str+"</td>";
 			rowstr += "</tr>";

@@ -349,12 +349,25 @@ class Task
 		$ntask->query = null;
 		$link_parentof = 'Is Parent of';
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
+		{
 			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
+			if($ntask->parent->globalepicquery != null)
+				$ntask->query = "(".$ntask->query.") ".$ntask->parent->globalepicquery;
+		}
 		if($ntask->issuetype == 'EPIC')
+		{
 			$ntask->query = "'Epic Link'=".$ntask->key;
+			if($ntask->parent->globaltaskquery != null)
+				$ntask->query = $ntask->query . " ".$ntask->parent->globaltaskquery;
+		}
 		if(count($task->fields->subtasks)>0)
+		{
 			$ntask->query = "parent=".$ntask->key;
+			if($ntask->parent->globaltaskquery != null)
+				$ntask->query = $ntask->query . " ".$ntask->parent->globaltaskquery;
+		}
 		
+		//dd($this->parent->globaltaskquery);
 		if(isset($task->fields->description))
 			$ntask->description = $task->fields->description;
 		
@@ -524,6 +537,9 @@ class Task
 		else
 		{
 			Utility::ConsoleLog(time(),"Running Query ".$this->query);
+			if(strstr(strtolower($this->query),'order by'))
+				$tasks = $this->SearchInJira($this->query,$jiraconf,'');
+			else
 			$tasks = $this->SearchInJira($this->query,$jiraconf,'ORDER BY Rank ASC');
 			if($tasks == null)
 				return -1;
@@ -574,6 +590,8 @@ class ProjectTree
 	public $resources = [];
 	private $weeklylogs = [];
 	private $milestones = [];
+	private $globaltaskquery=null;
+	private $globalepicquery=null;
 	function __construct(Project $project)
 	{
 		$user = $project->user()->first();
@@ -588,6 +606,16 @@ class ProjectTree
 
 		$this->jiraconfig = Utility::GetJiraConfig($project);
 		$project->jiraurl = Utility::GetJiraURL($project);
+		$globaltaskquery = explode("taskquery=",$project->description);
+		if(count($globaltaskquery)>1)
+			$this->globaltaskquery=$globaltaskquery[1];
+		
+		$globalepicquery = explode("epicquery=",$project->description);
+		if(count($globalepicquery)>1)
+			$this->globalepicquery=$globalepicquery[1];
+		
+		
+		
 		if(file_exists($this->treepath))
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));

@@ -228,10 +228,19 @@ $(function()
 
     var weekdate = ConvertDateFormat(data['tend']);
     $('#tend').html(ConvertDateToString(data['tend'])+"<br><small class='grey-text'>"+weekdate+"</small>");
-
+	
+	
+	if(data['status'] != 'DELIVERED')
+	{
     var weekdate = ConvertDateFormat(data['end']);
     $('#end').html(ConvertDateToString(data['end'])+"<br><small class='grey-text'>"+weekdate+"</small>");
-
+	}
+	else // If Delivered
+	{
+		var weekdate = ConvertDateFormat(data['tend']);
+		$('#end').html(ConvertDateToString(data['tend'])+"<br><small class='grey-text'>"+weekdate+"</small>");
+	
+	}
     estimate = Math.round(data['estimate']);
     bestimate = Math.round(data['bestimate']);
     consumed = Math.round(data['consumed']);
