@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\User;
+use App\Utility;
 use Hash;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Widgets\MilestoneController;
+use App\ProjectTree;
 
 class HomeController extends Controller
 {
@@ -16,7 +19,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        //$this->middleware('auth');
     }
 
     /**
@@ -24,7 +27,7 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function olddashboard()
     {
 		$user = Auth::user();
 		$admin = 0;
@@ -37,7 +40,8 @@ class HomeController extends Controller
 	{
         return view('auth.changepassword');
     }
-	public function changePassword(Request $request){
+	public function changePassword(Request $request)
+	{
         if (!(Hash::check($request->get('current-password'), Auth::user()->password))) {
             // The passwords matches
             return redirect()->back()->with("error","Your current password does not matches with the password you provided. Please try again.");
@@ -56,5 +60,84 @@ class HomeController extends Controller
         $user->save();
         return redirect()->back()->with("success","Password changed successfully !");
     }
-    
+	public function index(Request $request)
+	{
+		$admin=0;
+		$loggeduser = Auth::user();
+		if($loggeduser == null) // Public
+		{
+			if($request->username == null)
+				return redirect()->route('login');
+			else
+			{
+				$user=User::where('name',$request->username)->first();
+				
+				if($user == null)
+					abort(403, 'Account Not Found');
+			}
+		}
+		else // someone is loggedin
+		{
+			if($loggeduser->name == 'admin')
+			{
+				$admin=1;
+				if($request->username == null) 
+					return redirect()->route('adminhome');
+				else
+				{
+					$user=User::where('name',$request->username)->first();
+					if($user == null)
+						abort(403, 'Account Not Found');
+				}
+			}
+			else
+			{
+				if($request->username == null)
+				{
+					$admin = 1;
+					$user = $loggeduser;
+				}
+				else
+				{
+					$user=User::where('name',$request->username)->first();
+					if($user == null)
+						abort(403, 'Account Not Found');
+						
+					if($user->id == $loggeduser->id)
+						$admin = 1;
+				}
+			}
+				
+		}
+		
+		//$states = ['ACTIVE','PAUSED','CANCELLED'];
+		//$projects = $user->projects()->get()->whereIn('state',$states);
+		if($admin == 1)
+			$projects = $user->projects()->where('archive',0)->get();
+		else
+			$projects = $user->projects()->where('archive',0)->where('visible','true')->get();
+		
+		
+		foreach($projects as $project)
+		{
+			$projecttree = new ProjectTree($project);
+			$project->jiraurl = Utility::GetJiraURL($project);
+			$ms = new MilestoneController();
+			$status = $ms->GetStatus($project,"1");
+			$burnupdata = $projecttree->GetBurnUpData($projecttree->tree);
+			
+			if($status != null)
+			{
+	
+				if($burnupdata != null)
+				{
+					$status['cv'] = $burnupdata->cv;
+					$status['rv'] = $burnupdata->rv;
+				}
+				$project->status = $status;
+			}
+		}
+		$filter = $request->filter;
+		return view('home2',compact('projects','user','admin','loggeduser','filter'));
+    }
 }

@@ -12,21 +12,20 @@ class Task
 {
 	public $children = array();
 	public $parent = null;
-
 	public function __get($field) 
 	{
 		switch($field)
 		{
 			case '_tstart':
 				$t = $this;
-				while(strlen(trim($t->tstart)) == 0)
+				while(strlen(trim($t->_startconstraint)) == 0)
 				{
 					$parent=$t->_parenttask;
 					if($parent == null)
 						return $this->_project_start;
 					$t = $parent;
 				}
-				return $t->tstart;
+				return $t->_startconstraint;
 				break;
 			case '_tend':
 				$t = $this;
@@ -83,12 +82,20 @@ class Task
 					$pres = $this->assignee;
 				return $pres;
 			case '_startconstraint':
+				if(($this->extid == "1")&&($this->level==1))
+				{
+					if(strlen(trim($this->tstart)) > 0)
+						return $this->tstart;
+
+					return $this->_project_start;
+				}
+				
 				if(($this->isconfigured == "true")||($this->isconfigured == 1))
 				{
 					if(strlen(trim($this->tstart)) > 0)
 						return $this->tstart;
 				}
-				return null;
+				return $this->startconstraint;
 				break;
 			case '_summary':
 				if(($this->isconfigured == "true")||($this->isconfigured == 1))
@@ -130,6 +137,7 @@ class Task
 		$this->summary = $summary;
 		$this->query = $query;
 		$this->duedate = '';
+		$this->startconstraint = '';
 		$this->tstart = '';
 		$this->tend = '';
 		$this->level = $level;
@@ -274,13 +282,24 @@ class Task
 		}
 		if(isset($task->fields->$sprint))
 		{
+			//dd($task->fields->$sprint);
 			$last_sequence = 0;
+			
 			//echo count($task->fields->$sprint);
 			for($j=0;$j<count($task->fields->$sprint);$j++)
 			{
 				$str = $task->fields->$sprint[$j];
-				$sequence = explode('sequence=',$str)[1];
-				$sequence = explode(']',$sequence)[0];
+				$sprint_info = explode(',',$str);
+				for($i=0;$i<count($sprint_info);$i++)
+				{
+					$keyvalue = explode('=',$sprint_info[$i]);
+					if($keyvalue[0] =='sequence')
+					{
+						$sequence = $keyvalue[1];
+					}
+				}
+				//$sequence = explode('sequence=',$str)[1];
+				//$sequence = explode(']',$sequence)[0];
 				//echo $sequence;
 				if($sequence < $last_sequence)
 				{
@@ -303,12 +322,30 @@ class Task
 					{
 						$sprintid = $keyvalue[1];
 					}
+					else if($keyvalue[0] == 'startDate')
+					{
+						$sprintstart = $keyvalue[1];
+					}
+					else if($keyvalue[0] == 'endDate')
+					{
+						$sprintend = $keyvalue[1];
+					}
+					else if(strpos($keyvalue[0],'[id')!== false)
+					{
+						$sprintno = $keyvalue[1];
+						
+					}
 				}
 			}
 			$ntask->sprintname = $sprintname;
 			$ntask->sprintstate = $sprintstate;
 			$ntask->sprintid = $sprintid;
-			$ntask->sprintno = $last_sequence;
+			$ntask->sprintno = $sprintno;
+			if($sprintstart != '<null>')
+				$ntask->sprintstart = explode('T',$sprintstart)[0];
+			if($sprintend != '<null>')
+				$ntask->sprintend = explode('T',$sprintend)[0];
+			
 		}
 		if(isset($task->fields->assignee))
 		{
@@ -372,10 +409,15 @@ class Task
 			$ntask->description = $task->fields->description;
 		
 		if(isset($task->fields->timeoriginalestimate))
+		{
 			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),3);
+			$ntask->otimeestimate = $ntask->otimeestimate;
+		}
 		if(isset($task->fields->$story_points))
+		{
 			$ntask->storypoints = $task->fields->$story_points;
-
+			$ntask->ostorypoints = $ntask->storypoints;
+		}
 
 		if(isset($task->fields->$risk_severity))
 		{
@@ -547,9 +589,23 @@ class Task
 			$j=0;
 
 			$sprintno = 0;
+			
 			$values = explode('sprint=', strtolower($this->query));
 			if(count($values)>1)
+			{
 				$sprintno = explode(' ', $values[1])[0];
+				//dd($this->query);
+				$this->sprintinfo = Jira::GetSprintInfo($sprintno);
+				
+				if(array_key_exists('startDate',$this->sprintinfo ))
+					$this->startconstraint = explode('T',$this->sprintinfo ['startDate'])[0];
+				
+				if(array_key_exists('endDate',$this->sprintinfo ))
+					$this->duedate = explode('T',$this->sprintinfo ['endDate'])[0];
+				
+				//MUMTAZ
+				//$this->SearchInJira('sprint/92',$jiraconf);
+			}
 			
 			foreach($tasks as $key=>$task)
 			{
@@ -590,6 +646,7 @@ class ProjectTree
 	public $resources = [];
 	private $weeklylogs = [];
 	private $milestones = [];
+	private $status_array = null;
 	private $globaltaskquery=null;
 	private $globalepicquery=null;
 	function __construct(Project $project)
@@ -669,17 +726,19 @@ class ProjectTree
 			return $task->status;
 		}
 		$children = $task->children;
+		$task->status_array = [];
+		$task->status_array[$task->status] = 1;
 		foreach($task->children as $child)
 		{
 			$status = $this->ComputeStatus($child);
-			$status_array[$status] = 1;
+			$task->status_array[$status] = 1;
 		}
 
-		if (array_key_exists("INPROGRESS",$status_array))
+		if (array_key_exists("INPROGRESS",$task->status_array))
 			$task->status = "INPROGRESS";
-		else if (array_key_exists("OPEN",$status_array))
+		else if (array_key_exists("OPEN",$task->status_array))
 			$task->status = "OPEN";
-		else if (array_key_exists("RESOLVED",$status_array))
+		else if (array_key_exists("RESOLVED",$task->status_array))
 			$task->status = "RESOLVED";
 
 		return $task->status;
@@ -1076,6 +1135,7 @@ class ProjectTree
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$task->progress,$last_synced);*/
 	    //dd($this->tasks);
 		//dd($this->tasks);
+		$this->ValidateTasks();
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
 	function ReadBaseline()
@@ -1102,7 +1162,7 @@ class ProjectTree
 		//dd($this->tree);
 		$data = serialize($this->tree);
 		file_put_contents($this->treepath, $data);
-		$this->last_synced = date ("Y-m-d" , filemtime($this->treepath));
+		$this->last_synced = date ("Y-m-d H:i:s" , filemtime($this->treepath));
 		ProjectController::UpdateProgressAndLastSync($this->project->id,$this->tree->progress,$this->last_synced);
 	}
 	function GetHead()
@@ -1331,8 +1391,16 @@ class ProjectTree
 		}
 		return $data;
 	}
+	function checkIsAValidDate($myDateString)
+	{
+		if($myDateString == null)
+			return false;
+		return (bool)strtotime($myDateString);
+	}
 	function GetBurnUpData($task)
 	{
+		if($task == null)
+			return null;
 		$this->weeklylogs = array();
 		//dd($task->_tstart." ".$task->_tend);
 		$range = Utility::DateRange($task->_tstart,$task->_tend);
@@ -1557,5 +1625,40 @@ class ProjectTree
 		
 		return $data;
 	}
-	
+	function ValidateTasks()
+	{
+		foreach($this->tasks as $task)
+		{
+			if(($task->isconfigured == "true")||($task->isconfigured == 1)||$task->isconfigured == true)
+			{
+				if($this->checkIsAValidDate($task->duedate)&&$this->checkIsAValidDate($task->tend))
+				{
+					if($task->duedate != $task->tend)
+						Utility::ConsoleLog(time(),"Error::".$task->_summary." (".$task->key.") Due date conflicts ");
+					
+				}
+				if($this->checkIsAValidDate($task->startconstraint)&&$this->checkIsAValidDate($task->tstart))
+				{
+					if($task->startconstraint != $task->tstart)
+						Utility::ConsoleLog(time(),"Error::".$task->_summary." (".$task->key.") Start constraint date conflicts ");
+				}
+			}
+
+		}
+	}
+	function GetSprintsData()
+	{
+		$sprints = [];
+		foreach($this->tasks as $task)
+		{
+			if(isset($task->sprintinfo))
+			{
+				$task->sprintinfo['tstart'] = $task->_tstart;
+				$task->sprintinfo['tend'] = $task->_tend;
+				$task->sprintinfo['estimate'] = $task->estimate;
+				$sprints[]=$task->sprintinfo;
+			}
+		}
+		return $sprints;
+	}
 }

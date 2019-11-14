@@ -23,6 +23,7 @@ Auth::routes();
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/', 'HomeController@index');   // View
 Route::get('/home', 'HomeController@index')->name('home');   // View
+Route::get('/program/{username}', 'HomeController@index')->name('program'); 
 
 Route::get('/changePassword','HomeController@showChangePasswordForm')->name('showchangepassword'); // View
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
@@ -31,6 +32,7 @@ Route::post('/changePassword','HomeController@changePassword')->name('changePass
 Route::get('/project', 'ProjectController@getproject')->name('getproject');// arg project modal with no id
 Route::post('/project', 'ProjectController@create')->name('createproject');// arg project modal with no id
 Route::put('/project', 'ProjectController@update')->name('updateproject'); // arg project modal with id
+Route::put('/archive', 'ProjectController@archive')->name('archiveproject'); // arg project modal with id
 Route::delete('/project', 'ProjectController@delete')->name('deleteproject'); // arg project.id
 Route::get('/projects', 'ProjectController@getprojects')->name('getprojects');  // arg user.id
 
@@ -43,7 +45,7 @@ Route::get('/sync/oa', 'SyncController@syncoa')->name('syncoa');// arg project m
 Route::get('/dashboard/{user}/{project}','DashboardController@Show')->name('dashboard');
 // Admin /////
 Route::get('/admin', 'AdminController@index')->name('adminhome');
-Route::get('/admin/{user}', 'AdminController@showuserboard')->name('showuserboard');
+
 
 
 //Program View
@@ -65,6 +67,8 @@ Route::get('/widget/data/report/weekly/{user}/{project}','Widgets\ReportControll
 
 //// Report
 Route::get('/widget/document/{user}/{project}','Widgets\ReportController@ShowDocument')->name('showdocument');
+Route::get('/widget/excel/{user}/{project}','Widgets\ReportController@Downloadexcel')->name('downloadexcel');
+
 
 //// Burnup
 Route::get('/widget/burnup/{user}/{project}/{key?}','Widgets\BurnupController@Show')->name('showwburnupchart');
@@ -74,6 +78,10 @@ Route::get('/widget/milestone/{user}/{project}/{key?}','Widgets\MilestoneControl
 
 /// Milesrone status Report
 Route::get('/widget/status/{user}/{project}/{key?}','Widgets\MilestoneController@ShowStatus')->name('showwmilestonestatus');
+
+// Sprints
+Route::get('/widget/sprints/{user}/{project}','Widgets\SprintsController@ShowSprints')->name('showsprints'); 
+
 
 
 //// Project Resource //////

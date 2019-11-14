@@ -30,7 +30,10 @@ class GanttController extends Controller
     	{
     		abort(403, 'Account Not Found');
     	}
-		$project = $user->projects()->where('name',$project)->first();
+		if(ctype_digit($project))
+			$project = $user->projects()->where('id',$project)->first();
+		else
+			$project = $user->projects()->where('name',$project)->first();
 		if($project==null)
 		{
 			abort(403, 'Project Not Found');
@@ -183,6 +186,7 @@ class GanttController extends Controller
 		$row['pNotes'] = 'Some Notes text';
 	
 		$row['pStatus'] = $task->status;
+		$row['oStatus'] = $task->ostatus;
 		$row['pPrioriy'] = $task->schedule_priority;
 		$row['pJira'] = $task->key;
 		if($task->status == 'RESOLVED')

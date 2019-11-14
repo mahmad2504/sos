@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\Widgets\MilestoneController;
 
 use Illuminate\Http\Request;
 use App\Project;
@@ -33,6 +34,20 @@ class ProjectController extends Controller
 		if(count($projects) > 0)
 		{
 			$projects[0]->jiraurl = Utility::GetJiraURL($projects[0]);
+			$ms = new MilestoneController();
+			$projecttree = new ProjectTree($projects[0]);
+			$burnupdata = $projecttree->GetBurnUpData($projecttree->tree);
+			$status = $ms->GetStatus($projects[0],"1");
+			if($status != null)
+			{
+				if($burnupdata != null)
+				{
+					$status['cv'] = $burnupdata->cv;
+					$status['rv'] = $burnupdata->rv;
+				}
+				$projects[0]->status = $status;
+			}
+			
 			return Response::json($projects[0]);
 		}
 		else
@@ -94,6 +109,10 @@ class ProjectController extends Controller
 				$request->last_synced = 'Never';
 			if($request->baseline == null)
 				$request->baseline = '';
+			if($request->state == null)
+				$request->state = 'SYSTEM';
+			if($request->visible == null)
+				$request->visible = 'true';
 			
 			$project['user_id'] = $request->user_id;
 			$project['name'] = $request->name;
@@ -109,6 +128,8 @@ class ProjectController extends Controller
 			$project['task_description'] = $request->task_description;
 			$project['estimation'] = $request->estimation;
 			$project['progress'] = $request->progress;
+			$project['state'] = $request->state;
+			$project['visible'] = $request->visible;
 		}
 		else // Update case
 		{
@@ -141,6 +162,8 @@ class ProjectController extends Controller
 				$project['edate'] = $request->edate;
 			if ($request->progress!=null)
 				$project['progress'] = $request->progress;
+			if ($request->state!=null)
+				$project['state'] = $request->state;
 			if ($request->last_synced!=null)
 				$project->last_synced = $request->last_synced;
 			if ($request->baseline!=null)
@@ -149,6 +172,10 @@ class ProjectController extends Controller
 				$project->jirauri = $request->jirauri;
 			if($request->estimation != null)
 				$project->estimation = $request->estimation;
+			if($request->visible != null)
+			{
+				$project->visible = $request->visible;
+			}
 		}
 		//dd($project);
 		$project['dirty'] = 1;
@@ -181,10 +208,16 @@ class ProjectController extends Controller
 			return Response::json(Utility::Error($project), 500);
 		
 		$project->save();
+		$ms = new MilestoneController();
+		$status = $ms->GetStatus($project,"1");
+		if($status != null)
+		{
+			$project->status = $status;
+		}
 		return Response::json($project);
     }
 	public function GetProjects(Request $request)
-	{
+	{		
 		if($request->user_id == null)
 			abort(403, 'Missing Parameters - ProjectController@GetProjects(user_id)');
 		
@@ -216,10 +249,19 @@ class ProjectController extends Controller
 			return $projects;
 		return Response::json($projects);
 	}
+	public function Archive(Request $request)
+	{
+		$id = $request->id;
+		$project = Project::where('id', $id)->first();
+		
+		if($project['archive'] == 1)
+			Project::where('id', $id)->update(['archive' => 0]);
+		else
+			Project::where('id', $id)->update(['archive' => 1]);
+	
+	}
 	public function Delete(Request $request)
 	{
-		
-		
 		if($request->id == null)
 			abort(403, 'Missing Parameters - ProjectController@Delete(id)');
 		
@@ -231,13 +273,9 @@ class ProjectController extends Controller
 		$presources = $project->resources()->get();
 		foreach($presources as $presource)
 			$presource->delete();
-		$project->delete();
-		
 		$datafolder = Utility::GetDataPath($user,$project);
-		array_map('unlink', glob("$datafolder/*"));
-		if(file_exists($datafolder))
-			rmdir($datafolder);
-		
+		Utility::DeleteDir($datafolder);
+		$project->delete();		
 	}
 	public static function UpdateProgressAndLastSync($id,$progress,$last_synced,$baseline=null)
 	{

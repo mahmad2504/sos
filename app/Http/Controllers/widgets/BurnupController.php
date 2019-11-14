@@ -21,7 +21,10 @@ class BurnupController extends Controller
     	{
     		abort(403, 'Account Not Found');
     	}
-		$project = $user->projects()->where('name',$project)->first();
+		if(ctype_digit($project))
+			$project = $user->projects()->where('id',$project)->first();
+		else
+			$project = $user->projects()->where('name',$project)->first();
 		if($project==null)
     	{
     		abort(403, 'Project Not Found');

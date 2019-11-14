@@ -38,7 +38,10 @@ class MilestoneController extends Controller
     	{
     		abort(403, 'Account Not Found');
     	}
-		$project = $user->projects()->where('name',$project)->first();
+		if(ctype_digit($project))
+			$project = $user->projects()->where('id',$project)->first();
+		else
+			$project = $user->projects()->where('name',$project)->first();
 		if($project==null)
     	{
     		abort(403, 'Project Not Found');
@@ -65,7 +68,7 @@ class MilestoneController extends Controller
 		
 		return View('widgets.milestone',compact('user','project','isloggedin','data','key'));
 	}
-	private function FillStatusData($task,$baselinetask)
+	private function FillStatusData($task,$baselinetask,$project)
 	{
 		$data = array();
 		$data['bend'] = '';
@@ -95,7 +98,13 @@ class MilestoneController extends Controller
 					$data['status'] = 'STALL';
 			}
 		}
-	
+		if($data['status'] == 'DELIVERED')
+			$data['end'] = '';
+			
+		if($task->key == 1)
+			if($project->state != 'SYSTEM')
+				$data['status'] = $project->state;
+		
 		return $data;
 	}
 	public function GetStatus(Project $project,$key)
@@ -104,6 +113,7 @@ class MilestoneController extends Controller
 		if($projecttree->tree == null)
 			return null;
 		$task = $projecttree->GetTask($key);	
+		
 		$burnupdata = $projecttree->GetBurnUpData($task);
 		$task->cv = $burnupdata->cv;
 		$task->rv = $burnupdata->rv;
@@ -115,7 +125,7 @@ class MilestoneController extends Controller
 			$data['bend'] = $baselinetask->_tend;
 			$data['bestimate'] =  $baselinetask->_orig_estimate;
 		}
-		$data = $this->FillStatusData($task,$baselinetask);
+		$data = $this->FillStatusData($task,$baselinetask,$project);
 		$data['risksissues'] = $projecttree->GetRiskAndIssues($task);
 		$data['jiraurl'] = Utility::GetJiraURL($project);
 		return $data;
@@ -128,7 +138,10 @@ class MilestoneController extends Controller
     	{
     		abort(403, 'Account Not Found');
     	}
-		$project = $user->projects()->where('name',$project)->first();
+		if(ctype_digit($project))
+			$project = $user->projects()->where('id',$project)->first();
+		else
+			$project = $user->projects()->where('name',$project)->first();
 		if($project==null)
     	{
     		abort(403, 'Project Not Found');

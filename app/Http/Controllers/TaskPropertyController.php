@@ -153,7 +153,7 @@ class TaskPropertyController extends Controller
 		$row['ismilestone'] = $task->ismilestone;
 		$row['isconfigured'] = $task->isconfigured;
 		$row['atext'] = $task->atext;
-		$row['tstart'] = $task->tstart;
+		$row['tstart'] = $task->_startconstraint;
 		$row['tend'] = $task->_duedate;
 		$row['position'] = $task->position;
 		$row['duplicate'] = $task->duplicate;

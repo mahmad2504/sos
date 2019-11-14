@@ -151,6 +151,18 @@ class Utility
 		return config('openair');
 		
 	}
+	public static function DeleteDir($directory) 
+	{
+		foreach(glob("{$directory}/*") as $file)
+		{
+			if(is_dir($file)) { 
+				self::DeleteDir($file);
+			} else {
+				unlink($file);
+			}
+		}
+    rmdir($directory);
+}
 	
 	
 }

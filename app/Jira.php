@@ -31,6 +31,12 @@ class Jira
 		self::$pass = $pass;
 		self::$error = 0;
 	}
+	public static function GetSprintInfo($id)
+	{
+		$resource=self::$url.'/rest/agile/latest/sprint/'.$id;
+		$info =  self::GetJiraResource($resource);
+		return $info;
+	}
 	public static function Search($query,$maxresults=1000,$fields=null,$order=null)
 	{
 		$filename = self::$path."/".md5($query);

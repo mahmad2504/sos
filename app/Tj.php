@@ -151,8 +151,9 @@ class Tj
 			}
 			if( ($remffort > 0)&&($task->status != 'RESOLVED'))
 			{
+				if( $remffort < .125)
+					$remffort  = .125;
 				$header = $header.$spaces."   effort ".$remffort."d"."\n";
-				
 				
 				$presource = $this->resources[$task->assignee];
 				
@@ -247,8 +248,9 @@ class Tj
 	function FlushProjectHeader(Project $project)
 	{
 		$today = Utility::GetToday("Y-m-d");
-		$start = $project->start;
-		$end  =  $project->end;
+		$start = $project->sdate;
+		$end  =  $project->edate;
+	
 		if($end == null) // No end defined so schedule from start or from today
 		{
 			if(strtotime($start) < strtotime($today))

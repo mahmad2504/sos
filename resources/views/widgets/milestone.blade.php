@@ -69,18 +69,21 @@ function UpdateIssueOnUi(i)
 	issues = [];
 	
 	// Issue ////
+	
     if(data[i]['risksissues']['issues']['Critical'] !==  undefined)
     {
-        UpdateIssueOnUi('Critical');
+        severity = 'Critical';
     }else
     if(data[i]['risksissues']['issues']['High'] !==  undefined)
     {
-        UpdateIssueOnUi('High');
+        severity = 'High';
     }else
     if(data[i]['risksissues']['issues']['Medium'] !==  undefined)
     {
-        UpdateIssueOnUi('Medium');
+        severity = 'Medium'; 
     }
+	else
+		return;
 	
     for (var key in data[i]['risksissues']['issues'][severity]) 
     {
@@ -181,6 +184,8 @@ function UpdateRiskOnUi(i)
     {
         severity = 'Medium';
     }
+	else
+		return;
 	
     for (var key in data[i]['risksissues']['risks'][severity]) 
     {
@@ -262,8 +267,6 @@ $(function()
 		$('#progress'+i).text(Round(data[i]['progress'])+" %" );
 		$('#status'+i).html("<img width='80px' src='/images/"+data[i]['status']+".png'></img>"); 
 		
-	}
-	$( "#riskcount" ).addClass( "badge-info" );
-	
+	}	
 });
 @endsection

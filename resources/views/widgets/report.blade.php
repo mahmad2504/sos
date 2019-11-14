@@ -78,12 +78,12 @@ var project =  @json($project);
 var isloggedin = {{$isloggedin}};
 var data = @json($data);
 var key= '{{$key}}';
-var dataurl = '{{route('getweeklyreport',[$user->name,$project->name])}}';
+var dataurl = '{{route('getweeklyreport',[$user->name,$project->id])}}';
 if(isloggedin)
 {
 	$('.navbar').removeClass('d-none');
 	$('#dashboard_menuitem').show();
-	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->id])}}");
 }
 function OnReportDataReceived(indata)
 {

@@ -156,7 +156,7 @@ function ShowGantt(data)
 			pEndString: {
 				title: 'End'
 		    },
-		  //pStatus: {
+		//    oStatus: {
 		//	title: 'Status'
 		 // },
 		 // pPrioriy: {
@@ -266,6 +266,7 @@ function OnProjectDataReceived(response)
 {
 	//console.log(response);
 	jiraurl = response.jiraurl;
+	
 	//$('#description').text(response.description);
 }
 function OnChartChangeClick(event)

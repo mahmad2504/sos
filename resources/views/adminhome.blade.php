@@ -11,7 +11,7 @@
 		@foreach($users as $user)
 			@if($user->name != 'admin')
 				<li class="list-group-item">
-					<a href="/admin/{{$user->name}}">Program Dashboard {{ $user->name }}</a>
+					<a href="/program/{{$user->name}}">Program Dashboard {{ $user->name }}</a>
 				</li>
 			@endif
 		@endforeach

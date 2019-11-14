@@ -51,25 +51,25 @@ figure figcaption {
 	<div class="row">
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showtreeview',[$user->name,$project->name])}}"><img class="widget" src="/images/treeview.gif"></img></a>
+				<a href="{{route('showtreeview',[$user->name,$project->id])}}"><img class="widget" src="/images/treeview.gif"></img></a>
 				<figcaption styleclass="caption">Tree View</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showgantt',[$user->name,$project->name])}}"><img class="widget" src="/images/gantt.png"></img></a>
+				<a href="{{route('showgantt',[$user->name,$project->id])}}"><img class="widget" src="/images/gantt.png"></img></a>
 				<figcaption styleclass="caption">Gantt Chart</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showtimechart',[$user->name,$project->name])}}"><img class="widget" src="/images/timechart.jpg"></img></a>
+				<a href="{{route('showtimechart',[$user->name,$project->id])}}"><img class="widget" src="/images/timechart.jpg"></img></a>
 				<figcaption styleclass="caption">Time Chart</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showweeklyreport',[$user->name,$project->name])}}"><img class="widget" src="/images/report.gif"></img></a>
+				<a href="{{route('showweeklyreport',[$user->name,$project->id])}}"><img class="widget" src="/images/report.gif"></img></a>
 				<figcaption styleclass="caption">Weekly Report</figcaption>
 			</figure>
 		</div>
@@ -77,25 +77,25 @@ figure figcaption {
 	<div class="row">
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showwburnupchart',[$user->name,$project->name])}}"><img class="widget" src="/images/burnup.png"></img></a>
+				<a href="{{route('showwburnupchart',[$user->name,$project->id])}}"><img class="widget" src="/images/burnup.png"></img></a>
 				<figcaption styleclass="caption">Burnup</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showwmilestonereport',[$user->name,$project->name])}}"><img class="widget" src="/images/milestone.jpg"></img></a>
+				<a href="{{route('showwmilestonereport',[$user->name,$project->id])}}"><img class="widget" src="/images/milestone.jpg"></img></a>
 				<figcaption styleclass="caption">Milestone</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showwmilestonestatus',[$user->name,$project->name])}}"><img class="widget" src="/images/status.png"></img></a>
+				<a href="{{route('showwmilestonestatus',[$user->name,$project->id])}}"><img class="widget" src="/images/status.png"></img></a>
 				<figcaption styleclass="caption">Summary</figcaption>
 			</figure>
 		</div>
 		<div class="col-3">
 			<figure class="item">
-				<a href="{{route('showdocument',[$user->name,$project->name])}}"><img class="widget" src="/images/requirement.jpg"></img></a>
+				<a href="{{route('showdocument',[$user->name,$project->id])}}"><img class="widget" src="/images/requirement.jpg"></img></a>
 				<figcaption styleclass="caption">Requirement</figcaption>
 			</figure>
 		</div>
