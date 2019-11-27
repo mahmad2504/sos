@@ -598,7 +598,7 @@ function OnNewProject(event)
 	settings.id = '';
 	settings.last_synced = 'Never';
 	settings.name = '';
-	settings.description = '';
+	settings.description = 'link_implementedby=1\r\nlink_parentof=1\r\nlink_testedby=1\r\nepic_query=';
 	settings.jiraquery = '';
 	settings.estimation = 0;
 	settings.error = '';

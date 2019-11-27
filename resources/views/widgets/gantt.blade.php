@@ -90,6 +90,11 @@ function ShowGantt(data)
 		
 		//data[i].pEstimate = data[i].pEstimate*8;
 		data[i].pEstimate = Round2(data[i].pEstimate);
+		if(data[i].pIssuesubtype == 'DEV')
+		{
+			style = 'color:black;';
+		}
+		
 		
 		if(data[i].pStatus == 'RESOLVED')
 		{
@@ -135,8 +140,6 @@ function ShowGantt(data)
 		}
 		g.AddTaskItemObject(data[i]);
 	}
-	
-	
 	g.setOptions({
 	  vCaptionType: 'Caption',  // Set to Show Caption : None,Caption,Resource,Duration,Complete,     
 	  vQuarterColWidth: 36,

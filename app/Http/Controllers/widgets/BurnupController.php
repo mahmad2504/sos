@@ -30,6 +30,12 @@ class BurnupController extends Controller
     		abort(403, 'Project Not Found');
 		}
 		$key = $request->key;
+		$iframe = $request->iframe;
+		if($iframe == null)
+			$iframe = 0;
+		else
+			$iframe  = 1;
+		
 		if($key==null)
 		{
             $key = (string)1;
@@ -56,6 +62,9 @@ class BurnupController extends Controller
 			$milestone = new \StdClass();
 			$milestone->summary = $m->_summary;
 			$milestone->key = $m->key;
+			
+			if(isset($m->sprintinfo))
+				$milestone->sprintinfo = $m->sprintinfo;
 			$milestones[] = $milestone;
 		}
 		
@@ -63,7 +72,7 @@ class BurnupController extends Controller
 		
 		if(count($data->data)==0)
 			abort(403, 'Burnup Chart Does Not Exist');
-		return View('widgets.burnup',compact('user','project','isloggedin','data','key','milestones'));
+		return View('widgets.burnup',compact('user','project','isloggedin','data','key','milestones','iframe'));
 	}
 	
 }

@@ -157,6 +157,7 @@ $(document).ready(function()
 			var link=row['jiraurl'];
 			var linktext=row['key'];
 			var issuetype = row['issuetype'];
+			var issuesubtype = row['issuesubtype'];
 			var oissuetype=row['oissuetype'];
 			var estimate=Math.round(row['estimate']);
 			var timespent=Math.round(row['timespent']);
@@ -227,7 +228,11 @@ $(document).ready(function()
 			rowstr += "data-tt-id='"+id+"' ";
 			if(pid != '')
 				rowstr += "data-tt-parent-id='"+pid+"'";
+			
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
+			if(issuesubtype == 'QA')
+				rowstr += "<td title='"+title+"' style='color:blue;white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			else
 			rowstr += "<td title='"+title+"' style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
 			rowstr += title+"</td>";
 			rowstr += "<td>";
@@ -286,10 +291,11 @@ $(document).ready(function()
 			rowstr += "<td class='sprintcolumn'><a style='"+style+"' href='"+sprintlink+"'>"+sprintname+'</a></td>';
 			if(estimate > 0)
 			{
+				estimate_units='';
 				if(timespent > 0)
-					rowstr += "<td>"+timespent+" / "+estimate+"  "+estimate_units+"</td>";
+					rowstr += "<td><span style=''; title='Estimates'>"+estimate+"</span><span style=''; title='Earned'>("+timespent+")</span></td>";
 				else
-				rowstr += "<td>"+estimate+"  "+estimate_units+"</td>";
+					rowstr += "<td><span title='Estimate'>"+estimate+"  "+estimate_units+"</span></td>";
 			}
 			else
 				rowstr += "<td></td>";

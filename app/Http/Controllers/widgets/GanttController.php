@@ -129,6 +129,9 @@ class GanttController extends Controller
 		$row['pStart'] = $task->_sched_start;
 		$row['pEnd'] = $task->_sched_end;
 		$row['pRes'] = $task->_sched_assignee;
+		$row['pIssuesubtype'] = 'DEV';
+		if(isset($task->issuesubtype))
+			$row['pIssuesubtype'] = $task->issuesubtype;
 		
 		if($row['pRes'] == 'unassigned')
 			$row['pRes'] = '';

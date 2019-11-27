@@ -116,6 +116,9 @@ class TreeViewController extends Controller
 		$row['extid'] = $task->extid;
     	$row['pextid'] = $task->pextid;
 		$row['issuetype'] = $task->issuetype;
+		$row['issuesubtype'] = 'DEV';
+		if(isset($task->issuesubtype))
+			$row['issuesubtype'] = $task->issuesubtype;
 		$row['oissuetype'] = $task->oissuetype;
     	$row['summary'] = $task->_summary;
     	$row['jiraurl'] = $this->jiraurl;

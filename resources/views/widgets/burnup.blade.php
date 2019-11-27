@@ -10,7 +10,8 @@
 <?php $selected = 0;?>
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
-	<h3>{{ $project->name}}</h3>
+	<div id="selectbox" style="display:none;">
+	<h3 >{{ $project->name}}</h3>
 	<div class="d-flex form-group">
 			<label  for="jirauri"></label>
 			<select class="form-control-sm" id="milestones" name="jirauri">
@@ -27,6 +28,7 @@
 					<option value="i" selected="selected">{{$key}}</option>
 				@endif
 			</select>
+	</div>
 	</div>
 	<div class="row">
 		<div class="col-12">
@@ -57,16 +59,26 @@ var project =  @json($project);
 var isloggedin = {{$isloggedin}};
 var data = @json($data);
 var key = '{{$key}}';
+var iframe = {{$iframe}};
 var milestones = @json($milestones);
-var url = '{{route('showwburnupchart',[$user->name,$project->name])}}';
+var url = '{{route('showwburnupchart',[$user->name,$project->id])}}';
 'use strict';
 
 if(isloggedin)
 {
+	if(iframe==0)
+	{
 	$('.navbar').removeClass('d-none');
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	}
 }
+if(iframe==1)
+{
+	$('#selectbox').hide();
+}
+else
+	$('#selectbox').show();
 
 $(function() 
 {
@@ -93,7 +105,10 @@ $(function()
 	
 	$('#progress').html('<span class="badge badge-success">&nbsp&nbsp'+data.progress+'%</span>');
 	$('#title').text(data.summary);
-	console.log(data);
+	if(data.sprintinfo !== undefined)
+		$('#title').text(data.sprintinfo.name);
+	
+	//console.log(data);
 	for(var date in data.data)
 	{
 		var row = [];

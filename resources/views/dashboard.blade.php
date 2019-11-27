@@ -99,6 +99,12 @@ figure figcaption {
 				<figcaption styleclass="caption">Requirement</figcaption>
 			</figure>
 		</div>
+		<div class="col-3">
+			<figure class="item">
+				<a href="{{route('showsprints',[$user->name,$project->id])}}"><img class="widget" src="/images/sprint.png"></img></a>
+				<figcaption styleclass="caption">Sprint View</figcaption>
+			</figure>
+		</div>
   </div>
   <div style="margin-top:10px;" class="row">
 		<div class="col-3">

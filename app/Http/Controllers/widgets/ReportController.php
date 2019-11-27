@@ -101,6 +101,10 @@ class ReportController extends Controller
 		$writer->save('hello_world.xlsx');
 		dd($projecttree);
 	}
+	private function FindFixVersions()
+	{
+		
+	}
 	public function ShowDocument($user,$project)
 	{
 		$user = User::where('name',$user)->first();
@@ -123,6 +127,8 @@ class ReportController extends Controller
             $isloggedin = 0;
 		
 		$projecttree = new ProjectTree($project);
+		
+		
 		foreach($projecttree->tasks as $task)
 		{
 			if($task->_summary == 'Product Requirements')

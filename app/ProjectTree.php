@@ -171,6 +171,7 @@ class Task
 		$this->sprintid = '';
 		$this->sprintno = -1;
 		$this->issuetype = 'PROJECT';
+		$this->issuesubtype = 'DEV';
 		$this->assignee = 'unassigned';
 		$this->fixVersions = [];
 		$this->labels = [];
@@ -196,12 +197,23 @@ class Task
 		if($issuetype=='Epic')
 			return 'EPIC';
 
-		if(($issuetype=='Documentation')||($issuetype=='Action')||($issuetype=='Dependency')||($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
+		if(($issuetype=='DevTask')||($issuetype=='QaTask')||($issuetype=='Documentation')||($issuetype=='Action')||($issuetype=='Dependency')||($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
-
+		
 		Utility::ConsoleLog(time(),"Error::Unmapped type=[".$key." ".$issuetype."]");
 		return 'TASK';
 		//
+	}
+	function MapIssueSubType($issuetype,$key,$labels)
+	{
+		if($issuetype=='DevTask')
+			return 'DEV';
+		if($issuetype=='QaTask')
+			return 'QA';
+		foreach($labels as $label)
+			if(strtolower($label) == 'qa')
+				return 'QA';
+		return 'DEV';
 	}
 	function MapStatus($status)
 	{
@@ -234,14 +246,118 @@ class Task
 		//dd($tasks);
 		return $tasks;
 	}
+	private function ParseSprintData_newversion($task,$ntask,$sprint)
+	{
+		$lastid = 0;
+		$lastindex = -1;
+		for($j=0;$j<count($task->fields->$sprint);$j++)
+		{
+			if($lastid < $task->fields->$sprint[$j]->id)
+			{
+				$lastid = $task->fields->$sprint[$j]->id;
+				$lastindex  = $j;
+			}
+		}
+		//dd($task->fields->$sprint[$lastindex]);
+		$ntask->sprintname = $task->fields->$sprint[$lastindex]->name;
+		$ntask->sprintstate = $task->fields->$sprint[$lastindex]->state;
+		$ntask->sprintid = $task->fields->$sprint[$lastindex]->boardId;
+		$ntask->sprintno = $task->fields->$sprint[$lastindex]->id;
+		if(isset($task->fields->$sprint[$lastindex]->startDate))
+			$ntask->sprintstart = explode('T',$task->fields->$sprint[$lastindex]->startDate)[0];
+		if(isset($task->fields->$sprint[$lastindex]->endDate))
+			$ntask->endDate = explode('T',$task->fields->$sprint[$lastindex]->endDate)[0];
+	}
+	private function ParseSprintData($task,$ntask,$sprint)
+	{
+		$last_sequence = 0;
+		
+		if(!isset($task->fields->$sprint))
+			return;
+		if(is_object($task->fields->$sprint[0]))
+		{
+			$this->ParseSprintData_newversion($task,$ntask,$sprint);
+			return;
+		}
+		//dd($task->fields->$sprint[0]['id']);
+		//echo count($task->fields->$sprint);
+		for($j=0;$j<count($task->fields->$sprint);$j++)
+		{
+			$str = $task->fields->$sprint[$j];
+			
+			$sprint_info = explode(',',$str);
+			for($i=0;$i<count($sprint_info);$i++)
+			{
+				$keyvalue = explode('=',$sprint_info[$i]);
+				if($keyvalue[0] =='sequence')
+				{
+					$sequence = $keyvalue[1];
+				}
+			}
+			//$sequence = explode('sequence=',$str)[1];
+			//$sequence = explode(']',$sequence)[0];
+			//echo $sequence;
+			if($sequence < $last_sequence)
+			{
+				continue;
+			}
+			$last_sequence = $sequence;
+			$sprint_info = explode(',',$str);
+			for($i=0;$i<count($sprint_info);$i++)
+			{
+				$keyvalue = explode('=',$sprint_info[$i]);
+				if($keyvalue[0] =='name')
+				{
+					$sprintname = $keyvalue[1];
+				}
+				else if($keyvalue[0] =='state')
+				{
+					$sprintstate = $keyvalue[1];
+				}
+				else if($keyvalue[0] == 'rapidViewId')
+				{
+					$sprintid = $keyvalue[1];
+				}
+				else if($keyvalue[0] == 'startDate')
+				{
+					$sprintstart = $keyvalue[1];
+				}
+				else if($keyvalue[0] == 'endDate')
+				{
+					$sprintend = $keyvalue[1];
+				}
+				else if(strpos($keyvalue[0],'[id')!== false)
+				{
+					$sprintno = $keyvalue[1];
+					
+				}
+			}
+		}
+		$ntask->sprintname = $sprintname;
+		$ntask->sprintstate = $sprintstate;
+		$ntask->sprintid = $sprintid;
+		$ntask->sprintno = $sprintno;
+		if($sprintstart != '<null>')
+			$ntask->sprintstart = explode('T',$sprintstart)[0];
+		if($sprintend != '<null>')
+			$ntask->sprintend = explode('T',$sprintend)[0];
+	}
 	public function CreateTask($jiraconf,$task,$level,$pextid,$pos)
 	{
 		global $unestimated_count;
+		
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
-		$link_implemented_by  = $jiraconf['link_implemented_by'];
-		$link_parentof = $jiraconf['link_parentof']; 
-		$link_testedby = $jiraconf['link_testedby'];
+		$link_implemented_by = null;
+		if($this->parent->settings->implementedby)
+			$link_implemented_by  = $jiraconf['link_implemented_by'];	
+		$link_parentof = null;
+		if($this->parent->settings->parentof)
+			$link_parentof = $jiraconf['link_parentof']; 
+		$link_testedby= null;	
+		if($this->parent->settings->testedby)
+			$link_testedby = $jiraconf['link_testedby'];
+		
 		$other_field = $jiraconf['other'];
 		
 		$sprint = $jiraconf['sprint']; // custom field
@@ -267,8 +383,13 @@ class Task
 		$ntask->summary = $task->fields->summary;
 		$ntask->oissuetype = $task->fields->issuetype->name;
 		//$ntask->updated = $task->fields->updated;
-	
+		if(isset($task->fields->labels))
+		{
+			foreach($task->fields->labels as $label)
+				$ntask->labels[] = $label;
+		}
 		$ntask->issuetype = $this->MapIssueType($task->fields->issuetype->name,$task->key);
+		$ntask->issuesubtype = $this->MapIssueSubType($task->fields->issuetype->name,$task->key,$ntask->labels);
 		$sprintname = '';
 		$sprintstate = '';
 		$sprintid = '';
@@ -280,73 +401,8 @@ class Task
 					$ntask->escalate = 1;
 			
 		}
-		if(isset($task->fields->$sprint))
-		{
-			//dd($task->fields->$sprint);
-			$last_sequence = 0;
-			
-			//echo count($task->fields->$sprint);
-			for($j=0;$j<count($task->fields->$sprint);$j++)
-			{
-				$str = $task->fields->$sprint[$j];
-				$sprint_info = explode(',',$str);
-				for($i=0;$i<count($sprint_info);$i++)
-				{
-					$keyvalue = explode('=',$sprint_info[$i]);
-					if($keyvalue[0] =='sequence')
-					{
-						$sequence = $keyvalue[1];
-					}
-				}
-				//$sequence = explode('sequence=',$str)[1];
-				//$sequence = explode(']',$sequence)[0];
-				//echo $sequence;
-				if($sequence < $last_sequence)
-				{
-					continue;
-				}
-				$last_sequence = $sequence;
-				$sprint_info = explode(',',$str);
-				for($i=0;$i<count($sprint_info);$i++)
-				{
-					$keyvalue = explode('=',$sprint_info[$i]);
-					if($keyvalue[0] =='name')
-					{
-						$sprintname = $keyvalue[1];
-					}
-					else if($keyvalue[0] =='state')
-					{
-						$sprintstate = $keyvalue[1];
-					}
-					else if($keyvalue[0] == 'rapidViewId')
-					{
-						$sprintid = $keyvalue[1];
-					}
-					else if($keyvalue[0] == 'startDate')
-					{
-						$sprintstart = $keyvalue[1];
-					}
-					else if($keyvalue[0] == 'endDate')
-					{
-						$sprintend = $keyvalue[1];
-					}
-					else if(strpos($keyvalue[0],'[id')!== false)
-					{
-						$sprintno = $keyvalue[1];
-						
-					}
-				}
-			}
-			$ntask->sprintname = $sprintname;
-			$ntask->sprintstate = $sprintstate;
-			$ntask->sprintid = $sprintid;
-			$ntask->sprintno = $sprintno;
-			if($sprintstart != '<null>')
-				$ntask->sprintstart = explode('T',$sprintstart)[0];
-			if($sprintend != '<null>')
-				$ntask->sprintend = explode('T',$sprintend)[0];
-			
-		}
+		$this->ParseSprintData($task,$ntask,$sprint);
+		
 		if(isset($task->fields->assignee))
 		{
 			$resource =  new Resource;
@@ -377,31 +433,39 @@ class Task
 				$ntask->fixVersions[] = $fixVersion->name;
 			//dd($ntask->fixVersions);
 		}
-		if(isset($task->fields->labels))
-		{
-			foreach($task->fields->labels as $label)
-				$ntask->labels[] = $label;
-		}
+		
 		
 		$ntask->query = null;
-		$link_parentof = 'Is Parent of';
+		//$link_parentof = 'Is Parent of';
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
 		{
-			$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'") || issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
-			if($ntask->parent->globalepicquery != null)
-				$ntask->query = "(".$ntask->query.") ".$ntask->parent->globalepicquery;
+			$del = '';
+			if($link_implemented_by != null)
+			{
+				$ntask->query = 'issue in linkedIssues("'.$ntask->key.'","'.$link_implemented_by.'")';
+				$del = ' || ';
+			}
+			if($link_parentof != null)
+			{
+				$ntask->query .= $del.'issue in linkedIssues("'.$ntask->key.'","'.$link_parentof.'")';
+				$del = ' || ';
+			}
+			if($link_testedby != null)
+			{
+				$ntask->query .= $del.'issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
+			}
 		}
 		if($ntask->issuetype == 'EPIC')
 		{
 			$ntask->query = "'Epic Link'=".$ntask->key;
-			if($ntask->parent->globaltaskquery != null)
-				$ntask->query = $ntask->query . " ".$ntask->parent->globaltaskquery;
+			if($ntask->parent->settings->epic_query != null)
+				if(strlen($ntask->parent->settings->epic_query)>0)
+					$ntask->query = $ntask->query . " and ".$ntask->parent->settings->epic_query;
+			//dd($ntask->query);
 		}
 		if(count($task->fields->subtasks)>0)
 		{
 			$ntask->query = "parent=".$ntask->key;
-			if($ntask->parent->globaltaskquery != null)
-				$ntask->query = $ntask->query . " ".$ntask->parent->globaltaskquery;
 		}
 		
 		//dd($this->parent->globaltaskquery);
@@ -584,8 +648,22 @@ class Task
 			else
 			$tasks = $this->SearchInJira($this->query,$jiraconf,'ORDER BY Rank ASC');
 			if($tasks == null)
+			{
+				$values = explode('sprint=', strtolower($this->query));
+				if(count($values)>1)
+				{
+					$sprintno = explode(' ', $values[1])[0];
+					//dd($this->query);
+					$this->sprintinfo = Jira::GetSprintInfo($sprintno);
+					
+					if(array_key_exists('startDate',$this->sprintinfo ))
+						$this->startconstraint = explode('T',$this->sprintinfo ['startDate'])[0];
+					
+					if(array_key_exists('endDate',$this->sprintinfo ))
+						$this->duedate = explode('T',$this->sprintinfo ['endDate'])[0];
+				}
 				return -1;
-
+			}
 			$j=0;
 
 			$sprintno = 0;
@@ -648,9 +726,10 @@ class ProjectTree
 	private $milestones = [];
 	private $status_array = null;
 	private $globaltaskquery=null;
-	private $globalepicquery=null;
+	
 	function __construct(Project $project)
 	{
+		//dd($project);
 		$user = $project->user()->first();
 		$this->presources = $project->resources()->get();
 		$this->datapath = Utility::GetDataPath($user,$project);
@@ -663,15 +742,10 @@ class ProjectTree
 
 		$this->jiraconfig = Utility::GetJiraConfig($project);
 		$project->jiraurl = Utility::GetJiraURL($project);
+		$this->settings = $this->ParseSettings($project->description);
 		$globaltaskquery = explode("taskquery=",$project->description);
 		if(count($globaltaskquery)>1)
 			$this->globaltaskquery=$globaltaskquery[1];
-		
-		$globalepicquery = explode("epicquery=",$project->description);
-		if(count($globalepicquery)>1)
-			$this->globalepicquery=$globalepicquery[1];
-		
-		
 		
 		if(file_exists($this->treepath))
 		{
@@ -683,6 +757,51 @@ class ProjectTree
 		}
 
 		
+	}
+	private function ParseForSetting($setting,$str)
+	{
+		$settings = explode($setting,$str);
+		//dd($command);
+		if(count($settings)>1)
+			return $settings[1];
+		return null;
+	}
+	public function ParseSettings($str)
+	{
+		//dd($str);
+		$settings=new\StdClass();
+		$settings->implementedby = 1;
+		$settings->parentof=1;
+		$settings->testedby=1;
+		$settings->epic_query = null;
+	
+		$value = $this->ParseForSetting("link_implementedby=",$str);
+		if($value != null)
+			if(substr($value,0,1)=="0")
+				$settings->implementedby = 0;
+		
+		
+		$value = $this->ParseForSetting("link_parentof=",$str);
+		if($value != null)
+			if(substr($value,0,1)=="0")
+				$settings->parentof = 0;
+		
+			
+		$value = $this->ParseForSetting("link_testedby=",$str);
+		if($value != null)
+			if(substr($value,0,1)=="0")
+				$settings->testedby = 0;
+		
+		$value = $this->ParseForSetting("epic_query=",$str);
+		if($value != null)
+			$settings->epic_query = $value;
+			
+		return $settings;
+		//dd($str);
+		/*implementedby=true
+parentof=true
+testedby=true"	*/
+		 //dd(explode("implementedby=",$str));
 	}
 	public function __get($property)
 	{
@@ -727,7 +846,8 @@ class ProjectTree
 		}
 		$children = $task->children;
 		$task->status_array = [];
-		$task->status_array[$task->status] = 1;
+		if($task->key != "1.0")
+			$task->status_array[$task->status] = 1;
 		foreach($task->children as $child)
 		{
 			$status = $this->ComputeStatus($child);
@@ -1511,6 +1631,8 @@ class ProjectTree
 		else
 			$range->finishingon = $task->_sched_end;
 		$range->rv=round($rv,1);
+		if(isset($task->sprintinfo))
+			$range->sprintinfo = $task->sprintinfo;
 		$lastwork = $previouswork;
 		$lastev = $previouswork;
 		/*echo "Previous work = ".$previouswork;
@@ -1653,6 +1775,7 @@ class ProjectTree
 		{
 			if(isset($task->sprintinfo))
 			{
+				$task->sprintinfo['key'] = $task->key;
 				$task->sprintinfo['tstart'] = $task->_tstart;
 				$task->sprintinfo['tend'] = $task->_tend;
 				$task->sprintinfo['estimate'] = $task->estimate;

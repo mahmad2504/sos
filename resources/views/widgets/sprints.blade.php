@@ -5,7 +5,7 @@
 @section('style')
 
 ul {
-    margin: 20px 60px;
+    //margin: 20px 60px;
 }
 
 ul li {
@@ -75,12 +75,10 @@ ul li a {
 }
 
 ul li a:hover {
-    background: green;
+    color:black
 }
 
-ul li a:hover:after {
-    border-color: transparent transparent transparent pink; 
-}
+
 .info {
 	font-size:10px;
 	line-height: 2;
@@ -89,6 +87,7 @@ ul li a:hover:after {
 @endsection
 @section('content')
 <?php $i=0 ?>
+<div style="width:95%; margin-left: auto; margin-right: auto" class="center">
 <ul id="anchor">
 	@foreach($sprints as $sprint)
 		<?php    
@@ -99,35 +98,45 @@ ul li a:hover:after {
 		$tend = new DateTime($sprint['tend']);
 		$tend = $tend->format('d-M-Y');
 		
-		
 		$info = '<div class="info">'.$tstart." - ";
 		$info .= $tend."(<span style='color:green;font-weight:bold'>".$estimate.'</span>)</div>';
 		?>
-		<li class="tile" id="tile{{$i++}}"><a href="#">{{$sprint['name']}}</a><?php echo $info; ?></li>
+		<li  id="tile{{$i}}" class="sprint" ><a id="{{$i++}}" class="sprint" href="#">{{$sprint['name']}}</a><?php echo $info; ?></li>
 	@endforeach  
-	
-    <!-- <li><a href="#">Foobard<br>dsddsd</a></li>
-    <li class="active"><a href="#">Fo</a></li>
-    <li><a href="#">Foobar</a></li>
-    <li><a href="#">Foobar</a></li>
-    <li class="future"><a href="#">Foobar</a></li> -->
 </ul>
+<iframe id="burnupgraph" style=" margin-left: auto; margin-right: auto" class="center" height="1000" width="100%" frameborder="0"></iframe>
 
+</div>
 @endsection
 @section('script')
 var sprints=Object.values(@json($sprints));
 console.log(sprints);
+
+
 $(function() 
 {
+	$(".sprint").click(function(event)
+	{
+		id = $(event.target).attr('id');
+		key = sprints[id].key;
+		$('#burnupgraph').attr('src', "{{route('showwburnupchart',[$user->name,$project->id])}}/"+key+"?iframe=1");
+		return false;
+	});
+	key = null;
 	console.log(sprints.length);
 	for(i=0;i<sprints.length;i++)
 	{
 		console.log(sprints[i]);
 		$('#tile'+i).addClass(sprints[i]["state"]);
-		
-			
+		if(sprints[i]["state"] =='active')
+		{
+			if(key == null)
+				key = sprints[i].key; 
+		}	
 		title = sprints[i]['name'].substring(0,15);
 		//$('#anchor').append('<li><a class="active" href="#" style="">'+title+'</a></li>');
 	}
+	if(key != null)
+	$('#burnupgraph').attr('src', "{{route('showwburnupchart',[$user->name,$project->id])}}/"+key+"?iframe=1");
 });		
 @endsection
