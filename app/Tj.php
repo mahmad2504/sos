@@ -481,6 +481,8 @@ class Tj
 		
 		//echo $cmd;
 		exec($cmd,$result);
+		//var_dump($result);
+		//exit();
 		$pos1 = strpos($result[0], 'Error');
 		if ($pos1 != false)
 		{

@@ -101,11 +101,8 @@ class ReportController extends Controller
 		$writer->save('hello_world.xlsx');
 		dd($projecttree);
 	}
-	private function FindFixVersions()
-	{
-		
-	}
-	public function ShowDocument($user,$project)
+	
+	public function ShowDocument(Request $request,$user,$project)
 	{
 		$user = User::where('name',$user)->first();
 		if($user==null)
@@ -127,13 +124,13 @@ class ReportController extends Controller
             $isloggedin = 0;
 		
 		$projecttree = new ProjectTree($project);
-		
+		$fixversion = $request->fixversion;
 		
 		foreach($projecttree->tasks as $task)
 		{
 			if($task->_summary == 'Product Requirements')
 			{
-				return View('widgets.document',compact('user','project','task','isloggedin'));
+				return View('widgets.document',compact('user','project','task','isloggedin','fixversion'));
 			}
 		}
 		abort(403, 'Product Requirements Tag Not Found');

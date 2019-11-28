@@ -174,6 +174,7 @@ class Task
 		$this->issuesubtype = 'DEV';
 		$this->assignee = 'unassigned';
 		$this->fixVersions = [];
+		$this->allfixVersions = [];
 		$this->labels = [];
 		$this->description = '';
 		$this->risk_severity = 'None';
@@ -454,6 +455,11 @@ class Task
 			{
 				$ntask->query .= $del.'issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
 			}
+			
+			if($ntask->parent->settings->requirement_query != null)
+				if(strlen($ntask->parent->settings->requirement_query)>0)
+					$ntask->query = "(".$ntask->query . ") and ".$ntask->parent->settings->requirement_query;
+			
 		}
 		if($ntask->issuetype == 'EPIC')
 		{
@@ -760,10 +766,21 @@ class ProjectTree
 	}
 	private function ParseForSetting($setting,$str)
 	{
-		$settings = explode($setting,$str);
-		//dd($command);
-		if(count($settings)>1)
-			return $settings[1];
+		//echo $setting."<br>";
+		$fields = explode("\r\n",$str);
+		foreach($fields as $field)
+		{
+			$keyvalue = explode("=",$field);
+			//dd($settings);
+			if(count($keyvalue)>1)
+			{
+				if(trim(strtolower($keyvalue[0]))==$setting)
+				{
+					//echo "found".$setting."<br>";
+					return $keyvalue[1];
+				}
+			}
+		}
 		return null;
 	}
 	public function ParseSettings($str)
@@ -774,28 +791,35 @@ class ProjectTree
 		$settings->parentof=1;
 		$settings->testedby=1;
 		$settings->epic_query = null;
+		$settings->requirement_query = null;
 	
-		$value = $this->ParseForSetting("link_implementedby=",$str);
+		$value = $this->ParseForSetting("link_implementedby",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
 				$settings->implementedby = 0;
 		
 		
-		$value = $this->ParseForSetting("link_parentof=",$str);
+		$value = $this->ParseForSetting("link_parentof",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
 				$settings->parentof = 0;
 		
+
 			
-		$value = $this->ParseForSetting("link_testedby=",$str);
+		$value = $this->ParseForSetting("link_testedby",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
 				$settings->testedby = 0;
 		
-		$value = $this->ParseForSetting("epic_query=",$str);
+		$value = $this->ParseForSetting("epic_query",$str);
 		if($value != null)
 			$settings->epic_query = $value;
 			
+	
+		$value = $this->ParseForSetting("requirement_query",$str);
+		if($value != null)
+			$settings->requirement_query = $value;
+		//dd($settings);
 		return $settings;
 		//dd($str);
 		/*implementedby=true
@@ -1096,9 +1120,6 @@ testedby=true"	*/
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
 		$this->ComputeOEstimate($task);
-
-	
-
 		//$otasks = $this->tasks;
 		//$this->tasks = [];
 		//$this->FindDuplicates($task);
@@ -1171,25 +1192,37 @@ testedby=true"	*/
 				}
 				if(isset($t->worklogs))
 				{
-						foreach($t->worklogs as $date=>$userdata)
+					foreach($t->worklogs as $date=>$userdata)
+					{
+						foreach($userdata as $user=>$data)
 						{
-							foreach($userdata as $user=>$data)
+							if(!isset($this->resources[$user]))
 							{
-								if(!isset($this->resources[$user]))
-								{
-									$resource =  new Resource;
-									$resource->name = $data->name;
-									$resource->displayname =$data->displayname;
-									$resource->email = $data->email;
-									$resource->timeZone = $data->timeZone;
-									$this->resources[$user]	= $resource;
-								}
+								$resource =  new Resource;
+								$resource->name = $data->name;
+								$resource->displayname =$data->displayname;
+								$resource->email = $data->email;
+								$resource->timeZone = $data->timeZone;
+								$this->resources[$user]	= $resource;
 							}
 						}
 					}
 				}
 			}
-
+			if($t->isparent == 0)
+			{
+				$parent=$t->_parenttask;
+				while($parent != null)
+				{
+					foreach($t->fixVersions as  $fixVersion)
+					{
+						if(!in_array ($fixVersion,$parent->allfixVersions))
+							$parent->allfixVersions[] = $fixVersion;
+					}	
+					$parent = $parent->_parenttask;
+				}
+			}
+		}
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		foreach($allresources as $resource)
 		{
@@ -1359,7 +1392,6 @@ testedby=true"	*/
 			ksort($this->weeklylogs[$year]);
 		}
 		ksort($this->weeklylogs);
-	
 		return $this->weeklylogs;
 	}
 	private function _GetWeeklyStorypoints($task)

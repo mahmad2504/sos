@@ -36,9 +36,12 @@ th {
 <?php
 
 $url = $project->jiraurl."/browse/";
-function SpitTaskData($url,$task,$level,$firstcall=0)
+function SpitTaskData($url,$task,$level,$firstcall=0,$fixversion)
 {
 	$i=1;
+	if(IfShow($task,$fixversion)==0)
+		return;
+	
 	if(!$firstcall)
 	{
 		$thisurl  = $url.$task->key;
@@ -94,7 +97,7 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 				continue;
 				
 			$next_level = $level.".".$i++;
-			SpitTaskData($url,$child,$next_level);
+			SpitTaskData($url,$child,$next_level,0,$fixversion);
 		}
 	}
 	else
@@ -127,10 +130,30 @@ function SpitTaskData($url,$task,$level,$firstcall=0)
 		echo '</table><br><br>';
 	}
 }
-function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
+function IfShow($task,$fixversion=null)
+{
+	if($fixversion == null)
+		return 1;
+	if($task->isparent == 1)
+	{
+		if(!in_array ($fixversion,$task->allfixVersions))
+			return 0;
+	}
+	else
+	{
+		if(!in_array ($fixversion,$task->fixVersions))
+			return 0;
+	}
+	return 1;
+}
+function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 {
 	$label  = 1;
 	$i=1;
+	if(IfShow($task,$fixversion)==0)
+		return;
+	
+	
 	if(!$firstcall)
 	{
 		for($j=1;$j<$task->level;$j++)
@@ -139,14 +162,44 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 		if($task->isparent == 0)
 			$color = '#2A3439';
 		
+		 foreach($task->labels as $label)
+		{
+			if($label == 'format-as-table')
+			{
+				$task->show_children = 0;
+				$task->label = 'table';
+				$color = '#2A3439';
+				break;
+			}
+		}
+		
 		//if(($task->issuetype != 'TASK')&&($task->issuetype != 'DEFECT'))
 		//	if($task->isparent == 0)
 		//		$color = 'Red';
 		//$color = 'Red';
+		
 		if(count($task->fixVersions)==0)
 			$verstr = "No Fixversion";
 		else
 			$verstr = implode(",",$task->fixVersions);
+		
+		if($task->isparent == 1)
+		{
+			if($task->label == 'table')
+			{
+				if($fixversion != null)
+					$verstr  = $fixversion;
+			}
+			else
+				$verstr  = '';
+		}
+		
+		
+		if(count($task->allfixVersions)==0)
+			$allverstr = "No Fixversion";
+		else
+			$allverstr = implode(",",$task->allfixVersions);
+		$allverstr ='';
 		echo '<li><a style="color:'.$color.'" href="#'.$level.'">'.
 			$level.'         -'.$task->_summary."<small style='position: absolute;right: 300px;'>".$verstr."</small>".'<span style="float:right">'." ".$task->ostatus.'</span>'.
 			'</a></li>';
@@ -178,11 +231,11 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 	{
 		foreach($task->children as $child)
 		{
-			if($child->issuetype != 'REQUIREMENT')
-				continue;
+			//if($child->issuetype != 'REQUIREMENT')
+			//	continue;
 				
 			$next_level = $level.".".$i++;
-			SpitSummaryTaskData($child,$next_level,0,$count++);
+			SpitSummaryTaskData($child,$next_level,0,$count++,$fixversion);
 		}
 	}
 }
@@ -190,7 +243,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
     <a href="{{route('dashboard',[$user->name,$project->name])}}" style="float:left;margin-top:5px;margin-right:10px;"  rel="tooltip" title="Project Dashboard" class="float-right">Dashboard</a>
 	
-	 <div id="filter" class="float-leftghabra" style="visibility4: hidden !important;float:left;width:600px;">
+	<!-- <div id="filter" class="float-leftghabra" style="visibility4: hidden !important;float:left;width:600px;">
 		<span class="float-left"> Filter</span>
 		<select class="float-left"  name="states" id="versionselect" class="form-control"  multiple="multiple" style="width:300px!important">
 		  <option value="AL">Alabama</option>
@@ -200,9 +253,9 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 		  <option selectedvalue="CA">California</option>
 		</select>
 		<span class="float-right"> Apply</span>
-	</div>
+	</div> 
 
-	<input type="text" id="justAnInputBox" placeholder="Select"/>
+	<input type="text" id="justAnInputBox" placeholder="Select"/> -->
 	
 			
 	<div id="toc_container">
@@ -217,7 +270,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 				</li>-->
 				<li><a href="#product_requirement">1 Product Requirement</a>
 				<?php
-					SpitSummaryTaskData($task,1,1,0);
+					SpitSummaryTaskData($task,1,1,0,$fixversion);
 				?>
 				</li>
 			</ul>
@@ -225,7 +278,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count)
 	<div id="toc_container">
 	<h2 id="product_requirement">1 Product Requirement - Details</h2>
 	<?php
-		SpitTaskData($url,$task,1,1);
+		SpitTaskData($url,$task,1,1,$fixversion);
 		
 	?>
 	</div>
