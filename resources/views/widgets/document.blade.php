@@ -199,7 +199,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 			$allverstr = implode(",",$task->allfixVersions);
 		$allverstr ='';
 		echo '<li><a style="color:'.$color.'" href="#'.$level.'">'.
-			$level.'         -'.$task->_summary.'<small style="position: absolute;right:400px;">'.$task->label."</small><small style='position: absolute;right: 300px;'>".$verstr."</small>".'<span style="float:right">'." ".$task->ostatus.'</span>'.
+			$level.'         -'.$task->_summary.'<small style="position: absolute;right:400px;margin-top:7px">'.$task->label."</small><small style='position: absolute;right: 300px;margin-top:5px'>".$verstr."</small>".'<span style="float:right">'." ".$task->ostatus.'</span>'.
 			'</a></li>';
 		for($j=1;$j<$task->level;$j++)
 			echo '</ul>';
@@ -257,6 +257,8 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 		{
 			echo '<option value="'.'all'.'" selected>'.'all'.'</option>';
 		}
+		else
+			echo '<option value="'.'all'.'">'.'all'.'</option>';
 		?>
 	</select>
 	
@@ -313,16 +315,15 @@ if(isloggedin)
 	$('.navbar').removeClass('d-none');
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
-	$('#filter').show();
+	
 }
+
 $(function() {
+	$('#filter').show();
 	$( "#filter" ).change(function() 
 	{
 		fixversion = $(this).children("option:selected").val();
-		if(fixversion == 'all')
-			window.location.href  = '{{route('showdocument',[$user->name,$project->id])}}';
-		else
-			window.location.href  = '{{route('showdocument',[$user->name,$project->id])}}'+'?fixversion='+fixversion;
+		window.location.href  = '{{route('showdocument',[$user->name,$project->id])}}'+'?fixversion='+fixversion;
 		
 	});
 });

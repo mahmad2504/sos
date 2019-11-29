@@ -125,7 +125,21 @@ class ReportController extends Controller
 		
 		$projecttree = new ProjectTree($project);
 		$fixversion = $request->fixversion;
-		
+		if($fixversion != null)
+		{
+			if($fixversion == 'all')
+			{
+				session()->forget('widget_document_fixversion');
+				$fixversion = null;
+			}
+			else
+				session(['widget_document_fixversion' => $fixversion]);
+		}
+		else
+		{
+			$fixversion = session('widget_document_fixversion');
+			
+		}
 		foreach($projecttree->tasks as $task)
 		{
 			if($task->_summary == 'Product Requirements')
