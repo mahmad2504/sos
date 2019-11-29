@@ -1,8 +1,6 @@
 @extends('layouts.app')
 @section('csslinks')
 <link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
-<link rel="stylesheet" href="{{ asset('css/BsMultiSelect.min.css') }}" />
-<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
 @endsection
 @section('style')
 
@@ -161,13 +159,13 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 		$color = '';
 		if($task->isparent == 0)
 			$color = '#2A3439';
-		
+		$task->label = '';
 		 foreach($task->labels as $label)
 		{
 			if($label == 'format-as-table')
 			{
 				$task->show_children = 0;
-				$task->label = 'table';
+				$task->label = 'Table';
 				$color = '#2A3439';
 				break;
 			}
@@ -185,7 +183,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 		
 		if($task->isparent == 1)
 		{
-			if($task->label == 'table')
+			if($task->label == 'Table')
 			{
 				if($fixversion != null)
 					$verstr  = $fixversion;
@@ -201,7 +199,7 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 			$allverstr = implode(",",$task->allfixVersions);
 		$allverstr ='';
 		echo '<li><a style="color:'.$color.'" href="#'.$level.'">'.
-			$level.'         -'.$task->_summary."<small style='position: absolute;right: 300px;'>".$verstr."</small>".'<span style="float:right">'." ".$task->ostatus.'</span>'.
+			$level.'         -'.$task->_summary.'<small style="position: absolute;right:400px;">'.$task->label."</small><small style='position: absolute;right: 300px;'>".$verstr."</small>".'<span style="float:right">'." ".$task->ostatus.'</span>'.
 			'</a></li>';
 		for($j=1;$j<$task->level;$j++)
 			echo '</ul>';
@@ -242,6 +240,25 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 ?>
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
     <a href="{{route('dashboard',[$user->name,$project->name])}}" style="float:left;margin-top:5px;margin-right:10px;"  rel="tooltip" title="Project Dashboard" class="float-right">Dashboard</a>
+	<select id="filter" style="display: none">
+		<?php
+		$found = 0;
+		foreach($task->allfixVersions as $fv)
+		{
+			if($fv == $fixversion)
+			{
+				$found = 1;
+				echo '<option value="'.$fv.'" selected>'.$fv.'</option>';
+			}
+			else
+				echo '<option value="'.$fv.'" >'.$fv.'</option>';
+		}
+		if($found == 0 )
+		{
+			echo '<option value="'.'all'.'" selected>'.'all'.'</option>';
+		}
+		?>
+	</select>
 	
 	<!-- <div id="filter" class="float-leftghabra" style="visibility4: hidden !important;float:left;width:600px;">
 		<span class="float-left"> Filter</span>
@@ -284,9 +301,6 @@ function SpitSummaryTaskData($task,$level=0,$firstcall=0,$count,$fixversion)
 	</div>
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
-<script src="{{ asset('js/BsMultiSelect.min.js') }}" ></script>
-<script src="{{ asset('js/icontains.js') }}" ></script>
-<script src="{{ asset('js/comboTreePlugin.js') }}" ></script>
 
 @endsection
 @section('script')
@@ -294,51 +308,23 @@ var user = @json($user);
 var project =  @json($project);
 var isloggedin = {{$isloggedin}};
 
-var SampleJSONData = [
-    {
-        id: 0,
-        title: 'choice 1  '
-    }, 
-	{
-        id: 1,
-        title: 'choice 2',
-    }, {
-        id: 2,
-        title: 'choice 3'
-    }, {
-        id: 3,
-        title: 'choice 4'
-    }
-];
-
 if(isloggedin)
 {
 	$('.navbar').removeClass('d-none');
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+	$('#filter').show();
 }
 $(function() {
-	$("select").bsMultiSelect();
-	$("#filter").css('visibility', 'visible');
-	$( "#versionselect" ).change(function(event) {
-		 var brands = $('#versionselect option:selected');
-		 var selected = [];
-         $(brands).each(function(index, brand){
-            selected.push([$(this).val()]);
-         });
-         console.log(selected);
-	});
-	$("#versionselect").focusout(function(){
-		$(this).css("background-color", "#FFFFFF");
-		console.log("ddd");
-	});
-	comboTree1 = $('#justAnInputBox').comboTree({
-			source : SampleJSONData,
-			isMultiple: true,
-			cascadeSelect: false
-		});
+	$( "#filter" ).change(function() 
+	{
+		fixversion = $(this).children("option:selected").val();
+		if(fixversion == 'all')
+			window.location.href  = '{{route('showdocument',[$user->name,$project->id])}}';
+		else
+			window.location.href  = '{{route('showdocument',[$user->name,$project->id])}}'+'?fixversion='+fixversion;
 		
-
+	});
 });
 
 @endsection
