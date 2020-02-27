@@ -108,9 +108,9 @@ class SyncController extends Controller
 		}
 		if($project->edate < Utility::GetToday('Y-m-d'))
 		{
-			Utility::ConsoleLog(time(),'Error::Cannot Sync. Project End Date is expired.');
-			Utility::ConsoleLog(time(),'Error::Check Project Settings');
-			return; 
+			//Utility::ConsoleLog(time(),'Error::Cannot Sync. Project End Date is expired.');
+			//Utility::ConsoleLog(time(),'Error::Check Project Settings');
+			//return; 
 		}
 		$projecttree  =  new ProjectTree($project);
 		$oa = new OA($projecttree);

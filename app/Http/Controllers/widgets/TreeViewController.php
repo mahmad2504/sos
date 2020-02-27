@@ -17,6 +17,57 @@ class TreeViewController extends Controller
 	private $treedata = []; 
 	private $blockedtasks = [];
 	private $jiraurl = null;
+	public function Reduce($task)
+	{
+		if(isset($task->fixVersions ))
+		{
+			if(count($task->fixVersions)>0)
+				$task->fixVersions = implode(",",$task->fixVersions);
+			else
+				$task->fixVersions = $task->other_field;
+		}
+		
+		foreach ($task as $property => $value)
+		{
+
+			if(
+			($property == 'extid')||
+			($property == 'summary')||
+			($property == 'children')||
+			($property == 'isparent')||
+			($property == 'progress')||
+			($property == 'status')||
+			($property == 'ostatus')||
+			($property == 'key')||
+			($property == 'sprintname')||
+			($property == 'sprintstate')||
+			($property == 'sprintid')||
+			($property == 'fixVersions')||
+			($property == 'estimate')||
+			($property == 'timespent')||
+			($property == 'created')||
+			($property == 'duplicate')||
+			($property == 'issuetype')||
+			($property == 'assignee')
+			)
+			{
+				//$task->children=[];
+				
+			}
+			else
+				unset($task->$property);
+		}
+		if($task->isparent == 0)
+			unset($task->children);
+		else
+		{
+			foreach($task->children as $ctask)
+			{
+				$this->Reduce($ctask);
+			}
+		}
+	
+	}
     public function Show(Request $request)
     {
 		if($request->user == null || $request->project==null)
@@ -46,7 +97,23 @@ class TreeViewController extends Controller
 			$isloggedin = 1;
 		else
             $isloggedin = 0;
-		return View('widgets.treeview',compact('user','project','isloggedin'));
+		
+		$iframe = $request->iframe;
+		if($iframe == null)
+			$iframe = 0;
+		else
+			$iframe  = 1;
+		
+		$projecttree = new ProjectTree($project);
+		//dd($projecttree->tree);
+		$tree = $projecttree->GetHead();
+		$this->Reduce($tree);
+		$head[] = $tree;
+		if($request->view==1)
+			return View('widgets.treeview.treetable',compact('user','project','isloggedin','iframe','head'));
+		if($request->view==2)
+			return View('widgets.treeview.tabulator',compact('user','project','isloggedin','iframe','head'));
+		return View('widgets.treeview.treetable',compact('user','project','isloggedin','iframe','head'));
     }
 	public function GetData(Request $request)
 	{
@@ -119,8 +186,16 @@ class TreeViewController extends Controller
 		$row['issuesubtype'] = 'DEV';
 		if(isset($task->issuesubtype))
 			$row['issuesubtype'] = $task->issuesubtype;
+		if(isset($task->created))
+			$row['created'] = $task->created;
+		//dd($task->description);
 		$row['oissuetype'] = $task->oissuetype;
+    	
+		if(($task->isparent == 1)&&(isset($task->description)))
+			$row['summary'] = $task->_summary." ";//.$task->description;
+		else
     	$row['summary'] = $task->_summary;
+		
     	$row['jiraurl'] = $this->jiraurl;
     	$row['key'] = $task->key;
 		$row['estimate'] = $task->estimate;
@@ -128,12 +203,14 @@ class TreeViewController extends Controller
 		$row['progress'] = $task->progress;
 		$row['duplicate'] = $task->duplicate;
 		$row['status'] = $task->status;
+		$row['ostatus'] = $task->ostatus;
 		$row['priority'] = $task->priority;
 		$row['dependson'] = $task->dependson;
 		$row['sprintname'] = $task->sprintname;
 		$row['sprintstate'] = $task->sprintstate;
 		$row['sprintid'] = $task->sprintid;
 		$row['assignee'] = $task->assignee;
+		$row['backlog_priority'] = $task->_backlog_priority;
 		$row['versions']  = '';
 		if(isset($task->fixVersions ))
 		{

@@ -35,7 +35,26 @@ class SprintsController extends Controller
     		abort(403, 'Project Not Found');
 		}
 		$projecttree = new ProjectTree($project);
-		$sprints = $projecttree->GetSprintsData();
+		$t = null;
+		
+		if($request->key != null)
+		{
+			foreach($projecttree ->tasks as $t)
+			{
+					if($t->key."a" == $request->key."a")
+					{
+						break;
+					}
+			}
+		}
+		else
+			$t = $projecttree->tree;
+		
+		if($t == null)
+			abort(403, 'No Sprint is configured');
+		
+		$sprints = $projecttree->GetSprintsData($t,1);
+		
 		if(count($sprints)==0)
 			abort(403, 'No Sprint is configured');
 		//dd($projecttree->GetAllSprints());
@@ -49,6 +68,12 @@ class SprintsController extends Controller
 				$sprint['startDate'] = '';
 			
 		}
-		return View('widgets.sprints',compact('user','project','loggeduser','sprints'));
+		$iframe = $request->iframe;
+		if($iframe == null)
+			$iframe = 0;
+		else
+			$iframe  = 1;
+		
+		return View('widgets.sprints',compact('user','project','loggeduser','sprints','iframe'));
     }
 }

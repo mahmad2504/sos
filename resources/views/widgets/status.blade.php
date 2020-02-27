@@ -5,13 +5,19 @@
 
 @endsection
 @section('style')
- 
+@if ($iframe==1)
+body {
+	background-color: #fff;
+}@endif
 @endsection
 @section('content')
 <?php $selected = 0;?>
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
+	@if ($iframe==0)
     <h3>{{ $project->name}}</h3>
+	@endif
+	@if ($iframe==0)
     <select style="margin-bottom:5px;" class="form-control-sm" id="milestones" name="jirauri">
 		@for($i=0;$i<count($milestones);$i++)
 			@if (strcmp($milestones[$i]->key,$key)==0)
@@ -26,6 +32,7 @@
 			<option value="i" selected="selected">{{$key}}</option>
 		@endif
 	</select>
+	@endif
     <div class="mainpanel">
         <!--<div style="background-color:#F0F0F0">
             <h4 class="d-flex;" id="summary" style="margin-bottom:-17px;"></h4>
@@ -67,7 +74,7 @@
                 <th>Baseline EAC</th>
                 <th>Current EAC</th>
                 <th id="headerearned"></th>
-                <th>Remaining</th> 
+                <th>Remaining efforts</th> 
             </tr>
         </thead>`
         <tbody>
@@ -94,14 +101,17 @@ var data = @json($data);
 var milestones = @json($milestones);
 var key = '{{$key}}';
 var baseurl = '{{route('showwmilestonestatus',[$user->name,$project->name])}}';
-
+var iframe = {{$iframe}}
 
 'use strict';
+if(iframe == 0)
+{
 if(isloggedin)
 {
 	$('.navbar').removeClass('d-none');
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
+}
 }
 function UpdateRiskOnUi(severity)
 {
@@ -261,6 +271,8 @@ $(function()
 
         if(remaining >0)
             $('#remaining').text(remaining+" Points" );
+		else
+			$('#remaining').text("0");
     }
     else
     {
@@ -276,6 +288,8 @@ $(function()
 
         if(remaining > 0)
             $('#remaining').text(remaining+" Days of work" );
+		else
+			$('#remaining').text("0");
     }
     //$('#progress').text(data['progress']+" %" ); 
     $('#status').html("<img width='80px' src='/images/"+data['status']+".png'></img>"); 

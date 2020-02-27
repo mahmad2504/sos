@@ -131,7 +131,13 @@ class Tj
 		if($dheader != null)
 			$header = $header.$spaces."   depends ".$dheader."\n";
 		
-		if($task->_startconstraint!=null)
+		$remffort  = $task->estimate - $task->timespent;
+			
+		if(isset($task->isexcluded)||($task->duplicate==1))
+		{
+			$remffort = 0;
+		}
+		if(($task->_startconstraint!=null)&&($remffort > 0))
 		{
 			if(strtotime($task->_startconstraint) > strtotime(Utility::GetToday("Y-m-d")))
 				$header = $header.$spaces."   start ".$task->_startconstraint."\n";
@@ -143,12 +149,12 @@ class Tj
 			
 			$header = $header.$spaces.'   priority '.$task->schedule_priority."\n";
 			
-			$remffort  = $task->estimate - $task->timespent;
+			//$remffort  = $task->estimate - $task->timespent;
 			
-			if(isset($task->isexcluded)||($task->duplicate==1))
-			{
-				$remffort = 0;
-			}
+			//if(isset($task->isexcluded)||($task->duplicate==1))
+			//{
+			//	$remffort = 0;
+			//}
 			if( ($remffort > 0)&&($task->status != 'RESOLVED'))
 			{
 				if( $remffort < .125)
@@ -201,6 +207,10 @@ class Tj
 			$presource->name = $presource->resource()->first()->name;
 			
 			$presource->calendar =  $presource->resource()->first()->calendar()->first()->data;
+			
+			$presource->name = str_replace ("@", "_", $presource->name);
+			//$presource->name = explode("@",$presource->name)[0];
+			
 			$header = $header."   allocate ".$presource->name."\n";
 			$this->resources[$presource->name] = $presource;
 		}

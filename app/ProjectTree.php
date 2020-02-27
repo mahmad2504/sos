@@ -16,6 +16,17 @@ class Task
 	{
 		switch($field)
 		{
+			case '_backlog_priority':
+				$t = $this;
+				while($t->backlog_priority == '')
+				{
+					$parent=$t->_parenttask;
+					if($parent == null)
+						return '';
+					$t = $parent;
+				}
+				return $t->backlog_priority;
+				break;
 			case '_tstart':
 				$t = $this;
 				while(strlen(trim($t->_startconstraint)) == 0)
@@ -56,10 +67,14 @@ class Task
 			case '_orig_estimate':
 				if(isset($this->oestimate))
 					return $this->oestimate; 
-				if($this->parent->project->estimation == 0)// Story points
+				if($this->storypoints > 0)
+					return  $this->storypoints;
+				
+				return $this->timeestimate;
+				/*if($this->parent->project->estimation == 0)// Story points
 					return  $this->storypoints;
 				else
-					return $this->timeestimate;
+					return $this->timeestimate;*/
 				break;
 			case '_sched_start';
 				if(!isset($this->sched_start))
@@ -155,6 +170,7 @@ class Task
 		$this->instancecount = 1;
 		$this->storypoints = 0;
 		$this->estimate = 0;
+		$this->estimatehistory=[];
 		$this->timeestimate = 0;
 		$this->timespent = 0;
 		$this->updated = 0;
@@ -177,7 +193,10 @@ class Task
 		$this->allfixVersions = [];
 		$this->labels = [];
 		$this->description = '';
+		$this->created = '';
+		$this->resync=0;
 		$this->risk_severity = 'None';
+		$this->backlog_priority = '';
 		$this->other_field = '';
 		$this->dependencies_present = 0; // valid only for head
 		$this->blockers_present = 0; // valid only for head
@@ -200,7 +219,7 @@ class Task
 
 		if(($issuetype=='DevTask')||($issuetype=='QaTask')||($issuetype=='Documentation')||($issuetype=='Action')||($issuetype=='Dependency')||($issuetype=='Sub-task')||($issuetype=='Issue')||($issuetype=='Risk')||($issuetype=='Bug')||($issuetype=='Task')||($issuetype=='Story')||($issuetype=='Product Change Request')||($issuetype=='New Feature')||($issuetype=='Improvement'))
 			return 'TASK';
-		
+
 		Utility::ConsoleLog(time(),"Error::Unmapped type=[".$key." ".$issuetype."]");
 		return 'TASK';
 		//
@@ -223,7 +242,7 @@ class Task
 		if(($status == 'Completed')||($status=='Verified')||($status=='Done')||($status=='Closed')||($status=='Resolved')||($status=='Implemented')||($status=='Validated')||($status=='Satisfied'))
 			return 'RESOLVED';
 
-		if(($status == 'Monitored')||($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
+		if(($status == 'Review')||($status == 'Integration')||($status == 'Verification')||($status == 'Active')||($status == 'Monitored')||($status == 'In Analysis')||($status == 'In Progress')||($status == 'Code Review')||($status == 'In Review')||($status == 'RC: Release')||($status == 'PROJECT DEFINITION')||($status == 'PROJECT PLANNING')||($status == 'CLOSE DOWN'))
 			return 'INPROGRESS';
 		Utility::ConsoleLog(time(),"Unmapped status=".$status);
 		return 'OPEN';
@@ -235,14 +254,17 @@ class Task
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$other_field = $jiraconf['other']; // custom field
-		
+
 		$sprint = $jiraconf['sprint']; // custom field
 		$escalate = $jiraconf['escalate']; // custom field
-		
-		$fields = 'labels,updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,fixVersions';
+        $backlog_priority = $jiraconf['backlog_priority'];
+		if($backlog_priority != '')
+			$backlog_priority=$backlog_priority.",";
+			
+		$fields = $backlog_priority.'statuscategorychangedate,created,labels,updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,fixVersions';
 		if($this->parent->project->task_description==1)
 			$fields .= ',description';
-		
+
 		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint.",".$other_field.",".$escalate,$order);
 		//dd($tasks);
 		return $tasks;
@@ -272,9 +294,12 @@ class Task
 	private function ParseSprintData($task,$ntask,$sprint)
 	{
 		$last_sequence = 0;
-		
+
 		if(!isset($task->fields->$sprint))
 			return;
+		if(!isset($task->fields->$sprint[0]))
+			return;
+		
 		if(is_object($task->fields->$sprint[0]))
 		{
 			$this->ParseSprintData_newversion($task,$ntask,$sprint);
@@ -285,7 +310,7 @@ class Task
 		for($j=0;$j<count($task->fields->$sprint);$j++)
 		{
 			$str = $task->fields->$sprint[$j];
-			
+
 			$sprint_info = explode(',',$str);
 			for($i=0;$i<count($sprint_info);$i++)
 			{
@@ -298,7 +323,7 @@ class Task
 			//$sequence = explode('sequence=',$str)[1];
 			//$sequence = explode(']',$sequence)[0];
 			//echo $sequence;
-			if($sequence < $last_sequence)
+			if((int)$sequence < (int)$last_sequence)
 			{
 				continue;
 			}
@@ -330,10 +355,13 @@ class Task
 				else if(strpos($keyvalue[0],'[id')!== false)
 				{
 					$sprintno = $keyvalue[1];
-					
+
 				}
 			}
 		}
+		if(($sprintstate == 'CLOSED')&&($ntask->status != 'RESOLVED'))
+			return;
+		
 		$ntask->sprintname = $sprintname;
 		$ntask->sprintstate = $sprintstate;
 		$ntask->sprintid = $sprintid;
@@ -346,38 +374,70 @@ class Task
 	public function CreateTask($jiraconf,$task,$level,$pextid,$pos)
 	{
 		global $unestimated_count;
-		
+
 		$story_points = $jiraconf['storypoints']; // custom field
 		$risk_severity = $jiraconf['risk_severity']; // custom field
 		$link_implemented_by = null;
 		if($this->parent->settings->implementedby)
-			$link_implemented_by  = $jiraconf['link_implemented_by'];	
+			$link_implemented_by  = $jiraconf['link_implemented_by'];
 		$link_parentof = null;
 		if($this->parent->settings->parentof)
-			$link_parentof = $jiraconf['link_parentof']; 
-		$link_testedby= null;	
+			$link_parentof = $jiraconf['link_parentof'];
+		$link_testedby= null;
 		if($this->parent->settings->testedby)
 			$link_testedby = $jiraconf['link_testedby'];
-		
+
 		$other_field = $jiraconf['other'];
-		
+
 		$sprint = $jiraconf['sprint']; // custom field
 		$escalate = $jiraconf['escalate']; // custom field
-		
+		$backlog_priority = $jiraconf['backlog_priority']; // custom field
+
 		$ntask = new Task($this->parent,$level,$pextid,$pos);
-		
+
 		$ntask->key = $task->key;;
 		$ntask->id = $task->id;
 		$ntask->ostatus = $task->fields->status->name;
+		//dd($task->fields->status);
 		$ntask->updated = $task->fields->updated;
-		if(isset($task->fields->resolutiondate))
-			$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
-		//echo $ntask->key." ".$ntask->closedon."<br>";
+		$ntask->created = explode("T",$task->fields->created)[0];
+		//dd($ntask->created);
+		
+		
+		if(isset($task->fields->status->statusCategory))
+		{
+			$status1 = $this->MapStatus($task->fields->status->statusCategory->name);
+			$status2 = $ntask->status = $this->MapStatus($task->fields->status->name);
+			if($status1 != $status2)
+				Utility::ConsoleLog(time(),"Warning::".$ntask->key." in undetrminate state ".$task->fields->status->statusCategory->name."<->".$task->fields->status->name);
+			
+			 
+			if($status1 == 'RESOLVED')
+			{
+				$ntask->status = $status1;
+			}
+			else
+				$ntask->status = $status2;
+		}
+		else
 		$ntask->status = $this->MapStatus($task->fields->status->name);
+		
+
+		
+		if($ntask->status == 'RESOLVED')
+		{
+			if(isset($task->fields->resolutiondate))
+				$ntask->closedon = explode('T',$task->fields->resolutiondate)[0];
+			if(isset($task->fields->statuscategorychangedate))
+				$ntask->closedon = explode('T',$task->fields->statuscategorychangedate)[0];
+		}
+		
+		//dd($ntask->closedon);
+		
 		if(($ntask->status == 'RESOLVED') && ($ntask->closedon == null) && !isset($this->parent->tempflag))
 		{
 			$this->parent->tempflag = 1;
-			Utility::ConsoleLog(time(),"Error::"."Warning::Closedon date missing for resolved task. Check Your Jira Configurations");
+			Utility::ConsoleLog(time(),"Error::"."Warning::Closedon date missing for resolved task ".$ntask->key.". Check Your Jira Configurations");
 			$ntask->closedon = $ntask->updated;
 			//dd($task);
 		}
@@ -400,13 +460,23 @@ class Task
 			if(isset($task->fields->$escalate->value))
 				if($task->fields->$escalate->value == 'Yes')
 					$ntask->escalate = 1;
-			
 		}
-		$this->ParseSprintData($task,$ntask,$sprint);
 		
+		
+		if(isset($task->fields->$backlog_priority))
+			$ntask->backlog_priority = $task->fields->$backlog_priority;
+		
+		$this->ParseSprintData($task,$ntask,$sprint);
+
 		if(isset($task->fields->assignee))
 		{
 			$resource =  new Resource;
+			if(!isset($task->fields->assignee->name))
+			{
+				$task->fields->assignee->name = explode(" ",$task->fields->assignee->displayName)[0];
+			}
+			//echo "<br>".$task->fields->assignee->name."<br>";
+			$task->fields->assignee->name = explode("@",$task->fields->assignee->name)[0];
 			$resource->name = str_replace (".", "_", $task->fields->assignee->name);
 			$resource->displayname = $task->fields->assignee->displayName;
 			$resource->email = '';
@@ -416,6 +486,7 @@ class Task
 
 			$this->parent->resources[$task->fields->assignee->name]	= $resource;
 			$ntask->assignee = $resource->name;
+			//echo '<br>'.$ntask->assignee.'<br>';
 		}
 		else
 		{
@@ -434,8 +505,8 @@ class Task
 				$ntask->fixVersions[] = $fixVersion->name;
 			//dd($ntask->fixVersions);
 		}
-		
-		
+
+
 		$ntask->query = null;
 		//$link_parentof = 'Is Parent of';
 		if(($ntask->issuetype == 'REQUIREMENT')||($ntask->issuetype == 'WORKPACKAGE'))
@@ -455,11 +526,11 @@ class Task
 			{
 				$ntask->query .= $del.'issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
 			}
-			
+
 			if($ntask->parent->settings->requirement_query != null)
 				if(strlen($ntask->parent->settings->requirement_query)>0)
 					$ntask->query = "(".$ntask->query . ") and ".$ntask->parent->settings->requirement_query;
-			
+
 		}
 		if($ntask->issuetype == 'EPIC')
 		{
@@ -473,11 +544,11 @@ class Task
 		{
 			$ntask->query = "parent=".$ntask->key;
 		}
-		
+
 		//dd($this->parent->globaltaskquery);
 		if(isset($task->fields->description))
 			$ntask->description = $task->fields->description;
-		
+
 		if(isset($task->fields->timeoriginalestimate))
 		{
 			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),3);
@@ -498,30 +569,30 @@ class Task
 			$ntask->other_field = $task->fields->$other_field;
 		}
 		//echo $ntask->other_field;
-		
+
 		$ntask->estimate = $ntask->_orig_estimate;
 		if($task->fields->priority->name == 'Blocker')
 			$task->fields->priority->id = 1;
-		
+
 		if($task->fields->priority->name == 'Critical')
 			$task->fields->priority->id = 2;
-		
+
 		if($task->fields->priority->name == 'Major')
 			$task->fields->priority->id = 3;
-			
+
 		$ntask->priority = $task->fields->priority->id;
-		
+
 		if(($ntask->oissuetype == 'Risk')&&($ntask->risk_severity == 'None'))
 		{
 			if($task->fields->priority->name == 'Blocker')
 				$ntask->risk_severity = 'Critical';
-			
+
 			if($task->fields->priority->name == 'Critical')
 				$ntask->risk_severity = 'High';
-			
+
 			if($task->fields->priority->name == 'Major')
 				$ntask->risk_severity = 'Medium';
-		
+
 		}
 		//echo $ntask->key." ".$ntask->risk_severity."  ".$ntask->priority." ".print_r($task->fields->priority)."\r\n";
 		//if($ntask->key == 'IP-72')
@@ -541,7 +612,7 @@ class Task
 				}
 			}
 		}
-		
+
 		//var_dump($ntask->dependson);
 		$ntask->timespent =  0;
 		//Utility::ConsoleLog(time(),"Estimate is ".$ntask->estimate);
@@ -553,6 +624,9 @@ class Task
 		//if($ntask->status == 'RESOLVED')
 		//	$ntask->timespent = $ntask->estimate;
 		//else
+		if($this->parent->project->estimation == 0)// story point
+			$task->fields->timespent = 0;
+			
 		if(isset($task->fields->timespent))
 		{
 			//echo $ntask->key." ".$task->fields->timespent."<br>";
@@ -573,7 +647,7 @@ class Task
 			else if($ntask->duedate < $ntask->_project_start)
 				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (Before Project start)");
 			else if($ntask->duedate > $ntask->_project_end)
-				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (After Project end)  ");	
+				Utility::ConsoleLog(time(),'Error::'.$task->key." has a invalid Jira duedata (After Project end)  ");
 		}
 
 
@@ -604,9 +678,11 @@ class Task
 		global $unestimated_count;
 		//Utility::ConsoleLog(time(),$this->level." ".$this->key);
 
+		if($this->isparent == 1)
+			return 1;
+		$this->resync = 0;
 		if($this->query == null)
 			return 1;
-
 		else if(substr( $this->query, 0, 10 ) === "structure=")
 		{
 			$structure_id = explode('structure=',$this->query)[1];
@@ -624,7 +700,47 @@ class Task
 			}
 			$query = $query.")";
 			$tasks = $this->SearchInJira($query,$jiraconf);
-			
+
+			if($tasks == null)
+				return -1;
+			foreach($tasks as $key=>$jtask)
+			{
+				$objects[$jtask->id]->data=$jtask;
+			}
+			$taskatlevel[0] = $this;
+			foreach($objects as $object)
+			{
+				$level = $object->level;
+				$parent = $taskatlevel[$level-1];
+				//echo $level." Parent is ".$parent->key."<br>";
+				$ntask = $this->CreateTask($jiraconf,$object->data,$level,$parent->extid,count($parent->children));
+				$parent->AddChild($ntask);
+
+
+				//echo $ntask->key."  ".$level."<br>";
+				$taskatlevel[$level] = $ntask;
+			}
+			return 0;
+		}
+		else if(substr( $this->query, 0, 14) === "structuretree=")
+		{
+			$structure_id = explode('structuretree=',$this->query)[1];
+			$this->resync = 1;
+			Utility::ConsoleLog(time(),'Wait::Reading Structure '.$structure_id);
+			$objects = Jira::GetStructure($structure_id);
+			if($objects == null)
+				return -1;
+			$query = 'id in (' ;
+			$del = "";
+
+			foreach($objects as $object)
+			{
+				$query = $query.$del.$object->taskid;
+				$del = ",";
+			}
+			$query = $query.")";
+			$tasks = $this->SearchInJira($query,$jiraconf);
+
 			if($tasks == null)
 				return -1;
 			foreach($tasks as $key=>$jtask)
@@ -652,19 +768,23 @@ class Task
 			if(strstr(strtolower($this->query),'order by'))
 				$tasks = $this->SearchInJira($this->query,$jiraconf,'');
 			else
-			$tasks = $this->SearchInJira($this->query,$jiraconf,'ORDER BY Rank ASC');
+				$tasks = $this->SearchInJira($this->query,$jiraconf,'ORDER BY Rank ASC');
 			if($tasks == null)
 			{
-				$values = explode('sprint=', strtolower($this->query));
-				if(count($values)>1)
+				$str = substr(strtolower($this->query), 0,7);
+				//$values = explode('sprint=', strtolower($this->query));
+				if($str == 'sprint=')
+				//if(count($values)>1)
 				{
+					$values = explode('sprint=', strtolower($this->query));
 					$sprintno = explode(' ', $values[1])[0];
 					//dd($this->query);
 					$this->sprintinfo = Jira::GetSprintInfo($sprintno);
-					
+					$this->summary = $this->sprintinfo['name'];
+
 					if(array_key_exists('startDate',$this->sprintinfo ))
 						$this->startconstraint = explode('T',$this->sprintinfo ['startDate'])[0];
-					
+
 					if(array_key_exists('endDate',$this->sprintinfo ))
 						$this->duedate = explode('T',$this->sprintinfo ['endDate'])[0];
 				}
@@ -673,24 +793,26 @@ class Task
 			$j=0;
 
 			$sprintno = 0;
-			
-			$values = explode('sprint=', strtolower($this->query));
-			if(count($values)>1)
+			$str = substr(strtolower($this->query), 0,7);
+			if($str == 'sprint=')
 			{
+				$values = explode('sprint=', strtolower($this->query));
 				$sprintno = explode(' ', $values[1])[0];
 				//dd($this->query);
 				$this->sprintinfo = Jira::GetSprintInfo($sprintno);
-				
+
+
+				$this->summary = $this->sprintinfo['name'];
 				if(array_key_exists('startDate',$this->sprintinfo ))
 					$this->startconstraint = explode('T',$this->sprintinfo ['startDate'])[0];
-				
+
 				if(array_key_exists('endDate',$this->sprintinfo ))
 					$this->duedate = explode('T',$this->sprintinfo ['endDate'])[0];
-				
+
 				//MUMTAZ
 				//$this->SearchInJira('sprint/92',$jiraconf);
 			}
-			
+
 			foreach($tasks as $key=>$task)
 			{
 				//Utility::ConsoleLog(time(),$key);
@@ -732,7 +854,7 @@ class ProjectTree
 	private $milestones = [];
 	private $status_array = null;
 	private $globaltaskquery=null;
-	
+
 	function __construct(Project $project)
 	{
 		//dd($project);
@@ -745,6 +867,10 @@ class ProjectTree
 		$this->baselinepath = $this->datapath."/baseline";
 		$this->user = $user;
 		$this->project  = $project;
+		$this->weekdate = new \DateTime();
+		// Modify the date it contains
+		$this->weekdate->modify('next sunday');
+		$this->weekdate = $this->weekdate->format('Y-m-d');
 
 		$this->jiraconfig = Utility::GetJiraConfig($project);
 		$project->jiraurl = Utility::GetJiraURL($project);
@@ -752,7 +878,7 @@ class ProjectTree
 		$globaltaskquery = explode("taskquery=",$project->description);
 		if(count($globaltaskquery)>1)
 			$this->globaltaskquery=$globaltaskquery[1];
-		
+
 		if(file_exists($this->treepath))
 		{
 			$this->tree = unserialize(file_get_contents($this->treepath));
@@ -762,7 +888,7 @@ class ProjectTree
 			//dd($this->tree->oa);
 		}
 
-		
+
 	}
 	private function ParseForSetting($setting,$str)
 	{
@@ -777,7 +903,8 @@ class ProjectTree
 				if(trim(strtolower($keyvalue[0]))==$setting)
 				{
 					//echo "found".$setting."<br>";
-					return $keyvalue[1];
+					$str =  implode("=",array_slice($keyvalue, 1));
+					return $str;
 				}
 			}
 		}
@@ -792,33 +919,39 @@ class ProjectTree
 		$settings->testedby=1;
 		$settings->epic_query = null;
 		$settings->requirement_query = null;
-	
+		$settings->filter_fixversion = null;
+
 		$value = $this->ParseForSetting("link_implementedby",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
 				$settings->implementedby = 0;
-		
-		
+
+
 		$value = $this->ParseForSetting("link_parentof",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
 				$settings->parentof = 0;
-		
 
-			
+
+
 		$value = $this->ParseForSetting("link_testedby",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
 				$settings->testedby = 0;
-		
+
 		$value = $this->ParseForSetting("epic_query",$str);
 		if($value != null)
 			$settings->epic_query = $value;
-			
-	
+
+
 		$value = $this->ParseForSetting("requirement_query",$str);
 		if($value != null)
 			$settings->requirement_query = $value;
+
+		$value = $this->ParseForSetting("filter_fixversion",$str);
+		if($value != null)
+			$settings->filter_fixversion = $value;
+
 		//dd($settings);
 		return $settings;
 		//dd($str);
@@ -837,6 +970,12 @@ testedby=true"	*/
 				return $this->project->end;
 			case 'name':
 				return $this->project->name;
+			case '_settings_filter_fixversion':
+				$value = null;
+				if($this->settings->filter_fixversion != null)
+					if(strlen($this->settings->filter_fixversion)>0)
+						$value = $this->settings->filter_fixversion;
+				return $value;
 
 		}
 		if (property_exists($this, $property)) {
@@ -858,6 +997,54 @@ testedby=true"	*/
 			}
 		}
 	}
+	function ComputeAllFixedVersions($t)
+	{
+		if($t->isparent == 0)
+		{
+			$parent=$t->_parenttask;
+			while($parent != null)
+			{
+				foreach($t->fixVersions as  $fixVersion)
+				{
+					if(!in_array ($fixVersion,$parent->allfixVersions))
+						$parent->allfixVersions[] = $fixVersion;
+				}
+				$parent = $parent->_parenttask;
+			}
+		}
+		else
+		{
+			foreach($t->children as $c)
+				$this->ComputeAllFixedVersions($c);
+		}
+	}
+	function RemovedUnwantedFixedVersions($task,$fixversion)
+	{
+		if($fixversion == null)
+			return;
+		$indexes = [];
+		for($i=0;$i<count($task->children);$i++)
+		{
+			/*if($task->key == 'INDOS-31')
+			{
+				echo "<br>".$task->children[$i]->key."<br>";
+				echo $task->isparent."<br>";
+				var_dump($task->children[$i]->fixVersions);
+				var_dump($task->children[$i]->allfixVersions);
+			}*/
+			if(in_array ($fixversion,$task->children[$i]->fixVersions))
+				$indexes[] = $task->children[$i];
+			else if(in_array ($fixversion,$task->children[$i]->allfixVersions))
+				$indexes[] = $task->children[$i];
+		}
+		$task->children = $indexes;
+		//if($task->key == 'INDOS-31')
+		//	dd($indexes);
+		foreach($task->children as $child)
+		{
+			$this->RemovedUnwantedFixedVersions($child,$fixversion);
+		}
+	}
 	function ComputeStatus($task)
 	{
 		if($task->isparent == 0)
@@ -870,8 +1057,12 @@ testedby=true"	*/
 		}
 		$children = $task->children;
 		$task->status_array = [];
-		if($task->key != "1.0")
-			$task->status_array[$task->status] = 1;
+
+		//if($task->level > 2)
+		//if($task->level > 2)
+		//	$task->status_array[$task->status] = 1;
+		//if($task->key != "1.0")
+		//	$task->status_array[$task->status] = 1;
 		foreach($task->children as $child)
 		{
 			$status = $this->ComputeStatus($child);
@@ -920,8 +1111,10 @@ testedby=true"	*/
 			{
 				//if($task->key == 'NUC4-2516')
 				//	dd($task);
-				if($task->timespent > 0) // if no work logged , make work= estimes
+				//if($task->timespent > 0) // if no work logged , make work= estimes
+				//{
 					$task->estimate = $task->timespent;
+				//}
 			}
 			if($task->duplicate == 1)
 				return 0;
@@ -930,7 +1123,10 @@ testedby=true"	*/
 		$children = $task->children;
 		$acc = 0;
 		foreach($task->children as $child)
-			$acc += $this->ComputeEstimate($child);
+		{
+			$e = $this->ComputeEstimate($child);
+			$acc += $e;
+		}
 
 		$task->estimate = $acc;
 		return $task->estimate;
@@ -980,7 +1176,7 @@ testedby=true"	*/
 		//if($task->isparent == 0)
 		//echo $task->key." ".$task->isconfigured."\r\n";
 		//echo $task->summary." ".$task->isconfigured."\r\n";
-		
+
 		//echo $task->summary."\r\n";
 		{
 			if(array_key_exists($task->key,$this->tasks))
@@ -1002,6 +1198,16 @@ testedby=true"	*/
 		}
 		foreach($task->children as $stask)
 			$this->FindDuplicates($stask);
+	}
+	function CreateTasksList($task)
+	{
+		if(array_key_exists($task->key,$this->tasks))
+		{
+			$this->tasks[$task->key]=$task;
+			$this->tasksbyextid[$task->extid]=$task;
+		}
+		foreach($task->children as $stask)
+			$this->CreateTasksList($stask);
 	}
 	function UpdateDependencies($head)
 	{
@@ -1026,7 +1232,7 @@ testedby=true"	*/
 			if(($task->duplicate == 1)||($task->status == 'RESOLVED'))
 			{
 				$task->dependson = [];
-				
+
 			}
 			for($i=0;$i<count($task->dependson);$i++)
 			{
@@ -1073,22 +1279,49 @@ testedby=true"	*/
 		Jira::Initialize($this->jiraconfig,$this->datapath,$rebuild);
 
 		$queries = preg_replace('~[\r\n]+~', '@', $this->project->jiraquery);
-		
+
 		$queries = explode('@',$queries);
 		$queries = array_filter($queries);
 
 		if(count($queries)>1)
 		{
 			$task = new Task($this,1,0,0,$this->project->name,null);
+			$head = $task;
 			$pos = 0;
+			$parentpos = 0;
+			$parenttask = null;
 			foreach($queries as $query)
 			{
+				$groupname = null;
+				if(substr($query,0,1)=='#')
+				{
+
+					$groupname = substr($query,1);
+					if($parentpos > 0)
+					{
+						$pos = $parentpos;
+						$task = $parenttask;
+					}
+					$gtask = new Task($this,$task->level+1,$task->extid,$pos++,$groupname,null);
+					$lastpos = $pos;
+					$task->AddChild($gtask);
+					$parentpos = $pos;
+					$parenttask = $task ;
+
+					$pos = 0;
+					$task = $gtask;
+					//$ctask = new Task($this,'1.0',0,0,$groupname,null);
+					//$task->AddChild($ctask);
+					//$task = $ctask;
+					continue;
+				}
+
 				$query = explode(":",$query);
 				$name = $query[0];
 				if(count($query)>1)
 				{
 					$name = $query[1];
-					
+
 				}
 				$name = str_replace('"',"'",$name);
 				//dd($name);
@@ -1099,24 +1332,54 @@ testedby=true"	*/
 			}
 		}
 		else
+		{
 			$task = new Task($this,1,0,0,$this->project->name,$queries[0]);
+			$head = $task;
 
+		}
+		$task = $head;
 
 		$this->Populate($task);
-		
+
 		if(Jira::$error==1)
 			return -1;
-		
+
 		$otasks = $this->tasks;
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		$this->CreateTasksList($task);
+		$this->ComputeAllFixedVersions($task);
+		if($this->_settings_filter_fixversion != null)
+		{
+			Utility::ConsoleLog(time(),"Filtering tasks with fixversion=".$this->_settings_filter_fixversion);
+			$this->RemovedUnwantedFixedVersions($task,$this->_settings_filter_fixversion);
+		}
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if($task->resync == 1)
+		{
+			Utility::ConsoleLog(time(),"Checking again for Jira heirarchy");
+			$this->Populate($task);
+			$this->CreateTasksList($task);
+			$this->ComputeAllFixedVersions($task);
+		}
+		//if($this->_settings_filter_fixversion != null)
+		//{
+		//	Utility::ConsoleLog(time(),"Filtering tasks with fixversion=".$this->_settings_filter_fixversion);
+		//	$this->RemovedUnwantedFixedVersions($task,$this->_settings_filter_fixversion);
+		//}
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 		$this->tasks = [];
 		$this->tasksbyextid = [];
-		
-	
+
+
 		$this->FindDuplicates($task);
 
 		$this->ComputeStatus($task);
-		$this->ComputeEstimate($task);
+		$e = $this->ComputeEstimate($task);
+
 		$this->ComputeTimeSpent($task);
 		$this->ComputeProgress($task);
 		$this->ComputeOEstimate($task);
@@ -1133,7 +1396,7 @@ testedby=true"	*/
 
 		// Read Any old value from treepath
 		$oa = null;
-		
+
 		if(isset($this->tree->oa))
 			$oa = $this->tree->oa;
 
@@ -1148,6 +1411,16 @@ testedby=true"	*/
 			if(isset($otasks[$t->key]))
 			{
 				$otask = $otasks[$t->key];
+				if(isset( $otask->estimatehistory))
+				{
+					$t->estimatehistory = $otask->estimatehistory;
+					$lastestimate = end($t->estimatehistory);
+					if($lastestimate != $t->estimate)
+						$t->estimatehistory[$this->weekdate] = $t->estimate;
+				}
+				else
+					$t->estimatehistory[$this->weekdate] = $t->estimate;
+				//unset($t->estimatehistory['2019-12-22']);
 				$isconfigured  = 0;
 				if(isset($otask->isconfigured))
 					$isconfigured = $otask->isconfigured;
@@ -1192,24 +1465,24 @@ testedby=true"	*/
 				}
 				if(isset($t->worklogs))
 				{
-					foreach($t->worklogs as $date=>$userdata)
-					{
-						foreach($userdata as $user=>$data)
+						foreach($t->worklogs as $date=>$userdata)
 						{
-							if(!isset($this->resources[$user]))
+							foreach($userdata as $user=>$data)
 							{
-								$resource =  new Resource;
-								$resource->name = $data->name;
-								$resource->displayname =$data->displayname;
-								$resource->email = $data->email;
-								$resource->timeZone = $data->timeZone;
-								$this->resources[$user]	= $resource;
+								if(!isset($this->resources[$user]))
+								{
+									$resource =  new Resource;
+									$resource->name = $data->name;
+									$resource->displayname =$data->displayname;
+									$resource->email = $data->email;
+									$resource->timeZone = $data->timeZone;
+									$this->resources[$user]	= $resource;
+								}
 							}
 						}
 					}
 				}
-			}
-			if($t->isparent == 0)
+			/*if($t->isparent == 0)
 			{
 				$parent=$t->_parenttask;
 				while($parent != null)
@@ -1218,11 +1491,11 @@ testedby=true"	*/
 					{
 						if(!in_array ($fixVersion,$parent->allfixVersions))
 							$parent->allfixVersions[] = $fixVersion;
-					}	
+					}
 					$parent = $parent->_parenttask;
 				}
-			}
-		}
+			}*/
+	        }
 		$allresources = ProjectResource::where('project_id',$this->project->id)->get();
 		foreach($allresources as $resource)
 		{
@@ -1279,7 +1552,7 @@ testedby=true"	*/
 			}
 		}
 		$this->presources = $this->project->resources()->get();
-	
+
 		//dd($this);
 		/*$data = serialize($task);
     	file_put_contents($this->treepath, $data);
@@ -1342,7 +1615,7 @@ testedby=true"	*/
 		$task->estimate = $totalestimate;
 		$task->timespent = $totaltimespent;
 	}
-	private static function cmp($a,$b) 
+	private static function cmp($a,$b)
 	{
 		var_dump($a);
 		return true;
@@ -1371,7 +1644,7 @@ testedby=true"	*/
 					unset($worklog->timeZone);
 					unset($worklog->email);
 					$this->weeklylogs[$y][$w][$date][] = $worklog;
-					//$acc += $worklog->hours; 
+					//$acc += $worklog->hours;
 				}
 			}
 			//echo $task->key." ".$task->timespent." ".($acc/8)."<br>";
@@ -1401,7 +1674,10 @@ testedby=true"	*/
 		{
 			//$acc = 0;
 			//echo $task->key." ".$task->closedon."<br>";
+			if(trim($task->closedon) =='')
+				return;
 			$dte = new \DateTime($task->closedon);
+			//echo "-->".$task->closedon."<--".var_dump($dte)."#<br>";
 			$user = $task->assignee;
 			$worklog =  new \StdClass();
 			$y = $dte->format("Y");
@@ -1556,7 +1832,7 @@ testedby=true"	*/
 		$this->weeklylogs = array();
 		//dd($task->_tstart." ".$task->_tend);
 		$range = Utility::DateRange($task->_tstart,$task->_tend);
-	
+
 		$cv = 0;
 		if(($range->totaldays - $range->remaingdays)>0)
 			$cv = round($task->timespent/($range->totaldays - $range->remaingdays),1);
@@ -1574,12 +1850,18 @@ testedby=true"	*/
 		else
 			$logs = $this->GetWeeklyWorkLog($task);
 
+
+		//$logs = $this->GetWeeklyStorypoints($task);
+		
+		//$logs = $this->GetWeeklyStorypoints($task);
+		//dd($logs);
+		
 		$processedworklogs = [];
 		$acchours  = 0.0;
-		
+
 		$previousworkdate = null;
 		$lastdate  = '';
-		//dd($logs);
+		
 		foreach($logs as $year=>$weeklydata)
 		{
 			foreach($weeklydata as $weekno=>$worklogs)
@@ -1610,24 +1892,42 @@ testedby=true"	*/
 					{
 						$previousworkdate = $date;
 					}
-				}	
 			}
 		}
+		}
+
 		
-		//dd($previousworkdate);
-		//dd($range);
+		//dd($processedworklogs);
 		ksort($processedworklogs);
 		//dd($processedworklogs);
 		$accdays = $acchours/8;
 		$unloggedwork = $task->timespent - $accdays;
 		//echo $task->estimate."<br>";
 		$remainingwork = $task->estimate - $task->timespent;
-		
+
 		if($previousworkdate == null)
 			$previouswork = 0;
 		else
 			$previouswork = ($processedworklogs[$previousworkdate]->acchours/8);
+
 		
+		// CV Correction Fix
+
+
+		$workdone_in_current_duration = $accdays - $previouswork;
+		if(($range->totaldays - $range->remaingdays)>0)
+			$cv = round($workdone_in_current_duration/($range->totaldays - $range->remaingdays),1);
+
+		/*echo $task->estimate."\r\n";
+		echo $accdays."\r\n";
+		echo $previouswork."\r\n";
+		echo "(".$workdone_in_current_duration.")"."\r\n";
+		echo ($range->totaldays - $range->remaingdays)."\r\n";
+
+		dd($cv);*/
+		// End CV Correction Fix
+
+
 		//echo $task->estimate - $previouswork;
 		if($range->totaldays == 0)
 			$deltaofwork = 0;
@@ -1678,7 +1978,7 @@ testedby=true"	*/
 			{
 				$daydata->tv = $lastwork + $deltaofwork;
 				$lastwork = $daydata->tv;
-				
+
 
 				if(array_key_exists($date,$processedworklogs))
 				{
@@ -1686,30 +1986,30 @@ testedby=true"	*/
 				}
 				else
 					$daydata->ev = $lastev;
-				
+
 			}
-			$daydata->ftv = $daydata->tv; 
+			$daydata->ftv = $daydata->tv;
 			if( $date > Utility::GetToday('Y-m-d'))
 			{
 				$daydata->ev =  null;
-				$daydata->ftv = $daydata->tv; 
+				$daydata->ftv = $daydata->tv;
 				$daydata->tv = null;
 			}
 			else if( $date == Utility::GetToday('Y-m-d'))
-				$daydata->ftv = $daydata->tv; 
+				$daydata->ftv = $daydata->tv;
 			else
 			{
 				$daydata->ftv = null;
 			}
-			
-			
+
+
 		}
 
 		if(floor($lastwork) > $task->estimate)
 		{
 			dd("Not possible ".floor($lastwork)." > ".$task->estimate." ".__file__." ".__line__);
 		}
-			
+
 		//dd($range);
 		//dd($processedworklogs);
 		/*dd($range);*/
@@ -1717,13 +2017,13 @@ testedby=true"	*/
 		return $range;
 
 		//dd($range);
-		
+
 		//dd($this->project);
 		//foreach($task->children as $child)
 		//	dd($task);
 
 	}
-	
+
 	function GetMilestones($task,$firstcall=1)
 	{
 		if($firstcall)
@@ -1744,7 +2044,7 @@ testedby=true"	*/
             return $this->tasks[$key];
 		return null;
 	}
-	
+
 	function GetRiskAndIssues($task,$firstcall=1)
 	{
 		if($firstcall)
@@ -1763,10 +2063,10 @@ testedby=true"	*/
 		}
 		if(($task->priority == 1)&&($task->status != 'RESOLVED'))
 			$this->blockers[$task->key] =$task->key;
-		
+
 		if(($task->escalate == 1)&&($task->status != 'RESOLVED'))
 			$this->escalations[$task->key] =$task->key;
-			
+
 		foreach($task->children as $child)
 		{
 			$this->GetRiskAndIssues($child,0);
@@ -1776,7 +2076,7 @@ testedby=true"	*/
 		$data['blockers'] =  $this->blockers;
 		$data['escalations'] =  $this->escalations;
 		//dd($data['escalations']);
-		
+
 		return $data;
 	}
 	function ValidateTasks()
@@ -1789,7 +2089,7 @@ testedby=true"	*/
 				{
 					if($task->duedate != $task->tend)
 						Utility::ConsoleLog(time(),"Error::".$task->_summary." (".$task->key.") Due date conflicts ");
-					
+
 				}
 				if($this->checkIsAValidDate($task->startconstraint)&&$this->checkIsAValidDate($task->tstart))
 				{
@@ -1800,7 +2100,7 @@ testedby=true"	*/
 
 		}
 	}
-	function GetSprintsData()
+	function GetSprintsDataold()
 	{
 		$sprints = [];
 		foreach($this->tasks as $task)
@@ -1815,5 +2115,26 @@ testedby=true"	*/
 			}
 		}
 		return $sprints;
+	}
+	function GetSprintsData($task,$firstcall=1)
+	{
+		if($firstcall)
+			$this->sprints = [];
+			
+		
+		if(isset($task->sprintinfo))
+		{
+			$task->sprintinfo['key'] = $task->key;
+			$task->sprintinfo['tstart'] = $task->_tstart;
+			$task->sprintinfo['tend'] = $task->_tend;
+			$task->sprintinfo['estimate'] = $task->estimate;
+			$this->sprints[]=$task->sprintinfo;
+		}
+		foreach($task->children as $ctask)
+		{
+			$this->GetSprintsData($ctask,0);
+		}
+		if($firstcall)
+			return $this->sprints;
 	}
 }

@@ -12,7 +12,8 @@ return
 		 'link_implemented_by' => 'implemented by',
 		 'link_parentof' => 'Is Parent of',
 		 'link_testedby' => 'is tested by',
-		 'escalate' => 'customfield_0'
+		 'escalate' => 'customfield_0',
+                 'backlog_priority'=> ''
 		],
 		['uri'=>'http://ies-iesd-jira.ies.mentorg.com:8080',
 		 'username' => env('JIRA_IESD_USERNAME'),
@@ -24,7 +25,8 @@ return
 		 'link_implemented_by' => 'implemented by',
 		 'link_parentof' => 'Is Parent of',
 		 'link_testedby' => 'is tested by',
-		 'escalate' => 'customfield_12602'
+		 'escalate' => 'customfield_12602',
+		 'backlog_priority'=> ''
 		],
 		['uri'=>'https://mentorgraphics.atlassian.net',
 		 'username' => env('JIRA_ATTLASSIAN_USERNAME'),
@@ -36,7 +38,8 @@ return
 		 'link_implemented_by' => 'is implemented by',
 		 'link_parentof' => 'Is Parent of',
 		 'link_testedby' => 'is tested by',
-		 'escalate' => 'customfield_0'
+		 'escalate' => 'customfield_0',
+		 'backlog_priority'=> 'customfield_11908'
 		]
 	]
 ];

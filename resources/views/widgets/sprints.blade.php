@@ -3,7 +3,10 @@
 
 @endsection
 @section('style')
-
+@if ($iframe==1)
+body {
+	background-color: #fff;
+}@endif
 ul {
     //margin: 20px 60px;
 }
@@ -48,7 +51,20 @@ ul li a:after {
     border-width: 15px 0 15px 15px;
     border-color: transparent transparent transparent #ccc;
     z-index: 10;
+	
 }
+
+ul li.zero a {
+    background: LightGray ;
+	color:white;
+    z-index: 100;
+}
+
+ul li.zero a:after {
+    border-left-color: LightGray ;
+	
+}
+
 ul li.future a {
     background: DarkSeaGreen ;
 	color:white;
@@ -57,12 +73,13 @@ ul li.future a {
 
 ul li.future a:after {
     border-left-color: DarkSeaGreen ;
+	
 }
 
 ul li.active a {
     background: green;
     z-index: 100;
-	color:white;
+	color:white;	
 }
 
 ul li.active a:after {
@@ -100,21 +117,27 @@ ul li a:hover {
 		
 		$info = '<div class="info">'.$tstart." - ";
 		$info .= $tend."(<span style='color:green;font-weight:bold'>".$estimate.'</span>)</div>';
+		if($estimate == 0)
+			$info = '<div class="info">'.'Empty Sprint'.'</div>';
 		?>
 		<li  id="tile{{$i}}" class="sprint" ><a id="{{$i++}}" class="sprint" href="#">{{$sprint['name']}}</a><?php echo $info; ?></li>
 	@endforeach  
 </ul>
-<iframe id="burnupgraph" style=" margin-left: auto; margin-right: auto" class="center" height="1000" width="100%" frameborder="0"></iframe>
+<iframe id="burnupgraph" style=" margin-left: auto; margin-right: auto" class="center" height="500" width="100%" frameborder="0"></iframe>
 
 </div>
 @endsection
 @section('script')
+var iframe={{$iframe}};
 var sprints=Object.values(@json($sprints));
 console.log(sprints);
 
 
 $(function() 
 {
+	if(iframe == 1)
+		$('#footer').hide();
+	
 	$(".sprint").click(function(event)
 	{
 		id = $(event.target).attr('id');
@@ -123,20 +146,29 @@ $(function()
 		return false;
 	});
 	key = null;
-	console.log(sprints.length);
+	//console.log(sprints.length);
 	for(i=0;i<sprints.length;i++)
 	{
 		console.log(sprints[i]);
-		$('#tile'+i).addClass(sprints[i]["state"]);
-		if(sprints[i]["state"] =='active')
+		if(sprints[i]["estimate"]  == 0)
+			$('#tile'+i).addClass("zero");
+		else
 		{
-			if(key == null)
-				key = sprints[i].key; 
-		}	
+			$('#tile'+i).addClass(sprints[i]["state"]);
+			if((sprints[i]["state"] =='active')&&(sprints[i]["estimate"]>0))
+			{
+				if(key == null)
+				{
+					key = sprints[i].key; 
+				}
+			}
+		}
 		title = sprints[i]['name'].substring(0,15);
 		//$('#anchor').append('<li><a class="active" href="#" style="">'+title+'</a></li>');
 	}
 	if(key != null)
-	$('#burnupgraph').attr('src', "{{route('showwburnupchart',[$user->name,$project->id])}}/"+key+"?iframe=1");
+		$('#burnupgraph').attr('src', "{{route('showwburnupchart',[$user->name,$project->id])}}/"+key+"?iframe=1");
+	else
+		$('#burnupgraph').hide();
 });		
 @endsection

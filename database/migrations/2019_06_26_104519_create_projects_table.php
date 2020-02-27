@@ -33,7 +33,7 @@ class CreateProjectsTable extends Migration
 			$table->boolean('task_description')->default(0);
 			$table->string('state')->default('SYSTEM');
 			$table->boolean('archive')->default(0);
-			$table->boolean('visible')->default(1);
+			$table->string('visible')->default('true');
             $table->timestamps();
         });
     }

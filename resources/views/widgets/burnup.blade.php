@@ -5,6 +5,9 @@
 @endsection
 @section('style')
 .pill {font-size:.7rem;box-shadow: 0 0 2px 1px rgba(1, 0, 0, 0.5)}
+body {
+	background-color: #fff;
+}
 @endsection
 @section('content')
 <?php $selected = 0;?>
@@ -30,22 +33,23 @@
 			</select>
 	</div>
 	</div>
+	
 	<div class="row">
-		<div class="col-12">
+		<div class="col-7">
 			<div style="box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.5);" class="card text-center">
-				<div class="card-header">
-					<span class="float-left">Current Velocity  <span style id="cv"></span></span>
-					<span >Progress = <span style="font-size:25px;" id="progress"></span></span>
-					<span class="float-right">Required Velocity  <span style id="rv"></span></span>
-				</div>
 				<div class="card-body">
-					<div style="margin-left: auto; margin-right: auto; width:100%;height:400px;" id="graphdiv"></div>
+					<div class="row">
+					<div class="col-12">
+						<div style="margin-left: auto; margin-right: auto;width:100%" id="graphdiv"></div>
+					</div>
+					<!--<div class="col-3" style="font-size:12px;">
+						<span class="float-left">Current Velocity  <span style id="cv"></span></span><br>
+						<span class="float-left">Required Velocity  <span style id="rv"></span></span><br>
+						<span class="float-left">Duedate  <span style id="duedate"></span></span><br>
+						<span class="float-left">Expected Finish  <span style id="finishingon"></span></span>
+					</div>-->
 				</div>
-				<div class="card-footer text-muted">
-					<span class="float-left">Duedate  <span style id="duedate"></span></span>
-					<span style id="title"></span>
-					<span class="float-right">Expected Finish <span style id="finishingon"></span></span>
-				</div>
+				
 			</div>
 		</div>
 	</div>
@@ -76,6 +80,7 @@ if(isloggedin)
 if(iframe==1)
 {
 	$('#selectbox').hide();
+	$('#footer').hide();
 }
 else
 	$('#selectbox').show();
@@ -118,17 +123,22 @@ $(function()
 		row[1]= data.data[date].ftv;
 		graphdata[i++] = row;
 	}
-	title = 'Earned Value Graph&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+	title = '';
+	title =  title+'<span  class="pill badge badge-pill badge-info">'+data.progress+'% </span>&nbsp';
+	//if(lowvelocity == 1)
+	//	title =  title+'<span  class="pill badge badge-pill badge-warning">Low Velocity</span>&nbsp';
 	
-	if(lowvelocity == 1)
-		title =  title+'<span  class="pill badge badge-pill badge-warning">Low Velocity</span>&nbsp';
+	
 	
 	if(data.duedate.length != 0)
 	{
 		$('#duedate').html('<span class="badge badge-info">'+MakeDate2(data.duedate)+'</span>'); 
 		if(data.finishingon > data.duedate)
 		{
-			title =  title+'<span  class="pill badge badge-pill badge-danger">Delay</span>&nbsp';
+			if(lowvelocity)
+				title =  title+'<span  class="pill badge badge-pill badge-warning">Lagging</span>&nbsp';
+			else
+				title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>&nbsp';
 			$('#finishingon').html('<span class="badge badge-danger">'+MakeDate2(data.finishingon)+'</span>');
 		}
 		else
@@ -139,6 +149,12 @@ $(function()
 				title =  title+'<span  class="pill badge badge-pill badge-success">On Track</span>&nbsp';
 			$('#finishingon').html('<span class="badge badge-success">'+MakeDate2(data.finishingon)+'</span>');
 		}
+		title += '<span style="font-size:10px;" class="pill badge badge-pill badge-info">'+"CV "+data.cv+'</span>&nbsp';
+		if(lowvelocity == 1)
+			title += '<span style="font-size:10px;" class="pill badge badge-pill badge-danger">'+"RV "+data.rv+'</span>&nbsp';
+		else
+			title += '<span style="font-size:10px;" class="pill badge badge-pill badge-success">'+"RV "+data.rv+'</span>&nbsp';
+		
 	}
 	else
 	{
@@ -153,16 +169,18 @@ $(function()
 		graphdata,
 		{
 			title: title,
-            ylabel: 'Earned Values (Days of work)',
+            ylabel: 'Mandays / Points',
+			y2label: 'Mumtaz',
 			xlabel: MakeDate2(data.start)+' - '+MakeDate2(data.end),
+			xLabelHeight :12,
+			yLabelWidth :14,
 			labels: [ "x", "Target" ,"Earned","Past Target"],
-			showRangeSelector: false,
+			showRangeSelector: false,	
 			//strokeWidth: .5,
             //gridLineColor: 'rgb(123, 00, 00)',
 			//fillGraph: [false,false,false],
 			animatedZooms: true,
-			width: 640,
-            height: 480,
+			
             colors: ['E69997', '#54A653', '#284785','#284785' ],
             visibility: [true, true, true],
 			series: 

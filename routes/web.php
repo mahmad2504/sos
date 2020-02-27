@@ -23,7 +23,8 @@ Auth::routes();
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/', 'HomeController@index');   // View
 Route::get('/home', 'HomeController@index')->name('home');   // View
-Route::get('/program/{username}', 'HomeController@index')->name('program'); 
+Route::get('/program/{username}', 'HomeController@programview')->name('program'); 
+Route::get('/getmyprojects/{username}', 'HomeController@GetData')->name('getprojectsdata'); 
 
 Route::get('/changePassword','HomeController@showChangePasswordForm')->name('showchangepassword'); // View
 Route::post('/changePassword','HomeController@changePassword')->name('changePassword');
@@ -80,7 +81,7 @@ Route::get('/widget/milestone/{user}/{project}/{key?}','Widgets\MilestoneControl
 Route::get('/widget/status/{user}/{project}/{key?}','Widgets\MilestoneController@ShowStatus')->name('showwmilestonestatus');
 
 // Sprints
-Route::get('/widget/sprints/{user}/{project}','Widgets\SprintsController@ShowSprints')->name('showsprints'); 
+Route::get('/widget/sprints/{user}/{project}/{key?}','Widgets\SprintsController@ShowSprints')->name('showsprints'); 
 
 
 
@@ -119,4 +120,12 @@ Route::get('/test/tree/show/{projectid}','TestController@ShowTree'); // project 
 Route::get('/test/resource/worklogs/{projectid}','TestController@ResourceTimeLogs'); // project id as input param
 
 
+Route::get('schedule', function () {
+    return view('scripts/schedule');
+});
+Route::get('calendars', function () {
+    return view('scripts/calendars');
+});
+
+//URL::forceScheme('https');
 

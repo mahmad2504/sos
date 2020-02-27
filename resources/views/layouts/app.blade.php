@@ -97,7 +97,7 @@
         <main class="py-4">
 			<div style="display:none;" class="loading">Loading&#8230;</div>
 			@yield('content')
-			<footer style="text-align: center;width:90%;" class="container-fluid">
+			<footer id="footer" style="text-align: center;width:90%;" class="container-fluid">
 				<small style="color:grey" >Stay On Schedule &#169; <a style="color:grey" href="mailto:Mumtaz_Ahmad@mentor.com">Mumtaz Ahmad</a>
 				<a href="mailto:Mumtaz_Ahmad@mentor.com">
 					<i  class="far fa-envelope"></i>
@@ -252,7 +252,15 @@
 					start <= d && d <= end :
 					NaN
 				);
+			},
+			countDays:function(date1,date2)
+			{
+				Difference_In_Time = date2.getTime() - date1.getTime(); 
+				// To calculate the no. of days between two dates 
+				Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24); 
+				return Difference_In_Days;
 			}
+ 
 		}
 		//yyyy-mm-dd
 		function MakeDate2(string) {

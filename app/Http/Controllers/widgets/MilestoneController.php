@@ -130,7 +130,7 @@ class MilestoneController extends Controller
 		$data['jiraurl'] = Utility::GetJiraURL($project);
 		return $data;
 	}
-	public function ShowStatus($user, $project,$key="1")
+	public function ShowStatus(Request $request,$user, $project,$key="1")
 	{
 		//echo $user." ".$project." ".$key;
 		$user = User::where('name',$user)->first();
@@ -162,7 +162,12 @@ class MilestoneController extends Controller
 			$milestone->key = $m->key;
 			$milestones[] = $milestone;
 		}
-		return View('widgets.status',compact('user','project','isloggedin','data','key','milestones'));
+		$iframe = $request->iframe;
+		if($iframe == null)
+			$iframe = 0;
+		else
+			$iframe  = 1;
+		return View('widgets.status',compact('user','project','isloggedin','data','key','milestones','iframe'));
 	}
 	
 }

@@ -1,59 +1,15 @@
 @extends('layouts.app')
 @section('csslinks')
 <link rel="stylesheet" href="{{ asset('css/logger.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/jquery.treetable.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/jquery.treetable.theme.default.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/msc-style.css') }}" />
+
 @endsection
 @section('style')
-
-.progress {height: 5px;}
-label {
-  display: block;
-  padding-left: 15px;
-  text-indent: -15px;
-}
-input {
-  padding: 0;
-  margin:0;
-  vertical-align: bottom;
-  position: relative;
-  *overflow: hidden;
-}
-
 @endsection
 @section('content')
 
-<div style="width:90%;" class="container-fluid">
-	@if($admin)
-		<h3>Projects of - {{$user->name}}</h3>
-	@else
-		<h3>Projects</h3>
-	@endif
-	<div class="mainpanel">
-		<div  style="background-color:#F0F0F0">
-			<button id="new_project" title="Create New Project" type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#psettings_modal">New Project</button>
-			
-			<!--<label style="margin-top:-5px;padding-left: 0px;text-indent: 0px;" class="float-right" for="show_closed_projects">Show Archived Projects</label>
-			<input style="margin-left:5px;"id="show_closed_projects" class="reload" type="checkbox" name="show_closed_projects" value="0"></input> -->
-	
-			<a class="float-right " id="activeprojects" href="#">
-				Active Projects
-			</a>
-			<a class="float-right" id="inactiveprojects" href="#">
-				Inactive Projects |
-			</a>
-			<a class="float-right" href="{{route('programsummary',[$user->name])}}">
-				Summary |
-			</a> 
-		</div>
-		@if($user->role == 'admin')
-		<a href="/admin" style="margin-left:5px;" class="btn btn-info" role="button">Admin</a>
-		@endif
-		
-		<br>
-		<br>
-		<div class="card_container">
-		</div>
-	</div>
-</div>
 <!-- Edit Modal -->
 <div class="modal" id="psettings_modal">
   <div class="modal-dialog">
@@ -88,8 +44,8 @@ input {
 				<input style="width:35%;margin-left:10px;" id="psettings_oaname" type="text" class="form-control-sm form-control" placeholder="OpenAir Project Name" name="oaname"></input>
 			</div>
 			<div class="form-group">
-				<label for="name">Description</label>
-				<textarea id="psettings_description" class="form-control-sm form-control" rows="2" placeholder="Enter description" name="description"></textarea>
+				<label for="name">Commands</label>
+				<textarea id="psettings_description" class="form-control-sm form-control" rows="2" placeholder="Enter commands" name="description"></textarea>
 				<small  class="form-text text-muted"></small>
 			</div>
 			<div class="form-group">
@@ -118,7 +74,6 @@ input {
 			<small  id="psettings_error" class="text-danger form-text"></small><br>
 			<button id="create_project" type="submit" class="btn btn-primary d-none">Create</button>
 			<button id="update_project" type="submit" class="btn btn-primary d-none">Update</button>
-			<button id="delete_project" class="btn btn-danger float-right d-none">Delete</button>
 		</form>
 	  </div>
 	</div>
@@ -156,49 +111,505 @@ input {
 	</div>
 </div>
 <!-- End Sync Modal -->
+
+<div style="width:95%;" class="container-fluid">
+	@if($loggeduser != null)
+		@if($loggeduser->name == 'admin')
+			<div>Program Board - {{$user->name}}</div>
+		@endif
+	@endif
+	<div class="mainpanel">
+		<button style=""  id="new_project" title="Create New Project" type="button" class="btn btn-outline-success btn-sm">New Project</button>
+		<input style="float:right;" id="filter" placeholder="Filter ..."></input>
+		<div style="margin-top:20px;" id="example-table"></div>
+	</div>
+	
+</div>
+<script src="{{ asset('js/tabulator.table.js') }}" ></script>
 <script src="{{ asset('js/eventsource.min.js') }}" ></script>
+<script src="{{ asset('js/msc-script.js') }}" ></script>
 <script src="{{ asset('js/logger.js') }}" ></script>
 @endsection
 @section('script')
-
+var thistoday="{{date("Y-m-d H:i:s")}}";
+var admin={{$admin}};
 var username = "{{$user->name}}";
 var userid = "{{$user->id}}";
-var projects = null;
-var showclosedprojects =0;
+var tabledata = @json($projects);
+var jiraservers = @json($jiraservers);
+var filter = "{{$filter}}";
+//console.log(jiraservers);
+var selected_row = null;
+//define data
+/*var tabledata = [
+    {id:1, name:"Oli Bob", progress:12, gender:"male", rating:1, col:"red" },
+    {id:2, name:"Mary May", progress:1, gender:"female", rating:2, col:"blue" },
+    {id:3, name:"Christine Lobowski", progress:42, gender:"female", rating:0, col:"green" },
+    {id:4, name:"Brendon Philips", progress:100, gender:"male", rating:1, col:"orange" },
+    {id:5, name:"Margret Marmajuke", progress:16, gender:"female", rating:5, col:"yellow"},
+];*/
+//result = Object.values(tabledata);
+dataurl = '{{route('getprojectsdata',[$user->name])}}';
+var table = null;
 
-function ShowPsettingsModalButtons(create=0,update=0,delete_button=0)
+
+function GetData()
 {
-	if(create == 0)
-		$('#create_project').addClass('d-none');
-	else	
-		$('#create_project').removeClass('d-none');
-	
-	if(update == 0)
-		$('#update_project').addClass('d-none');
-	else	
-		$('#update_project').removeClass('d-none');
-	
-	if(delete_button == 0)
-		$('#delete_project').addClass('d-none');
-	else	
-		$('#delete_project').removeClass('d-none');
+	reponse =  $.ajax({
+        type: "GET",
+        url: dataurl,
+        async: false,
+		cache: false
+    }).responseText;
+	return JSON.parse(reponse);
 }
-function SetPsettingsModalFields(settings)
+
+
+function stateparamLookup(cell){
+    //cell - the cell component
+	data = cell.getRow().getData();
+	if(data.status.status == undefined)
+		return {values:["SYSTEM"]};
+		
+	return {values:["SYSTEM", "ON HOLD", "CANCEL", "CLOSE","ON TRACK","DELAY"]}
+   
+}
+function stateEditCheck(cell){
+	if(admin == 1)
+		return true;
+	return false;
+}
+
+function GetRisksIssues(data,type)
 {
-	$('#psettings_id').val(settings.id);
-	$('#psettings_last_synced').val(settings.last_synced);
-	$('#psettings_name').val(settings.name);
-	$('#psettings_oaname').val(settings.oaname);
-	$('#psettings_description').val(settings.description);
-	$('#psettings_jiraquery').val(settings.jiraquery);
-	$('#psettings_error').text(settings.error);
-	$('#psettings_estimation').prop('selectedIndex',settings.estimation);
-	$('#psettings_jirauri').prop('selectedIndex',settings.jirauri);
-	$('#psettings_sdate').val(settings.sdate);
-	$('#psettings_edate').val(settings.edate);
-	$('#psettings_jiradependencies').prop('checked', settings.jira_dependencies);
-	$('#psettings_task_description').prop('checked', settings.task_description);
+    count = 0;
+	references = [];
+	if(data['risksissues'] === undefined)
+		return null;
+	if(data['risksissues'][type]['Critical'] !==  undefined)
+    {
+        severity = 'Critical';
+    }
+	else if(data['risksissues'][type]['High'] !==  undefined)
+    {
+        severity = 'High';
+    }
+	else if(data['risksissues'][type]['Medium'] !==  undefined)
+    {
+        severity = 'Medium';
+    }
+	else
+		return null;
+	
+    for (var key in data['risksissues'][type][severity]) 
+    {
+        references[count] = key;
+        count++
+    }
+	obj = null;
+    if(references.length > 0)
+    {
+		obj = {};
+        str = references.toString();
+		obj.references = str;
+		obj.count = references.length;
+        obj.type = severity;
+    }
+	return obj;
 }
+
+function GetBadge(severity)
+{
+	if(severity == 'Critical')
+		return "badge-danger";
+	else if(severity == 'High')
+		return "badge-warning";
+	else if(severity == 'Medium')
+		return "badge-info";
+}
+
+function GetBlockers(data)
+{
+    count = 0;
+	obj = null;
+	blockers = [];
+	if(data['risksissues'] === undefined)
+		return null;
+	if(data['risksissues']['blockers'] ===  undefined)
+		return;
+	
+    for (var key in data['risksissues']['blockers']) 
+    {
+        blockers[count] = key;
+        count++
+    }
+    if(blockers.length > 0)
+    {
+		obj = {};
+        str = blockers.toString();
+		obj.references = str;
+		obj.count = blockers.length;
+        obj.type = 'Critical';
+    }
+	return obj;
+}
+
+function GetEscalations(data)
+{
+    count = 0;
+	escalations = [];
+	obj = null;
+	if(data['risksissues'] === undefined)
+		return null;
+	if(data['risksissues']['escalations'] ===  undefined)
+		return;
+	
+    for (var key in data['risksissues']['escalations']) 
+    {
+        escalations[count] = key;
+        count++
+    }
+    if(escalations.length > 0)
+    {
+		obj = {};
+        str = escalations.toString();
+		obj.references = str;
+		obj.count = escalations.length;
+        obj.type = 'Critical';
+    }
+	return obj;
+}
+
+
+function ShowTable()
+{
+	//Build Tabulator
+	table = new Tabulator("#example-table", 
+	{
+		/*height:"311px",*/
+		//persistenceMode:true , 
+		//persistentLayout:true,
+		//persistentFilter:true,
+		//layout:"fitColumns",
+		layout:"fitDataFill",
+		//movableColumns: true,
+		tooltips:true,
+		reactiveData:true, //turn on data reactivity
+		data:result, //load data into table
+		columns:[
+			{width:50,title:"Id", field:"id", sorter:"number"},
+			{width:300,title:"Name", field:"name", sorter:"string",
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					data = cell.getRow().getData();
+					if(data.status !== undefined)
+					{
+						risks = GetRisksIssues(data.status,'risks');
+						if(cell.getValue().length > 30)
+							html = cell.getValue().substring(0,30)+"...";
+						else
+						html = cell.getValue();
+						
+						if(risks != null)
+						{
+							badge = GetBadge(risks.type);
+							html += '<span style="margin-top:2px;" title="Risks '+risks.references+'" class="ml-1 d-flex float-right badge '+badge+'">'+risks.count+'</span>';
+						}
+						
+						issues = GetRisksIssues(data.status,'issues');
+						if(issues != null)
+						{
+							badge = GetBadge(issues.type);
+							html += '<span style="margin-top:2px;" title="Issues '+issues.references+'" class="d-flex float-right badge '+badge+'">'+issues.count+'</span>';
+						}
+						blockers = GetBlockers(data.status);
+						if(blockers != null)
+						{
+							badge = GetBadge(blockers.type);
+							html += '<span style="margin-top:2px;" title="Blockers '+blockers.references+'" class="d-flex float-right badge '+badge+'">'+blockers.count+'</span>';
+						}
+						
+						escalations = GetEscalations(data.status);
+						if(escalations != null)
+						{
+							badge = GetBadge(escalations.type);
+							html += '<span style="margin-top:2px;" title="Escalations '+escalations.references+'" class="d-flex float-right badge '+badge+'">'+escalations.count+'</span>';
+						}
+						
+						return html;
+					}
+					return cell.getValue();
+				}
+			},
+			/*{width:100,title:"Estimation", field:"estimation", sorter:"string",
+				formatter:function(cell, formatterParams, onRendered){
+					if(cell.getValue() == 1)
+						return 'Time Based';
+					else
+						return 'Story Points';
+				}
+			},*/
+			{width:90,title:"Estimate", field:"status.estimate", sorter:"numeric",
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					if(cell.getValue() > 0)
+					{
+						data = cell.getRow().getData();
+						estimate = Round(cell.getValue());
+						remaining  = Round(data.status.remaining);
+						return '<span title="Estimated">'+estimate+'<span>/<span title="Remaining">'+remaining+'<span>';
+					}
+				}
+			},
+			{width:100,title:"Server", field:"jirauri", sorter:"string",
+				formatter:function(cell, formatterParams, onRendered){
+					return jiraservers[cell.getValue()].uri;
+				}
+			},
+			{width:100,title:"Start", field:"sdate", sorter:"string", formatter:"datetime", formatterParams:{
+					inputFormat:"YYYY-MM-DD",
+					outputFormat:"MMM DD YYYY",
+					invalidPlaceholder:"(invalid date)",
+				}
+			
+			},
+			{width:100,title:"Deadline", field:"edate", sorter:"string", formatter:"datetime", formatterParams:{
+					inputFormat:"YYYY-MM-DD",
+					outputFormat:"MMM DD YYYY",
+					invalidPlaceholder:"(invalid date)",
+				}
+			
+			},
+			{width:100,title:"Forecast<br>Finish", field:"status.end", sorter:"string", formatter:"datetime", formatterParams:{
+					inputFormat:"YYYY-MM-DD",
+					outputFormat:"MMM DD YYYY",
+					invalidPlaceholder:"",
+				}
+			
+			},
+			
+			{width:200,title:"Progress", field:"status.progress",
+				formatter:"progress", formatterParams:{
+					min:0,
+					max:100,
+					legend :function(value){return '<span style="font-size:10px;font-weight:bold">'+value + "%"+'</span>'},
+					color:["lightgreen"],
+					legendColor:"#000000",
+					legendAlign:"center",
+				}
+			},
+			
+			{width:100,title:"Status", field:"status.status", sorter:"string",
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					return "<img width='80px' src='/images/"+cell.getValue()+".png'></img>"; 
+
+				}
+			},
+			{title:"Query", field:"jiraquery", sorter:"string"},
+			{width:100,title:"Status", field:"state", editor:"select", 
+				editorParams:stateparamLookup,editable:stateEditCheck,
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					row = cell.getRow();
+					data = row.getData();
+					value  = data.status.status;
+					return "<img width='80px' src='/images/"+value+".png'></img>"; 
+
+				}
+			},
+			{width:150,title:"", field:"icons", sorter:"string",
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					icons = '<i style="margin-top:2px;float:right;color:grey;" onclick="OnDelete('+data.id+')" title="delete" class="icon fa fa-trash  ml-1" aria-hidden="true"></i>&nbsp'+
+						    '<i style="margin-top:3px;float:right;" onclick="OnArchive('+data.id+')" title="archive" class="icon fa fa-archive  ml-1" aria-hidden="true"></i>&nbsp'+
+							'<i title="Settings" onclick="OnEditSettings('+data.id+')" class="icon fas far fa-edit icon ml-0"></i>'+
+							'<i title="Sync With Jira" onclick="OnSync('+data.id+')" class="fas fa-sync icon  ml-1"></i>'+
+							'<a href='+'"/projectresource/'+data.id+'">'+
+							'<i title="Resources"  class="icon fas fa-user-circle ml-1"></i></a>'+
+							'<a href='+'"/taskproperty/'+data.id+'">'+
+							'<i title="Milestones"  class="icon fas fa-flag-checkered ml-1"></i>';
+							
+							
+					return icons;
+				}
+			},
+			{title:"", field:"status.rv", sorter:"numeric",
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					row = cell.getRow();
+					data = row.getData();
+					if(data.status.cv === undefined)
+						return;
+					cv  = data.status.cv;
+					rv  = data.status.rv;
+					color='';
+					if(rv > cv)
+						color='red';
+					else
+						color='green';
+					return '<span title="Current Velocity">'+cv+'</span>'+"/"+'<span style="color:'+color+'" title="Required Velocity">'+rv+'</span>';
+				}
+			},
+			{width:70,title:"Last<br>Sync", field:"last_synced", sorter:"string", formatter:
+				function(cell, formatterParams, onRendered)
+				{
+					//cell - the cell component
+		
+					//do some processing and return the param object
+					last_synced = MakeDate2(cell.getValue());
+					if(last_synced == '')
+					{
+						cell.getElement().style["font-weight"] = "bold";
+						//cell.getElement().style.color = "red";
+						return cell.getValue();
+					}
+					else
+					{
+						ms = Math.floor(( Date.parse(thistoday) - Date.parse(cell.getValue()) ));
+						t = millisToDaysHoursMinutes(ms);
+						if(t.d > 0)
+							return t.d+" days";
+						else if(t.h > 0)
+						{
+							return t.h+" hours";
+						}
+						else if(t.m > 0)
+						{
+							return t.m+" min";
+						}
+						else if(t.s > 0)
+						{
+							return t.s+" sec";
+						}
+						else
+							return "5 sec";
+					}
+					
+				}
+			},
+			{title:"", field:"visible", editor:"tick",
+				formatter:function(cell, formatterParams, onRendered)
+				{
+					//return cell.getValue();
+					if(cell.getValue()=='false')
+						return '<i title="Public Hidden" style="color:red;" class="far fa-times-circle"></i>';
+					else
+						return '<i title="Public Viewable" style="color:green;" class="far fa-check-circle"></i>';
+					
+				}
+			}
+			
+			
+			
+			/*
+			{title:"Progress", field:"progress", sorter:"number", formatter:"progress"},
+			{title:"Gender", field:"gender", sorter:"string"},
+			{title:"Rating", field:"rating", formatter:"star", align:"center", width:100},
+			{title:"Favourite Color", field:"col", sorter:"string"},*/
+		],
+		cellEdited:function(cell)
+		{
+			//cell - cell component
+			//console.log(cell.getValue());
+			/*field = cell.getField();
+			if(field == 'visible')
+			{
+				row = cell.getRow();
+				data = row.getData();
+				if(data.visible == 1)
+					data.visible = 0;
+				else
+					data.visible = 1;
+			}
+			
+			console.log(data);*/
+			
+			UpdateRow(cell.getRow());
+		},
+		
+		cellClick:function(e, cell)
+		{
+			
+			row = cell.getRow();
+			data = row.getData();
+			
+			selected_row = row;
+			field = cell.getField();
+			console.log("Row clicked");
+			if((field == 'state')||(field == 'icons')||(field == 'visible'))
+				return false;
+			
+			if(data.status.status == undefined)
+			{
+				mscAlert({
+				  title: 'Error',
+				  subtitle: 'Sync Project to view its dashboatd',
+				  okText: 'Close',    // default: OK
+				});
+				return;
+			}
+			
+			//console.log(field);
+			project = row.getData();
+			window.location.href = "/dashboard/"+username+"/"+project.id;
+		},
+		rowFormatter:function(row)
+		{
+			//row.getElement().style.backgroundColor = "#A6A6DF";
+			//row - row component
+			var data = row.getData();
+			//console.log(MakeDate2(data.last_synced));
+			//if(data.last_synced == "blue")
+			//{
+			//	row.getElement().style["font-weight"] = "bold";
+			//}
+		}
+	});
+	table.hideColumn("jirauri");
+	table.hideColumn("jiraquery");
+	table.hideColumn("status.status");
+	table.setFilter("name", "like", filter);
+	if(admin == 0)
+	{
+		table.hideColumn("icons");
+		table.hideColumn("visible");
+		table.hideColumn("last_synced");
+		table.hideColumn("status.rv");
+	}
+	else
+	{
+		table.showColumn("icons");
+		table.showColumn("visible");
+		table.showColumn("last_synced");
+		table.showColumn("status.rv");
+	}
+}
+$(document).ready(function()
+{
+	console.log("Loading Home Page2");
+	result = GetData();
+	//result = Object.values(json);
+	//console.log(result);
+	
+	if(admin == 1)
+		ShowNavBar();
+	ShowTable();
+	
+	$('#update_project').on('click', OnUpdateProject);
+	$('#create_project').on('click', OnCreateProject);
+	$('#archive').on('click', OnArchive);
+	$('#new_project').on('click', OnNewProject);
+	$("#filter").on("input", function(){
+		table.setFilter("name", "like", $(this).val());
+    });
+	if(admin == 0)
+	{
+		$('#new_project').hide();
+		$('#filter').hide();
+	}
+	InitLoader();
+});
 function OnNewProject(event)
 {
 	console.log("OnNewProject Click Dialog");
@@ -207,340 +618,25 @@ function OnNewProject(event)
 	settings.id = '';
 	settings.last_synced = 'Never';
 	settings.name = '';
-	settings.description = '';
+	settings.description = 'link_implementedby=1\r\nlink_parentof=1\r\nlink_testedby=1\r\nepic_query=\r\nrequirement_query=\r\nfilter_fixversion=\r\n';
 	settings.jiraquery = '';
 	settings.estimation = 0;
 	settings.error = '';
-	settings.sdate = MakeDate(dates.day(),dates.month()+1,dates.year());
-	settings.edate = MakeDate(dates.day(),dates.month()+3,dates.year());
+	sdate = new Date(thistoday);
+	settings.sdate = MakeDate(sdate.getDate(),sdate.getMonth()+1,sdate.getFullYear());
+	sdate.setMonth(sdate.getMonth() + 3);
+	settings.edate = MakeDate(sdate.getDate(),sdate.getMonth()+1,sdate.getFullYear());
+	console.log(settings.sdate);
 	settings.jira_dependencies = 0;
 	
 	SetPsettingsModalFields(settings);
-	ShowPsettingsModalButtons(1,0,0)
-}
-function OnJiraDependenciesClick(event)
-{
-	 var element  = $(event.target);
-	 console.log(element);
-     if (element.prop('checked')){
-          element.attr('value', 1);
-     } else {
-          element.attr('value', 0);
-     }
-}
-function ValidateFormData(data)
-{
-	console.log(data);
-	$(data).each(function(i, field)
-	{
-		data[field.name] = field.value;
-	});
-	$('#psettings_error').text('');
-	
-	if(data['name'].trim().length == 0)
-	{
-		$('#psettings_error').text('Project Name field cannot be empty');
-		return -1;
-	}
-	if(data['jiraquery'].trim().length == 0)
-	{
-		$('#psettings_error').text('Jira Query field cannot be empty');
-		return -1;
-	}
-	result = dates.compare(data['sdate'],data['edate']);
-	console.log(result);
-	if(result !== -1)
-	{
-		$('#psettings_error').text('Project Ends before start');
-		return -1;
-	}
-	
-	return 0;
-}
-function AddCard(project,row)
-{
-	if(project.estimation == 0)
-		estimation = 'Story Points';
-	else 
-		estimation = 'Time';
-	
-	color='';
-	if(project.dirty == 1)
-		color='red';
-	console.log(color);
-	var col=$('<div class="col-sm-4">');
-	var card=$('<div style="  box-shadow: 5px 5px 5px grey !important" class="card bg-white rounded bg-white shadow">');
-	var progress=project.progress;
-	var oaname=project.oaname;
-	var baseline=project.baseline;
-	var errors=null;project.errors;
-	var progress = '<div class="shadow-lg progress position-relative" style=""><div class="progress-bar" role="progressbar" style="background-color:green !important; width: '+progress+'%" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100"></div></div>'+'<small style="color:black;" class="justify-content-center d-flex">'+progress+'%</small>';
-	if((baseline != null)&&(baseline.length==0))
-		baseline=null;
-	
-	var headerstr ='<div  class="card-header border-success" style="background-color: #FFFAFA;">';
-		headerstr +='<div class="d-flex">';
-		projectend  = new Date(project.edate);
-		today = new Date();
-		todate = MakeDate(today.getDate(),(today.getMonth()+1),today.getFullYear());
-		com = 0;
-		
-		if(project.edate >= todate)
-			com = 1;
-		if(project.archived==1)
-			headerstr   +='<img title="Project Is Archived" src="/images/inactive.jpg" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
-		else
-		{
-			if(com == 1)
-				headerstr   +='<img title="Project Is inactive" src="/images/greenpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
-			else
-				headerstr   +='<img title="Project Is inactive" src="/images/redpulse.gif" style="margin-left:-10px;margin-right:10px;width:20px;height:20px"></img>';
-		}
-
-		headerstr   +='<span rel="tooltip" title="Project Name" id="card-name-'+project.id+'">'+project.name;
-		headerstr +='<small style="" rel="tooltip" title="Estimation Method" class="text-muted">&nbsp&nbsp&nbsp'+estimation+'</small>';
-		headerstr +='</span>';
-		headerstr   +='</div>';
-		headerstr   +='<div class="d-flex">';
-			if(oaname != null)
-				headerstr +='<img rel="tooltip" title="'+oaname+'" src="/images/openair.png" style="margin-top:0px;margin-left:20px;float:left;width:40px;height:13px;"></img>';
-			if(baseline !=null)
-				headerstr +='<img rel="tooltip" title="'+MakeDate2(baseline)+'" src="/images/baseline.png" style="margin-top:0px;margin-left:5px;float:left;width:35px;height:13px;"></img>';
-		headerstr   +='</div>';
-		headerstr   +='</div>';
-		headerstr   +=progress;
-	var header = $(headerstr);
-	var body=$('<div username="'+username+'" projectname="'+project.name+'" class="card-body card-body-all">');
-	var desc=$('<p  username="'+username+'" projectname="'+project.name+'" rel="tooltip" title="Description" class="card-text card-body-all" style="font-size:100%;">'+project.description+'</p>');
-	var query=$('<p  username="'+username+'" projectname="'+project.name+'" rel="tooltip" title="Seed Jira Query" class="card-text card-body-all" style="font-size:100%;">'+project.jiraquery+'</p>');
-	var footerstr='<div class="card-footer bg-transparent">';
-	footerstr+='<i projectid="'+project.id+'" class="editbutton far fa-edit icon float-left" rel="tooltip" title="Edit Project" data-toggle="modal" data-target="#editmodal"></i>';
-	footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Sync With Jira" class="syncbutton fas fa-sync icon float-left ml-1"></i>';
-	footerstr+='<a class="float-right ml-1" href='+'"/dashboard/'+username+'/'+project.name+'">';
-		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Dashboard" class="icon fas fa-chart-line float-right"></i></a>';
-	footerstr+='<a class="float-right" href='+'"/projectresource/'+project.id+'">';
-		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Resources" class="icon fas fa-user-circle float-right"></i></a>';
-	footerstr+='<a class="float-right" href='+'"/taskproperty/'+project.id+'">';
-		footerstr+='<i projectid="'+project.id+'" rel="tooltip" title="Milestones" style="margin-right:5px;" class="icon fas fa-flag-checkered float-right"></i></a>';
-	if(project.last_synced == 'Never')
-		footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Never Synced '+'</p></div>';
-	else
-		footerstr+='<p class="card-text" rel="tooltip" title="Last Sync time" style="color:'+color+';margin-left:70px;font-size:70%;">Synced on '+MakeDate2(project.last_synced)+'</p></div>';
-
-	var footer = $(footerstr);
-	body.append(desc);
-	body.append(query);
-	card.append(header);
-	card.append(body);
-	card.append(footer);
-	col.append(card);
-	row.append(col);
-	
-}
-function PopulateCard(projects)
-{
-	var j=1;
-	var rownum = 1;
-	$('.card_container').empty();
-	var row=$('<div id="'+'row_'+rownum+'" class="row">');
-	console.log("Creating Cards");
-	$('.card_container').append(row);
-	for(i=0;i<projects.length;i++)
-	{
-		AddCard(projects[i],row);
-		if(j%3==0)
-		{
-			console.log("Appending");
-			rownum++;
-			row=$('<br><div id="'+'row_'+rownum+'" class="row">');
-			
-			rownum++;
-			$('.card_container').append(row);
-		}
-		j++;
-	}
-}
-function FindProject(id)
-{
-	for(var i=0;i<projects.length;i++)
-	{
-		if(projects[i].id == id)
-			return projects[i];
-	}
-}
-function OnEdit(event) // when edit button is pressed on card to show edit dialog
-{
-	event.preventDefault(); 
-	console.log("Showing Edit Project Dialog");
-	$element  = $(event.target);
-	project  = FindProject($element.attr('projectid'));
-	ShowPsettingsModalButtons(0,1,1);
-	$('#psettings_title').text("Edit Project");
-	
-	settings = {};
-	settings.id = project.id;
-	settings.last_synced = project.last_synced;
-	settings.name = project.name;
-	settings.oaname = project.oaname;
-	settings.description = project.description;
-	settings.jiraquery = project.jiraquery;
-	settings.estimation = project.estimation;
-	settings.jirauri =  project.jirauri;
-	settings.sdate = project.sdate;
-	settings.edate = project.edate;
-	settings.jira_dependencies = project.jira_dependencies;
-	settings.error = '';
-	SetPsettingsModalFields(settings);
+	ShowPsettingsModalButtons(1,0,0);
 	$('#psettings_modal').modal('show');
-}
-function OnCardBodyClicked(event)
-{
-	console.log($(event.target));
-	element  = $(event.target);
-	projectname  = element.attr('projectname');
-	username = element.attr('username');
-	console.log(projectname);
-	console.log(username);
-	ShowLoading();
-	window.location.href = '/dashboard/'+username+'/'+projectname;
-}
-function OnSync(event)
-{
-	event.preventDefault(); 
-	$element  = $(event.target);
-	project  = FindProject($element.attr('projectid'));
-	if((project.oaname == null)||(project.oaname.length == 0))
-		$('#oasync').hide();
-	else
-		$('#oasync').show();
-
-	$('#synctitle').text(project.name);
-	console.log("Sync button pressed project#"+project.name);
-	$('#sync').attr('projectid', project.id);
-	$('#sync').attr('url', "{{route('syncjira')}}");
-	
-	$('#oasync').attr('projectid', project.id);
-	$('#oasync').attr('url', "{{route('syncoa')}}");
-	$( "#cb_worklog" ).prop( "checked", false );
-	$( "#cb_baseline" ).prop( "checked", false );
-	Clear();
-	$('#syncmodal').modal('show');	
-}
-
-function OnProjectsDataLoad(response)
-{
-	console.log("Projects Data Received");
-	HideLoading();
-	projects = response;
-	console.log(projects);
-	PopulateCard(projects);
-	$('#activeprojects').on('click', LoadActiveProjects);
-	$('#inactiveprojects').on('click', LoadInActiveProjects);
-	$('.editbutton').on('click', OnEdit); 
-	$('.syncbutton').on('click', OnSync);
-	$('.card-body-all').on('click', OnCardBodyClicked);
-	HideLoading();
-}
-function LoadProjectsData(onsuccess,onfail)
-{
-	data = {};
-	data.user_id = userid;
-	data.showclosedprojects=showclosedprojects;
-	data._token = "{{ csrf_token() }}";
-	ShowLoading();
-	$.ajax({
-		type:"GET",
-		url:'{{route('getprojects')}}',
-		cache: false,
-		data:data,
-		success: onsuccess,
-		error: onfail
-	});
-}
-
-function OnUpdateProject(event)
-{
-	event.preventDefault(); 
-	//var form = $(event.target);
-	var form = $('#psettings_form');
-	if(ValidateFormData(form.serializeArray())==-1)
-		return;
-	var serializedData = form.serialize();
-	//console.log("*****************");
-	//console.log($('#psettings_jiradependencies').prop('checked'));
-	data = {};
-	$(form.serializeArray()).each(function(i, field)
-	{
-		data[field.name] = field.value;
-	});
-	data.jira_dependencies = 0;
-	if($('#psettings_jiradependencies').prop('checked'))
-		data.jira_dependencies = 1;
-	
-	if($('#psettings_task_description').prop('checked'))
-		data.task_description = 1;
-		
-	data.estimation = $('#psettings_estimation').prop('selectedIndex');
-	console.log(data.estimation);
-	data.jirauri =  $('#psettings_jirauri').val();
-	data.user_id = userid;
-	data._token = "{{ csrf_token() }}";
-	console.log(data);
-	ShowLoading();
-	
-	$.ajax(
-	{
-		type:"PUT",
-		url:'{{route('updateproject')}}',
-		data:data,
-		success: function(response){
-			$('#psettings_modal').modal('hide');
-			console.log(response);  
-			LoadProjectsData(OnProjectsDataLoad);
-			
-		},
-		error: function (error) 
-		{
-			HideLoading();
-			console.log(error);
-			$('#psettings_error').text(error.responseJSON.message);
-		}
-	});
-	return false;
-}
-
-function OnDeleteProject(event)
-{
-	console.log("Deleting Project");
-	event.preventDefault(); 
-	data = {};
-	data.id = $('#psettings_id').val();
-	data._token = "{{ csrf_token() }}";
-	ShowLoading();
-	$.ajax(
-	{
-		type:"DELETE",
-		url:'{{route('deleteproject')}}',
-		data:data,
-		success: function(response)
-		{
-			$('#psettings_modal').modal('hide');
-			console.log(response);  
-			LoadProjectsData(OnProjectsDataLoad);
-		},
-		error: function (error) 
-		{
-			HideLoading();
-			console.log(error);
-			$('#psettings_error').text(error.responseJSON.message);
-		}
-	});
-	return false;
 }
 function OnCreateProject(event) 
 {
-	console.log("Creating Project");
 	event.preventDefault(); 
+	console.log("Creating Project");
 	var form = $('#psettings_form');
 	if(ValidateFormData(form.serializeArray())==-1)
 		return;
@@ -561,8 +657,13 @@ function OnCreateProject(event)
 		success: function(response)
 		{
 			$('#psettings_modal').modal('hide');
+			HideLoading();
 			console.log(response);  
-			LoadProjectsData(OnProjectsDataLoad,null);
+			table.addData(response);
+			var rows = table.searchRows("id", "=",response.id);
+			rows[0].getElement().style.backgroundColor  = "lightgreen";	
+			setTimeout(function(){ rows[0].getElement().style.backgroundColor  = "white";}, 1000);
+			
 		},
 		error: function (error) 
 		{
@@ -572,6 +673,238 @@ function OnCreateProject(event)
 		}
 	});
 }
+function millisToDaysHoursMinutes(miliseconds) {
+  var days, hours, minutes, seconds, total_hours, total_minutes, total_seconds;
+  
+  total_seconds = parseInt(Math.floor(miliseconds / 1000));
+  total_minutes = parseInt(Math.floor(total_seconds / 60));
+  total_hours = parseInt(Math.floor(total_minutes / 60));
+  days = parseInt(Math.floor(total_hours / 24));
+
+  seconds = parseInt(total_seconds % 60);
+  minutes = parseInt(total_minutes % 60);
+  hours = parseInt(total_hours % 24);
+  
+  return { d: days, h: hours, m: minutes, s: seconds };
+
+};
+function OnEditSettings(id)
+{
+	//console.log("OnEditSettings");
+	var rows = table.searchRows("id", "=",id);
+	selected_row = rows[0];
+	project = rows[0].getData();
+	
+	ShowPsettingsModalButtons(0,1,1);
+	$('#psettings_title').text("Edit Project");
+	SetPsettingsModalFields(project);
+	
+	$('#psettings_modal').modal('show');
+}
+
+function OnSync(id)
+{
+	var rows = table.searchRows("id", "=",id);
+	selected_row = rows[0];
+	project = rows[0].getData();
+	
+	if((project.oaname == null)||(project.oaname.length == 0))
+		$('#oasync').hide();
+	else
+		$('#oasync').show();
+
+	$('#synctitle').text(project.name);
+	console.log("Sync button pressed project#"+project.name);
+	$('#sync').attr('projectid', project.id);
+	$('#sync').attr('url', "{{route('syncjira')}}");
+	
+	$('#oasync').attr('projectid', project.id);
+	$('#oasync').attr('url', "{{route('syncoa')}}");
+	$( "#cb_worklog" ).prop( "checked", false );
+	$( "#cb_baseline" ).prop( "checked", false );
+	Clear();
+	$('#syncmodal').modal('show');	
+}
+function OnShowResources()
+{
+	console.log("OnShowResources");
+}
+function  OnConfigureMilestones(id)
+{
+	alert("OnConfigureMilestones "+id);
+}			
+function OnArchive(id)
+{
+	var rows = table.searchRows("id", "=",id);
+	selected_row = rows[0];
+	mscConfirm("Archive", "Project will be archived permanantly\nPlease notedown its id("+id+") to unrchive in future\nAre you sure to archive?", 
+	function()
+	{
+		data = {};
+		data.id = id;
+		data._token = "{{ csrf_token() }}";
+		ShowLoading();
+		$.ajax(
+		{
+			type:"PUT",
+			url:'{{route('archiveproject')}}',
+			data:data,
+			success: function(response)
+			{
+				HideLoading();
+				console.log(response); 
+				selected_row.getElement().style.backgroundColor  = "grey";	
+				setTimeout(function(){ selected_row.delete() }, 1000);
+			},
+			error: function (error) 
+			{
+				HideLoading();
+				mscAlert({
+				  title: 'Error',
+				  subtitle: error.responseJSON.original.message,
+				  okText: 'Close',    // default: OK
+				});
+			}
+		});
+	},
+	function() 
+	{
+		
+	});
+	
+}
+function OnDelete(id)
+{
+	var rows = table.searchRows("id", "=",id);
+	selected_row = rows[0];
+	
+	mscConfirm("Delete", "Project will be deleted permentaly\nAre you sure?", function()
+	{
+		data = {};
+		data.id = id;
+		data._token = "{{ csrf_token() }}";
+		ShowLoading();
+		$.ajax(
+		{
+			type:"DELETE",
+			url:'{{route('deleteproject')}}',
+			data:data,
+			success: function(response)
+			{
+				HideLoading();
+				console.log(response); 
+				selected_row.getElement().style.backgroundColor  = "grey";	
+				setTimeout(function(){ selected_row.delete() }, 1000);
+				
+			},
+			error: function (error) 
+			{
+				HideLoading();
+				mscAlert({
+				  title: 'Error',
+				  subtitle: error.responseJSON.original.message,
+				  okText: 'Close',    // default: OK
+				});
+			}
+		});
+	},
+	function() {
+		
+	});
+}
+function ShowPsettingsModalButtons(create=0,update=0,delete_button=0)
+{
+	if(create == 0)
+		$('#create_project').addClass('d-none');
+	else	
+		$('#create_project').removeClass('d-none');
+	
+	if(update == 0)
+		$('#update_project').addClass('d-none');
+	else	
+		$('#update_project').removeClass('d-none');
+	
+}
+function SetPsettingsModalFields(settings)
+{
+	$('#psettings_id').val(settings.id);
+	$('#psettings_last_synced').val(settings.last_synced);
+	$('#psettings_name').val(settings.name);
+	$('#psettings_oaname').val(settings.oaname);
+	$('#psettings_description').val(settings.description);
+	$('#psettings_jiraquery').val(settings.jiraquery);
+	$('#psettings_error').text(settings.error);
+	$('#psettings_estimation').prop('selectedIndex',settings.estimation);
+	$('#psettings_jirauri').prop('selectedIndex',settings.jirauri);
+	$('#psettings_sdate').val(settings.sdate);
+	$('#psettings_edate').val(settings.edate);
+	
+	$('#psettings_jiradependencies').prop('checked', settings.jira_dependencies);
+	$('#psettings_task_description').prop('checked', settings.task_description);
+}
+function ValidateFormData(data)
+{
+	//console.log(data);
+	$(data).each(function(i, field)
+	{
+		data[field.name] = field.value;
+	});
+	$('#psettings_error').text('');
+	
+	if(data['name'].trim().length == 0)
+	{
+		$('#psettings_error').text('Project Name field cannot be empty');
+		return -1;
+	}
+	if(data['jiraquery'].trim().length == 0)
+	{
+		$('#psettings_error').text('Jira Query field cannot be empty');
+		return -1;
+	}
+	result = dates.compare(data['sdate'],data['edate']);
+	//console.log(result);
+	if(result !== -1)
+	{
+		$('#psettings_error').text('Project Ends before start');
+		return -1;
+	}
+	return 0;
+}
+function UpdateRow(row)
+{
+	data = row.getData();
+
+	data._token = "{{ csrf_token() }}";
+	
+	$.ajax(
+	{
+		type:"PUT",
+		url:'{{route('updateproject')}}',
+		data:data,
+		success: function(response){
+			$('#psettings_modal').modal('hide');
+			HideLoading();
+			console.log(response);		
+			row.update(response); 
+			row.reformat();
+			console.log(row.getData());
+
+		},
+		error: function (error) 
+		{
+			HideLoading();
+			console.log(error);
+			$('#psettings_error').text(error.responseJSON.original.message);
+		}
+	});
+	console.log(data);
+}
+function OnSyncModalClosed()
+{
+	closeConnection();
+	ShowLoading();
+	RefreshProject(selected_row);
+}
 function InitLoader()
 {
 	"use strict";
@@ -580,36 +913,85 @@ function InitLoader()
 	$("#sync").click(Sync); 
 	$("#close").click(closeConnection);
 	$("#rebuild").click(Rebuild);
+	$('#syncmodal').on('hidden.bs.modal',OnSyncModalClosed);
 	updateConnectionStatus('Disconnected', false);
 }
-function OnSyncModalClosed()
+function RefreshProject(row)
 {
-	closeConnection();
-	ShowLoading();
-	LoadProjectsData(OnProjectsDataLoad,null);
-
+	data = row.getData();
+	$.ajax(
+	{
+		type:"GET",
+		url:'{{route('getproject')}}'+'?id='+data.id,
+		data:null,
+		success: function(response){
+			HideLoading();
+			row.update(response); 
+			row.reformat();
+			console.log(response);  
+			row.getElement().style.backgroundColor  = "powderblue";
+			setTimeout(function(){ row.getElement().style.backgroundColor= "white"; }, 2000);
+			
+		},
+		error: function (error) 
+		{
+			HideLoading();
+			$('#psettings_error').text(error.responseJSON.original.message);
+		}
+	});
+	
 }
-function LoadActiveProjects(event)
+function OnUpdateProject(event)
 {
-	showclosedprojects =0;
-	LoadProjectsData(OnProjectsDataLoad,null);
-}
-function LoadInActiveProjects(event)
-{
-	showclosedprojects =1;
-	LoadProjectsData(OnProjectsDataLoad,null);
-}
-$(document).ready(function()
-{
-	console.log("Loading Home Page");
-	ShowNavBar();
-	LoadProjectsData(OnProjectsDataLoad,null);
+	event.preventDefault(); 
+	
+	var form = $('#psettings_form');
+	if(ValidateFormData(form.serializeArray())==-1)
+		return;
+	var serializedData = form.serialize();
+	data = {};
+	$(form.serializeArray()).each(function(i, field)
+	{
+		data[field.name] = field.value;
+	});
+	data.jira_dependencies = 0;
+	if($('#psettings_jiradependencies').prop('checked'))
+		data.jira_dependencies = 1;
+	
+	if($('#psettings_task_description').prop('checked'))
+		data.task_description = 1;
 		
-	$('#new_project').on('click', OnNewProject);
-	$('#create_project').on('click', OnCreateProject);
-	$('#update_project').on('click', OnUpdateProject);
-	$('#delete_project').on('click', OnDeleteProject);
-	$('#syncmodal').on('hidden.bs.modal',OnSyncModalClosed);
-	InitLoader();
-});
+	data.estimation = $('#psettings_estimation').prop('selectedIndex');
+	//console.log(data.estimation);
+	data.jirauri =  $('#psettings_jirauri').val();
+	data.user_id = userid;
+	data.last_synced = 'Need Sync';
+	data.state = selected_row.getCell('state').getValue();
+	data._token = "{{ csrf_token() }}";
+	console.log(data);
+	ShowLoading();
+	
+	$.ajax(
+	{
+		type:"PUT",
+		url:'{{route('updateproject')}}',
+		data:data,
+		success: function(response){
+			$('#psettings_modal').modal('hide');
+			HideLoading();
+			selected_row.update(response); 
+			selected_row.getElement().style.backgroundColor  = "powderblue";
+			setTimeout(function(){ selected_row.getElement().style.backgroundColor= "white"; }, 2000);
+			console.log(response);  
+			//LoadProjectsData(OnProjectsDataLoad);
+			
+		},
+		error: function (error) 
+		{
+			HideLoading();
+			$('#psettings_error').text(error.responseJSON.original.message);
+		}
+	});
+	return false;
+}
 @endsection

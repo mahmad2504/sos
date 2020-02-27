@@ -38,6 +38,7 @@
 	<div style="margin-top:5px;" class="mainpanel">
 	<div style="background-color:#F0F0F0">
 		<h3>Gantt Chart</h3>
+		<a  href="{{route('syncjira',['projectid'=>$project->id,'rebuild'=>'1'])}}">Sync</a>
 	</div>
 		<div class="gantt" id="GanttChartDIV">Loading ...</div>
 	</div>

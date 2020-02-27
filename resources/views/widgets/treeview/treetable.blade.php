@@ -20,6 +20,7 @@ body {
 	<div style="background-color:#F0F0F0">
 	@if ($iframe==0)
 	<h3>Tree View</h3>
+	<a style="float: right;" href="{{route('syncjira',['projectid'=>$project->id,'rebuild'=>'1'])}}">Sync</a>
 	@endif
 	</div>
 	<table id="treetable" style="display:none;  box-shadow: 10px 5px 5px grey;" class="table">
@@ -120,6 +121,9 @@ $(document).ready(function()
 			$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 		}
 	}
+	else
+		$('#footer').hide();
+	
 	$('#dashboard_menuitem').show();
 	$('#dashboard_menuitem').attr('href',"{{route('dashboard',[$user->name,$project->name])}}");
 	LoadProjectData("{{route('getproject',['id'=>$project->id])}}",null,OnProjectDataReceived,function(response){});
@@ -167,7 +171,7 @@ $(document).ready(function()
 			var pid = row['pextid'];
 			var _class =row['issuetype'];
 			var title=row['summary'];
-			
+			var created = row['created'];
 			var link=row['jiraurl'];
 			var linktext=row['key'];
 			var issuetype = row['issuetype'];
@@ -180,12 +184,14 @@ $(document).ready(function()
 			var ostatus=row['ostatus'];
 			var priority=row['priority'];
 			var risk_severity = row['risk_severity'];
-			var blockedtasks='';//row['blockedtasks'];
+			var blockedtasks=row['blockedtasks'];
 			var sprintstate = row['sprintstate'];
 			var sprintname = row['sprintname'];
 			var duplicate=row['duplicate'];
 			var versions=row['versions'];
 			var assignee=row['assignee'];
+			var backlog_priority=row['backlog_priority'];
+			
 			if(assignee == 'unassigned')
 				assignee = '';
 			var sprintlink = link+"/secure/RapidBoard.jspa?rapidView="+row['sprintid'];
@@ -290,7 +296,16 @@ $(document).ready(function()
 			if(linktext == id)// Not a Jira Task 
 				rowstr += '<td></td>';
 			else
+			{
+				if(backlog_priority == "1.0")
+					rowstr += "<td><a style='color:red;font-size:.6rem;' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+				else if(backlog_priority == "2.0")
+					rowstr += "<td><a style='color:orange;font-size:.6rem;' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+				//else if(backlog_priority == "3.0")
+				//	rowstr += "<td><a style='color:yellow;font-size:.6rem;' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+				else
 				rowstr += "<td><a style='font-size:.6rem;' href='"+link+"/browse/"+linktext+"'>"+linktext+'</a></td>';
+			}
 			rowstr += "<td class='blockers' style='font-size:.6rem;'>"+blockedtasksstr+"</td>";
 			rowstr += "<td class='dependencies' style='font-size:.6rem;'>"+dtasksstr+"</td>";
 			if(sprintstate == 'ACTIVE')
@@ -356,6 +371,7 @@ $(document).ready(function()
 		$("#treetable").show();
 		$("#legend").show();
 		$("#treetable").treetable("expandNode", "1");
+		//$("#treetable").treetable("expandNode", "1.0");
 	}
 })
 @endsection

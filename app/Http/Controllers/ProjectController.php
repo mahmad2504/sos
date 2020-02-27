@@ -90,7 +90,7 @@ class ProjectController extends Controller
 			if($request->jiraquery == null)
 				return 'Jira Query is missing';
 			if (($request->description==null)||(strlen($request->description)==0))
-				$request->description = "link_implementedby=1\r\nlink_parentof=1\r\nlink_testedby=1\r\nepic_query=\r\nrequirement_query=\r\n";
+				$request->description = "link_implementedby=1\r\nlink_parentof=1\r\nlink_testedby=1\r\nepic_query=\r\nrequirement_query=\r\nfilter_fixversion=\r\n";
 			if ($request->jira_dependencies==null)
 				$request->jira_dependencies = 0;
 			if ($request->task_description==null)
