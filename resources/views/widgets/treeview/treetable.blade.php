@@ -245,16 +245,28 @@ $(document).ready(function()
 				if(priority == 2)
 					color = 'orange';
 			}
-			var rowstr = '<tr ';
+			var rowstr = '<tr style="color:grey;"';
 			rowstr += "data-tt-id='"+id+"' ";
 			if(pid != '')
 				rowstr += "data-tt-parent-id='"+pid+"'";
 			
+				
 			rowstr += "style='border-bottom:1pt solid grey;' class='branch expanded'>";
 			if(issuesubtype == 'QA')
+			{
+				if(status == 'RESOLVED')
+					rowstr += "<td title='"+title+"' style='color:#cdcdcd;white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+				else
 				rowstr += "<td title='"+title+"' style='color:blue;white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			}
 			else
-			rowstr += "<td title='"+title+"' style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			{
+				if(status == 'RESOLVED')
+					rowstr += "<td title='"+title+"' style='color:#cdcdcd;white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+				else
+					rowstr += "<td title='"+title+"' style='color:black;white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;'><span class='"+_class+"'>";
+			}
+			
 			rowstr += title+"</td>";
 			rowstr += "<td>";
 			console.log(rowstr);

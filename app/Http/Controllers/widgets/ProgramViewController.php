@@ -32,14 +32,19 @@ class ProgramViewController extends Controller
 		$i=0;
 		foreach($projects as $project)
 		{
-			$ms = new MilestoneController();
-			$status = $ms->GetStatus($project,"1");
-			if($status != null)
+			if( ($project->visible != "false"))
 			{
-				$data[] = $status;
+				$ms = new MilestoneController();
+				$status = $ms->GetStatus($project,"1");
+				if($status != null)
+				{
+					$status['id'] = $project->id;
+					$data[] = $status;
+				}
+				$i++;
 			}
-			$i++;
 		}
+		
 		$isloggedin = $this->isloggedin;
 		return view('program.summary',compact('data','user','isloggedin'));
 		//dd($data);

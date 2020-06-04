@@ -1,0 +1,454 @@
+project acs "UEFI PCR01" 2020-05-05 +48m
+{ 
+   timezone "Asia/Karachi"
+   timeformat "%Y-%m-%d"
+   numberformat "-" "" "," "." 1 
+   currencyformat "(" ")" "," "." 0 
+   currency "USD"
+   scenario plan "Plan" {}
+   extend task { text Jira "Jira"}
+} 
+macro allocate_developers [
+   allocate usaleem
+   allocate amhamza
+   allocate mmasood
+   allocate rkanwal
+   allocate javedm
+   allocate samazhar
+   allocate atraza
+   allocate eahmed
+   allocate hjamal
+]
+resource all "Developers" {
+    resource usaleem "usaleem_PK" {
+       leaves annual 2020-01-16 +2d
+       leaves annual 2019-12-24 +1d
+       leaves annual 2019-12-26 +2d
+       leaves annual 2020-03-05 +1d
+       leaves annual 2019-11-11 +1d
+       leaves annual 2019-12-25 +1d
+       leaves annual 2020-02-05 +1d
+       leaves annual 2020-03-23 +1d
+       leaves annual 2020-05-01 +1d
+       leaves annual 2020-05-25 +3d
+       leaves annual 2020-08-14 +1d
+       leaves annual 2020-10-29 +1d
+       leaves annual 2020-12-25 +1d
+       leaves annual 2019-08-12 +3d
+       leaves annual 2019-09-09 +2d
+       leaves annual 2020-07-30 +2d
+       leaves annual 2020-08-28 +1d
+        limits { weeklymax  40h}
+    }
+    resource amhamza "amhamza_IR" {
+       leaves annual 2020-01-16 +2d
+       leaves annual 2020-03-10 +1d
+       leaves annual 2020-05-18 +229d
+        limits { weeklymax  40h}
+    }
+    resource mmasood "mmasood_IR" {
+        limits { weeklymax  40h}
+    }
+    resource rkanwal "rkanwal_PK" {
+       leaves annual 2020-03-09 +4d
+       leaves annual 2019-11-11 +1d
+       leaves annual 2019-12-25 +1d
+       leaves annual 2020-02-05 +1d
+       leaves annual 2020-03-23 +1d
+       leaves annual 2020-05-01 +1d
+       leaves annual 2020-05-25 +3d
+       leaves annual 2020-08-14 +1d
+       leaves annual 2020-10-29 +1d
+       leaves annual 2020-12-25 +1d
+       leaves annual 2019-08-12 +3d
+       leaves annual 2019-09-09 +2d
+       leaves annual 2020-07-30 +2d
+       leaves annual 2020-08-28 +1d
+        limits { weeklymax  40h}
+    }
+    resource javedm "javedm_IR" {
+       leaves annual 2019-12-20 +1d
+       leaves annual 2019-12-23 +2d
+       leaves annual 2020-03-16 +1d
+        limits { weeklymax  40h}
+    }
+    resource samazhar "samazhar_PK" {
+       leaves annual 2020-03-04 +1d
+       leaves annual 2019-11-11 +1d
+       leaves annual 2019-12-25 +1d
+       leaves annual 2020-02-05 +1d
+       leaves annual 2020-03-23 +1d
+       leaves annual 2020-05-01 +1d
+       leaves annual 2020-05-25 +3d
+       leaves annual 2020-08-14 +1d
+       leaves annual 2020-10-29 +1d
+       leaves annual 2020-12-25 +1d
+       leaves annual 2019-08-12 +3d
+       leaves annual 2019-09-09 +2d
+       leaves annual 2020-07-30 +2d
+       leaves annual 2020-08-28 +1d
+        limits { weeklymax  40h}
+    }
+    resource atraza "atraza_PK" {
+       leaves annual 2019-11-11 +1d
+       leaves annual 2019-12-25 +1d
+       leaves annual 2020-02-05 +1d
+       leaves annual 2020-03-23 +1d
+       leaves annual 2020-05-01 +1d
+       leaves annual 2020-05-25 +3d
+       leaves annual 2020-08-14 +1d
+       leaves annual 2020-10-29 +1d
+       leaves annual 2020-12-25 +1d
+       leaves annual 2019-08-12 +3d
+       leaves annual 2019-09-09 +2d
+       leaves annual 2020-07-30 +2d
+       leaves annual 2020-08-28 +1d
+        limits { weeklymax  40h}
+    }
+    resource eahmed "eahmed_PK" {
+       leaves annual 2019-11-11 +1d
+       leaves annual 2019-12-25 +1d
+       leaves annual 2020-02-05 +1d
+       leaves annual 2020-03-23 +1d
+       leaves annual 2020-05-01 +1d
+       leaves annual 2020-05-25 +3d
+       leaves annual 2020-08-14 +1d
+       leaves annual 2020-10-29 +1d
+       leaves annual 2020-12-25 +1d
+       leaves annual 2019-08-12 +3d
+       leaves annual 2019-09-09 +2d
+       leaves annual 2020-07-30 +2d
+       leaves annual 2020-08-28 +1d
+        limits { weeklymax  40h}
+    }
+    resource hjamal "hjamal_IR" {
+        limits { weeklymax  40h}
+    }
+}
+task t1 "1 UEFI PCR01" {
+     task t1a0 "1.0 PCR01 Sprint 1" {
+          task t1a0a0 "1.0.0 [PCR01] [WP9] R" {
+             complete 100
+             Jira "SH-788"
+             priority 0
+          }
+          task t1a0a1 "1.0.1 [PCR01] [WP9] R" {
+             complete 100
+             Jira "SH-789"
+             priority 0
+          }
+          task t1a0a2 "1.0.2 [PCR01] [WP9] R" {
+             complete 100
+             Jira "SH-862"
+             priority 0
+          }
+          task t1a0a3 "1.0.3 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-865"
+             priority 0
+          }
+          task t1a0a4 "1.0.4 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-786"
+             priority 0
+          }
+          task t1a0a5 "1.0.5 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-792"
+             priority 0
+          }
+          task t1a0a6 "1.0.6 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-793"
+             priority 0
+          }
+          task t1a0a7 "1.0.7 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-794"
+             priority 0
+          }
+          task t1a0a8 "1.0.8 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-864"
+             priority 0
+          }
+          task t1a0a9 "1.0.9 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-871"
+             priority 0
+          }
+          task t1a0a10 "1.0.10 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-872"
+             priority 0
+          }
+          task t1a0a11 "1.0.11 [PCR01] R.45 In" {
+             complete 100
+             Jira "SH-783"
+             priority 0
+          }
+          task t1a0a12 "1.0.12 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-843"
+             priority 0
+          }
+          task t1a0a13 "1.0.13 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-844"
+             priority 0
+          }
+          task t1a0a14 "1.0.14 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-884"
+             priority 0
+          }
+     }
+     task t1a1 "1.1 PCR01 Sprint 2" {
+          task t1a1a0 "1.1.0 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-893"
+             priority 0
+          }
+          task t1a1a1 "1.1.1 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-791"
+             priority 0
+          }
+          task t1a1a2 "1.1.2 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-860"
+             priority 0
+          }
+          task t1a1a3 "1.1.3 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-795"
+             priority 0
+          }
+          task t1a1a4 "1.1.4 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-800"
+             priority 0
+          }
+          task t1a1a5 "1.1.5 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-801"
+             priority 0
+          }
+          task t1a1a6 "1.1.6 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-797"
+             priority 0
+          }
+          task t1a1a7 "1.1.7 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-873"
+             priority 0
+          }
+          task t1a1a8 "1.1.8 [PCR01] R.43 Up" {
+             complete 100
+             Jira "SH-886"
+             priority 0
+          }
+          task t1a1a9 "1.1.9 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-798"
+             priority 0
+          }
+     }
+     task t1a2 "1.2 PCR01 Sprint 3" {
+          task t1a2a0 "1.2.0 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-916"
+             priority 0
+          }
+          task t1a2a1 "1.2.1 [PCR01] [WP8] R" {
+             complete 100
+             Jira "SH-889"
+             priority 0
+          }
+          task t1a2a2 "1.2.2 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-915"
+             priority 0
+          }
+          task t1a2a3 "1.2.3 [PCR01] [WP10] " {
+             complete 3
+             Jira "SH-799"
+             priority 1000
+             effort 4.87d
+             allocate mmasood
+          }
+          task t1a2a4 "1.2.4 [PCR01] [WP12] " {
+             complete 0
+             Jira "SH-805"
+             priority 997
+             effort 2d
+             allocate rkanwal
+          }
+          task t1a2a5 "1.2.5 [PCR01] [WP12] " {
+             complete 0
+             Jira "SH-806"
+             priority 999
+             effort 10d
+             allocate rkanwal
+          }
+          task t1a2a6 "1.2.6 [PCR01] [WP12] " {
+             complete 26
+             Jira "SH-807"
+             priority 998
+             effort 7.37d
+             allocate samazhar
+          }
+          task t1a2a7 "1.2.7 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-790"
+             priority 0
+          }
+          task t1a2a8 "1.2.8 [PCR01] Adonis " {
+             complete 100
+             Jira "SH-922"
+             priority 0
+          }
+          task t1a2a9 "1.2.9 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-923"
+             priority 0
+          }
+          task t1a2a10 "1.2.10 [PCR01] [WP10] " {
+             complete 100
+             Jira "SH-925"
+             priority 0
+          }
+          task t1a2a11 "1.2.11 [PCR01] [WP10] " {
+             complete 0
+             Jira "SH-926"
+             priority 996
+             effort 1d
+             allocate mmasood
+          }
+     }
+     task t1a3 "1.3 PCR01 Sprint 4" {
+          task t1a3a0 "1.3.0 [PCR01] R.43 An" {
+             complete 0
+             Jira "SH-918"
+             priority 995
+             effort 2d
+             allocate rkanwal
+          }
+          task t1a3a1 "1.3.1 [PCR01] R.43 An" {
+             complete 0
+             Jira "SH-919"
+             priority 994
+             effort 2d
+             allocate mmasood
+          }
+          task t1a3a2 "1.3.2 [PCR01] [WP10] " {
+             complete 0
+             Jira "SH-802"
+             priority 993
+             effort 5d
+             allocate rkanwal
+          }
+          task t1a3a3 "1.3.3 [PCR01] [WP11] " {
+             complete 0
+             Jira "SH-803"
+             priority 992
+             effort 5d
+             allocate mmasood
+          }
+          task t1a3a4 "1.3.4 [PCR01] QA and " {
+             complete 0
+             depends !!!t1.t1a3.t1a3a2,!!!t1.t1a3.t1a3a3
+             Jira "SH-835"
+             priority 991
+             effort 10d
+             allocate eahmed
+          }
+          task t1a3a5 "1.3.5 [PCR01] QA and " {
+             complete 0
+             depends !!!t1.t1a3.t1a3a2,!!!t1.t1a3.t1a3a3
+             Jira "SH-917"
+             priority 990
+             effort 5d
+             allocate hjamal
+          }
+     }
+}
+
+		
+		#taskreport monthreporthtml "monthreporthtml" {
+		#	formats html
+		#	columns bsi, name, start, end, effort,resources, complete,Jira, monthly
+			# For this report we like to have the abbreviated weekday in front
+			# of the date. %a is the tag for this.
+		#	timeformat "%a %Y-%m-%d"
+		#	loadunit hours
+		#    hideresource @all
+		#}
+		
+		taskreport monthreport "monthreport" {
+			formats csv
+			columns bsi { title "ExtId" },name, start { title "Start" }, end { title "End" }, resources { title "Resource" }, monthly
+			# For this report we like to have the abbreviated weekday in front
+			# of the date. %a is the tag for this.
+			timeformat "%Y-%m-%d"
+			loadunit hours
+			hideresource @all
+		}
+		
+		#taskreport weekreporthtml "weekreporthtml" {
+		#	formats html
+		#	columns bsi, name, start, end, effort,resources, complete,Jira, weekly
+			# For this report we like to have the abbreviated weekday in front
+			# of the date. %a is the tag for this.
+		#	timeformat "%Y-%m-%d"
+		#	loadunit hours
+		#	hideresource @all
+		#}
+		
+		#taskreport weekreport "weekreport" {
+		#	formats csv
+		#	columns bsi { title "ExtId" },name, start { title "Start" }, end { title "End" }, resources { title "Resource" }, weekly
+			# For this report we like to have the abbreviated weekday in front
+			# of the date. %a is the tag for this.
+		#	timeformat "%Y-%m-%d"
+		#	loadunit hours
+		#	hideresource @all
+		#}
+		
+		#taskreport dayreporthtml "dayreporthtml" {
+		#	formats html
+		#	columns bsi, name, start, end, effort,resources, complete,Jira, daily
+			# For this report we like to have the abbreviated weekday in front
+			# of the date. %a is the tag for this.
+		#	timeformat "%Y-%m-%d"
+		#	loadunit hours
+		#	hideresource @all
+		#}
+	
+		
+		#resourcereport resourcegraphhtm "resourcehtml" {
+		#   formats html
+		#   headline "Resource Allocation Graph"
+		#   columns no, name, effort, weekly 
+		   #loadunit shortauto
+	       # We only like to show leaf tasks for leaf resources.
+		#   hidetask ~(isleaf() & isleaf_())
+		#   sorttasks plan.start.up
+		#}
+		
+		#resourcereport resourcegraph "resource" {
+		#   formats csv
+		#   headline "Resource Allocation Graph"
+		#   columns name, effort, weekly 
+		   #loadunit shortauto
+	       # We only like to show leaf tasks for leaf resources.
+		#   hidetask 1
+		   #hidetask ~(isleaf() & isleaf_())
+		   #sorttasks plan.start.up
+		#}
+		
+		
+		
+		
+		

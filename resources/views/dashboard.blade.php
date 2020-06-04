@@ -105,7 +105,21 @@ figure figcaption {
 				<figcaption styleclass="caption">Sprint View</figcaption>
 			</figure>
 		</div>
+		<div class="col-3">
+			<figure class="item">
+			
+				<a href="/widget/milestone/{{$user->name}}/{{$project->id}}?view=1"><img class="widget" src="/images/allstatus.jpeg"></img></a>
+				<figcaption styleclass="caption">Complete Status</figcaption>
+			</figure>
+		</div>
+		<div class="col-3">
+			<figure class="item">
+				<a href="{{route('showdefectchart',[$user->name,$project->id])}}"><img class="widget" src="/images/defects.png"></img></a>
+				<figcaption styleclass="caption">Defect Closed Vs Resolved</figcaption>
+			</figure>
   </div>
+  </div>
+  
   <div style="margin-top:10px;" class="row">
 		<div class="col-3">
 			

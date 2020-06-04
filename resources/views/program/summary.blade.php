@@ -4,34 +4,75 @@
 <link rel="stylesheet" href="{{ asset('css/tooltipster.bundle.min.css') }}" />
 @endsection
 @section('style')
-.h6{
-    font-size: 16px;
- }
+.thistable{
+  table-layout: fixed;
+  width: 100%;
+  white-space: nowrap;
+}
+
+tr:nth-child(even) {background: #ddd}
+tr:nth-child(odd) {background: #fff}
+thead th {
+    background-color: #DDEFEF;
+    border: solid 2px #cdcdcd;
+    font: normal 15px Arial, sans-serif;
+    font-weight: bold;
+    color: #000;
+    //padding: 10px;
+    text-align: center;
+    text-shadow: 1px 1px 1px #fff;
+	height: 30px;
+}
+
+td {
+    border: solid 2px #cdcdcd;
+	font-size:12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+	text-align: center;
+}
+.col1 {
+  width: 40%;
+}
+.col2 {
+  width: 12%;
+}
+.col3 {
+  width: 12%;
+}
+.col4 {
+  width: 12%;
+}
+.col5 {
+  width: 12%;
+}
+.col6 {
+  width: 12%;
+}
 @endsection
 @section('content')
 
 
-<div style="width:90%; margin-left: auto; margin-right: auto" class="center">
+<div style="width:60%; margin-left: auto; margin-right: auto" class="center">
 	<!-- <h4 class="center" id="summary" style="width:60%;margin-bottom:-17px;">Projects Status</h4> -->
 	<h3>Projects of {{ $user->name}}</h3>
 	<div class="mainpanel">
-	<table  class="zui-table">
+	<table  class="thistable">
 		<thead>
 			<tr>
-				<th width="29%"  style="text-align: left;">Project</th>
-				<th width="15%" >Blockers</th>
-				<th width="15%" >Risks</th>
-				<th width="15%" >Issues</th> 
-				<th width="15%" >Escalations</th> 
-				<th width="13%" >Progress</th> 
-				<th width="10%" >Status</th>
+				<th width="29%" class="col1" style="text-align: left;">Project Name</th>
+				<th width="15%" class="col2">Risk Level</th>
+				<th width="15%" class="col3">Issue Level</th> 
+				<th width="15%" class="col4">Escalations</th> 
+				<th width="13%" class="col5">Progress</th> 
+				<th width="10%" class="col6">Status</th>
 			</tr>
 		</thead>`
 	<tbody>
 		@for($i=0;$i<count($data);$i++)
 		<tr>
 			<td style="text-align: left;font-weight:bold" id="desc{{$i}}"></td>
-			<td id="blockers{{$i}}"></td>
 			<td id="risks{{$i}}"></td>
 			<td id="issues{{$i}}"></td>
 			<td id="escalations{{$i}}"></td>
@@ -61,10 +102,80 @@ if(isloggedin)
 	$('.navbar').removeClass('d-none');
 	
 }
-
+function FillEscalationsCell(type,data,i)
+{	count=0;
+	title = '';
+	//$('#'+type+i).css("padding-left",'20px');
+	for(var key in data)
+	{
+		title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
+		count++;
+	}
+	if(count > 0)
+	{
+		$('#'+type+i).css("background-color",'#ff0000');
+		$('#'+type+i).css("color",'#ffffff');
+		badges = '<span  title="'+title+'"  class="tp badge badge-success">'+count+'</span>&nbsp&nbsp';
+		$('#'+type+i).html('<span>Yes&nbsp&nbsp'+badges+'</span>');
+	}
+	else
+	{
+		$('#'+type+i).css("background-color",'#008000');
+		$('#'+type+i).css("color",'#ffffff');
+		$('#'+type+i).text('No');
+	}
+}		
+function FillCell(type,data,i)
+{
+	//$('#'+type+i).css("padding-left",'20px');
+	count = 0;
+	title = '';
+	if(data['Critical'] != undefined)
+	{
+		$('#'+type+i).css("background-color",'#ff0000');
+		$('#'+type+i).css("color",'#ffffff');
+		for(var key in risks['Critical'])
+		{
+			title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
+			count++;
+		}
+		badges = '<span  title="'+title+'"  class="tp badge badge-success">'+count+'</span>&nbsp&nbsp';
+		$('#'+type+i).html('<span>Critical&nbsp&nbsp'+badges+'</span>');
+	}
+	else if(data['High'] != undefined)
+	{
+		$('#'+type+i).css("background-color",'#FFA500');
+		$('#'+type+i).css("color",'#ffffff');
+		for(var key in risks['High'])
+		{
+			title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
+			count++;
+		}
+		badges = '<span  title="'+title+'"  class="tp badge badge-success">'+count+'</span>&nbsp&nbsp';
+		$('#'+type+i).html('<span>High&nbsp&nbsp'+badges+'</span>');
+	}
+	else if(data['Medium'] != undefined)
+	{
+		$('#'+type+i).css("background-color",'#FFFF00');
+		$('#'+type+i).css("color",'#000000');
+		for(var key in risks['Medium'])
+		{
+			title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
+			count++;
+		}
+		badges = '<span  title="'+title+'"  class="tp badge badge-success">'+count+'</span>&nbsp&nbsp';
+		$('#'+type+i).html('<span>Medium&nbsp&nbsp'+badges+'</span>');
+	}
+	else 
+	{
+		$('#'+type+i).css("background-color",'#008000');
+		$('#'+type+i).css("color",'#ffffff');
+		$('#'+type+i).text('Low');
+	}
+	return;
+}
 $(function() 
 {
-
 	console.log(data);
 	for(i=0;i<data.length;i++)
 	{
@@ -77,136 +188,15 @@ $(function()
 		status = project.status;
 		progress = project.progress;
 		
-		url = '/dashboard/'+user.name+'/'+project.summary;
+		url = '/dashboard/'+user.name+'/'+project.id;
 		console.log(url);
 		$('#desc'+i).html('<h6><a href="'+url+'">'+project.summary+'</a></h6>');
-		
-		count=0;
-		title = '';
-		for(var key in blockers)
-		{
-			title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-			count++;
-		}
-		
-		if(count > 0)
-			$('#blockers'+i).html('<h6><span  title="'+title+'" class="tp badge badge-danger">'+count+' Blocker</span></h6>');
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		count=0;
-		title = '';
-		badges = '<h6>';
-		
-		if(risks['Critical'] != undefined)
-		{
-			for(var key in risks['Critical'])
-			{
-				title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-				count++;
-			}
-		}
-		if(count > 0)
-			badges += '<span  title="'+title+'"  class="tp badge badge-danger">'+count+' Critical</span>&nbsp&nbsp';
-		
-		count=0;
-		title = '';
-		if(risks['High'] != undefined)
-		{
-			for(var key in risks['High'])
-			{
-				title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-				count++;
-			}
-		}
-		if(count > 0)
-			badges += '<span  title="'+title+'"  class="tp badge badge-warning">'+count+' High</span>&nbsp&nbsp';
-
-			count=0;
-		title = '';
-		if(risks['Medium'] != undefined)
-		{
-			for(var key in risks['Medium'])
-			{
-				title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-				count++;
-			}
-		}
-		if(count > 0)
-			badges += '<span  title="'+title+'"  class="tp badge badge-info">'+count+' Medium</span>&nbsp&nbsp';
-
-		badges += '</h6>'; 
-		
-		$('#risks'+i).html(badges);
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		count=0;
-		title = '';
-		badges = '<h6>';
-		
-		if(issues['Critical'] != undefined)
-		{
-			for(var key in issues['Critical'])
-			{
-				title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-				count++;
-			}
-		}
-		if(count > 0)
-			badges += '<span  title="'+title+'"  class="tp badge badge-danger">'+count+' Critical</span>&nbsp&nbsp';
-		
-		count=0;
-		title = '';
-		if(issues['High'] != undefined)
-		{
-			for(var key in issues['High'])
-			{
-				title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-				count++;
-			}
-		}
-		if(count > 0)
-			badges += '<span  title="'+title+'"  class="tp badge badge-warning">'+count+' High</span>&nbsp&nbsp';
-
-			count=0;
-		title = '';
-		if(issues['Medium'] != undefined)
-		{
-			for(var key in issues['Medium'])
-			{
-				title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-				count++;
-			}
-		}
-		if(count > 0)
-			badges += '<span  title="'+title+'"  class="tp badge badge-info">'+count+' Medium</span>&nbsp&nbsp';
-
-		badges += '</h6>' ;
-		
-		$('#issues'+i).html(badges);
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		count=0;
-		title = '';
-		for(var key in escalations)
-		{
-			title += "<a href='"+project.jiraurl+"/browse/"+key+"'>"+key+"</a><br>";
-			count++;
-		}
-		
-		if(count > 0)
-			$('#escalations'+i).html('<h6><span  title="'+title+'" class="tp badge badge-danger">'+count+' Escalation</span></h6>');
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+		FillCell('risks',risks,i);
+		FillCell('issues',issues,i);
+		FillEscalationsCell('escalations',escalations,i);
+		$('#progress'+i).html('<div style="font-size:10px;padding-left:0%;background-color:#00ff00;width:'+Math.round(progress)+'%;">'+Math.round(progress)+'%</div>'); 
 		$('#status'+i).html("<img width='80px' src='/images/"+status+".png'></img>"); 
-	
-		$('#progress'+i).radialIndicator({
-        barColor: '#2E8B57',
-        radius:10,
-        barWidth: 4,
-        initValue: Math.round(progress),
-        roundCorner : true,
-        percentage: true
-  	 	});
-	
 	}
 	$('.tp').tooltipster({ interactive: true, contentAsHTML: true});
 	

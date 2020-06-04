@@ -29,7 +29,6 @@ class TreeViewController extends Controller
 		
 		foreach ($task as $property => $value)
 		{
-
 			if(
 			($property == 'extid')||
 			($property == 'summary')||
@@ -52,6 +51,7 @@ class TreeViewController extends Controller
 			)
 			{
 				//$task->children=[];
+				
 				
 			}
 			else

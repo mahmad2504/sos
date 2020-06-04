@@ -65,12 +65,8 @@ class Task
 				return $this->parent->project->estimation;
 				break;
 			case '_orig_estimate':
-				if(isset($this->oestimate))
 					return $this->oestimate; 
-				if($this->storypoints > 0)
-					return  $this->storypoints;
 				
-				return $this->timeestimate;
 				/*if($this->parent->project->estimation == 0)// Story points
 					return  $this->storypoints;
 				else
@@ -205,7 +201,7 @@ class Task
 
 	function MapIssueType($issuetype,$key)
 	{
-		if(($issuetype=='Cluster')||($issuetype=='Feature')||($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
+		if(($issuetype=='Product Change Request')||($issuetype=='Cluster')||($issuetype=='Feature')||($issuetype == ' Customer Requirement')||($issuetype=='ESD Requirement')||($issuetype=='BSP Requirement')||($issuetype=='Requirement'))
 			return 'REQUIREMENT';
 
 		if(($issuetype=='Workpackage')||($issuetype=='Project')||($issuetype=='Subproject'))
@@ -294,7 +290,8 @@ class Task
 	private function ParseSprintData($task,$ntask,$sprint)
 	{
 		$last_sequence = 0;
-
+		//if($task->key == 'MEIF-2276')
+		//	dd($task->fields->$sprint);
 		if(!isset($task->fields->$sprint))
 			return;
 		if(!isset($task->fields->$sprint[0]))
@@ -352,7 +349,7 @@ class Task
 				{
 					$sprintend = $keyvalue[1];
 				}
-				else if(strpos($keyvalue[0],'[id')!== false)
+				else if(strpos($keyvalue[0],'id')!== false)
 				{
 					$sprintno = $keyvalue[1];
 
@@ -361,10 +358,13 @@ class Task
 		}
 		if(($sprintstate == 'CLOSED')&&($ntask->status != 'RESOLVED'))
 			return;
+		if(!isset($sprintno))
+			return;
 		
 		$ntask->sprintname = $sprintname;
 		$ntask->sprintstate = $sprintstate;
 		$ntask->sprintid = $sprintid;
+		
 		$ntask->sprintno = $sprintno;
 		if($sprintstart != '<null>')
 			$ntask->sprintstart = explode('T',$sprintstart)[0];
@@ -422,8 +422,8 @@ class Task
 		else
 		$ntask->status = $this->MapStatus($task->fields->status->name);
 		
-
 		
+		$ntask->closedon = null;
 		if($ntask->status == 'RESOLVED')
 		{
 			if(isset($task->fields->resolutiondate))
@@ -431,9 +431,9 @@ class Task
 			if(isset($task->fields->statuscategorychangedate))
 				$ntask->closedon = explode('T',$task->fields->statuscategorychangedate)[0];
 		}
+
 		
-		//dd($ntask->closedon);
-		
+
 		if(($ntask->status == 'RESOLVED') && ($ntask->closedon == null) && !isset($this->parent->tempflag))
 		{
 			$this->parent->tempflag = 1;
@@ -526,7 +526,9 @@ class Task
 			{
 				$ntask->query .= $del.'issue in linkedIssues("'.$ntask->key.'","'.$link_testedby.'")' ;
 			}
-
+            //$link_relatesto = 'relates to';
+            //$ntask->query .= $del.'issue in linkedIssues("'.$ntask->key.'","'.$link_relatesto.'")' ;
+           
 			if($ntask->parent->settings->requirement_query != null)
 				if(strlen($ntask->parent->settings->requirement_query)>0)
 					$ntask->query = "(".$ntask->query . ") and ".$ntask->parent->settings->requirement_query;
@@ -549,16 +551,61 @@ class Task
 		if(isset($task->fields->description))
 			$ntask->description = $task->fields->description;
 
+		//if(isset($task->fields->timeoriginalestimate))
+		//{
+		//	$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),3);
+		//	$ntask->otimeestimate = $ntask->otimeestimate;
+		//}
+		//if(isset($task->fields->$story_points))
+		//{
+		//	$ntask->storypoints = $task->fields->$story_points;
+		//	$ntask->ostorypoints = $ntask->storypoints;
+		//}
+
+
+		/////////// NEW Changes ///////
+		
+		if(isset($task->fields->$story_points))
+			$ntask->oestimate=$task->fields->$story_points;
+		else
+			$ntask->oestimate=$task->fields->timeoriginalestimate/(8*60*60);
+		
+		if($ntask->closedon != null) // Task is closed
+		{
+			if(!isset($task->fields->timespent)) // there is no timespent
+			{
 		if(isset($task->fields->timeoriginalestimate))
 		{
-			$ntask->timeestimate = round($task->fields->timeoriginalestimate/(28800),3);
-			$ntask->otimeestimate = $ntask->otimeestimate;
+					$task->fields->timespent = $task->fields->timeoriginalestimate;
 		}
 		if(isset($task->fields->$story_points))
 		{
-			$ntask->storypoints = $task->fields->$story_points;
-			$ntask->ostorypoints = $ntask->storypoints;
+					$task->fields->timespent = $task->fields->$story_points * 8 * 60 * 60;
 		}
+			}
+			else
+			{
+
+				$task->fields->timeoriginalestimate = $task->fields->timespent;
+				if(isset($task->fields->$story_points))
+				{
+					$task->fields->$story_points = round($task->fields->timespent/(8*60*60),6);	
+				}
+			}
+		}
+		
+		if(isset($task->fields->$story_points))
+			$ntask->estimate = $task->fields->$story_points;
+			else if(isset($task->fields->timeoriginalestimate))
+				$ntask->estimate = $task->fields->timeoriginalestimate/(8 * 60 * 60);
+		else
+			if(isset($task->fields->timeoriginalestimate))
+				$ntask->estimate = $task->fields->timeoriginalestimate/(8 * 60 * 60);
+			else if(isset($task->fields->$story_points))
+				$ntask->estimate = $task->fields->$story_points;
+		
+///////////////////////////////////////////////////////////////////////////////////
+
 
 		if(isset($task->fields->$risk_severity))
 		{
@@ -570,15 +617,18 @@ class Task
 		}
 		//echo $ntask->other_field;
 
-		$ntask->estimate = $ntask->_orig_estimate;
+		//$ntask->estimate = $ntask->_orig_estimate;
+		//dd($ntask->estimate);
 		if($task->fields->priority->name == 'Blocker')
 			$task->fields->priority->id = 1;
 
-		if($task->fields->priority->name == 'Critical')
+		else if($task->fields->priority->name == 'Critical')
 			$task->fields->priority->id = 2;
 
-		if($task->fields->priority->name == 'Major')
+		else if($task->fields->priority->name == 'Major')
 			$task->fields->priority->id = 3;
+		else 
+			$task->fields->priority->id = 4;
 
 		$ntask->priority = $task->fields->priority->id;
 
@@ -624,8 +674,9 @@ class Task
 		//if($ntask->status == 'RESOLVED')
 		//	$ntask->timespent = $ntask->estimate;
 		//else
-		if($this->parent->project->estimation == 0)// story point
-			$task->fields->timespent = 0;
+		// NEW CHANGES 
+		//if($this->parent->project->estimation == 0)// story point
+		//	$task->fields->timespent = 0;
 			
 		if(isset($task->fields->timespent))
 		{
@@ -639,6 +690,7 @@ class Task
 			//echo $ntask->key." ".$task->fields->timespent." ".$ntask->timespent."<br>";
 			$ntask->otimespent = $ntask->timespent;
 		}
+
 		if(isset($task->fields->duedate)&&($ntask->status != 'RESOLVED'))
 		{
 			$ntask->duedate = $task->fields->duedate;
@@ -855,7 +907,7 @@ class ProjectTree
 	private $status_array = null;
 	private $globaltaskquery=null;
 
-	function __construct(Project $project)
+	function __construct(Project $project,$baselinetree=null)
 	{
 		//dd($project);
 		$user = $project->user()->first();
@@ -878,17 +930,23 @@ class ProjectTree
 		$globaltaskquery = explode("taskquery=",$project->description);
 		if(count($globaltaskquery)>1)
 			$this->globaltaskquery=$globaltaskquery[1];
-
-		if(file_exists($this->treepath))
+		
+		if($baselinetree != null)
 		{
-			$this->tree = unserialize(file_get_contents($this->treepath));
+			$this->tree = $baselinetree;
 			$this->FindDuplicates($this->tree);
-			//dd($this->tasks);
-			//echo "ff";
-			//dd($this->tree->oa);
 		}
-
-
+		else
+		{
+			if(file_exists($this->treepath))
+			{
+				$this->tree = unserialize(file_get_contents($this->treepath));
+				$this->FindDuplicates($this->tree);
+				//dd($this->tasks);
+				//echo "ff";
+				//dd($this->tree->oa);
+			}
+		}
 	}
 	private function ParseForSetting($setting,$str)
 	{
@@ -1084,7 +1142,7 @@ testedby=true"	*/
 		{
 			if($task->duplicate == 1)
 				return 0;
-			return $task->_orig_estimate;
+			return $task->oestimate;
 		}
 		$children = $task->children;
 		$acc = 0;
@@ -1098,17 +1156,20 @@ testedby=true"	*/
 	{
 		if($task->isparent == 0)
 		{
-			if($task->_projectestimation == 0)//Story points
-			{
 				if($task->duplicate == 1)
 					return 0;
-				return $task->estimate;
+			//if($task->_projectestimation == 0)//Story points
+			//{
+			//	if($task->duplicate == 1)
+			//		return 0;
+			//	return $task->estimate;
 
-			}
+			//}
 			if($task->timespent > $task->estimate)
 				$task->estimate = $task->timespent;
 			if($task->status == 'RESOLVED')
 			{
+				
 				//if($task->key == 'NUC4-2516')
 				//	dd($task);
 				//if($task->timespent > 0) // if no work logged , make work= estimes
@@ -1124,10 +1185,12 @@ testedby=true"	*/
 		$acc = 0;
 		foreach($task->children as $child)
 		{
+			//echo $child->key." ".$task->status."  ".$task->estimate."\n";
 			$e = $this->ComputeEstimate($child);
+			//echo $e."  "."timespent=".$child->timespent."\n";
 			$acc += $e;
 		}
-
+		//echo $acc."\n";
 		$task->estimate = $acc;
 		return $task->estimate;
 	}
@@ -1569,7 +1632,9 @@ testedby=true"	*/
 		if(file_exists($this->baselinepath))
 		{
 			$this->baselinetree = unserialize(file_get_contents($this->baselinepath));
-			$baselineproject = new ProjectTree($this->project);
+			$baselineproject = new ProjectTree($this->project,$this->baselinetree);
+			//$baselineproject->tree = $this->baselinetree;
+			//dd($baselineproject);
 			return $baselineproject;
 		}
 		return null;
@@ -1622,6 +1687,14 @@ testedby=true"	*/
 	 }
 	private function _GetWeeklyWorkLog($task)
 	{
+		//if($task->status == 'RESOLVED')
+		//{
+		//	$this->_GetWeeklyStorypoints($task);
+			
+		//}
+		//else
+		$estimate = $task->estimate*8;
+		{
 		if($task->isparent == 0)
 		{
 			//$acc = 0;
@@ -1641,16 +1714,40 @@ testedby=true"	*/
 					}
 					$worklog->jira = $task->key;
 					$worklog->summary = $task->summary;
+						
 					unset($worklog->timeZone);
 					unset($worklog->email);
 					$this->weeklylogs[$y][$w][$date][] = $worklog;
+						$estimate = $estimate - $worklog->hours;
 					//$acc += $worklog->hours;
 				}
 			}
+				if(($task->status == 'RESOLVED')&&($estimate > 0))
+				{
+					$dte = new \DateTime($task->closedon);
+					//echo "-->".$task->closedon."<--".var_dump($dte)."#<br>";
+					$user = $task->assignee;
+					$worklog =  new \StdClass();
+					$y = $dte->format("Y");
+					$w = $dte->format("W");
+					$w = (int)$w;
+					{
+						$m = $dte->format("m");
+						if($m == 12)
+							$w = 53;
+					}
+					$worklog->jira = $task->key;
+					$worklog->summary = $task->summary;
+					$worklog->hours = $estimate;
+					// echo $task->key."  ".$task->estimate."<br>";
+					$this->weeklylogs[$y][$w][$task->closedon][] = $worklog;
+				}
 			//echo $task->key." ".$task->timespent." ".($acc/8)."<br>";
 		}
 		else foreach($task->children as $stask)
 			$this->_GetWeeklyWorkLog($stask);
+	}
+		//$this->_GetWeeklyStorypoints($task);
 	}
 	public function GetWeeklyWorkLog($task)
 	{
@@ -1665,6 +1762,9 @@ testedby=true"	*/
 			ksort($this->weeklylogs[$year]);
 		}
 		ksort($this->weeklylogs);
+
+		//unset($this->weeklylogs['2020']);
+		//dd($this->weeklylogs);
 		return $this->weeklylogs;
 	}
 	private function _GetWeeklyStorypoints($task)
@@ -1690,7 +1790,11 @@ testedby=true"	*/
 			}
 			$worklog->jira = $task->key;
 			$worklog->summary = $task->summary;
+			//if($task->total_worklog_hours < $task->timespent)
+			//	$worklog->hours = $task->timespent - $task->total_worklog_hours;
+			//else
 			$worklog->hours = $task->timespent * 8;
+			
 			$this->weeklylogs[$y][$w][$task->closedon][] = $worklog;
 		}
 		else foreach($task->children as $stask)
@@ -1846,11 +1950,23 @@ testedby=true"	*/
 
 		//$logs = $this->GetWeeklyWorkLog($task);
 		if($this->project->estimation == 0)// story points
+		{
 			$logs = $this->GetWeeklyStorypoints($task);
+			
+			//if(count($logs) == 0)
+			//	$logs = $this->GetWeeklyWorkLog($task);
+		}
 		else
+		{
 			$logs = $this->GetWeeklyWorkLog($task);
+			//if(count($logs) == 0)
+			//	$logs = $this->GetWeeklyStorypoints($task);
+		}
 
-
+		
+		//unset($logs['2020']);
+		
+		
 		//$logs = $this->GetWeeklyStorypoints($task);
 		
 		//$logs = $this->GetWeeklyStorypoints($task);
@@ -1879,6 +1995,7 @@ testedby=true"	*/
 							$processedworklogs[$date]->hours +=  $worklog->hours;
 							$processedworklogs[$date]->acchours = $acchours + $worklog->hours;
 							$acchours = $processedworklogs[$date]->acchours;
+							//echo $date."  ".$acchours."<br>";
 						}
 						else
 						{
@@ -1886,6 +2003,7 @@ testedby=true"	*/
 							$processedworklogs[$date]->hours =  $worklog->hours;
 							$processedworklogs[$date]->acchours = $acchours + $worklog->hours;
 							$acchours = $processedworklogs[$date]->acchours;
+							//echo $date."  ".$acchours."<br>";
 						}
 					}
 					if(($date < $task->_tstart)&&($date > $previousworkdate))
@@ -1898,7 +2016,20 @@ testedby=true"	*/
 
 		
 		//dd($processedworklogs);
-		ksort($processedworklogs);
+		//ksort($processedworklogs);
+		//for($i=0;$i<$count(processedworklogs)
+		$lastlog = null;
+		foreach($processedworklogs as $data=>$log)
+		{
+			if($lastlog == null)
+			{
+				$lastlog = $log;
+				continue;
+			}
+			if($log->acchours < $lastlog->acchours)
+				$lastlog->acchours = $log->acchours;
+			$lastlog = $log;
+		}
 		//dd($processedworklogs);
 		$accdays = $acchours/8;
 		$unloggedwork = $task->timespent - $accdays;
@@ -2007,7 +2138,7 @@ testedby=true"	*/
 
 		if(floor($lastwork) > $task->estimate)
 		{
-			dd("Not possible ".floor($lastwork)." > ".$task->estimate." ".__file__." ".__line__);
+			//dd("Not possible ".floor($lastwork)." > ".$task->estimate." ".__file__." ".__line__);
 		}
 
 		//dd($range);

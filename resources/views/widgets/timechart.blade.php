@@ -220,7 +220,7 @@ function FormatDataForGantt(data)
 		monthdatasource = FormatDataForGantt(ModifyData(data,endOfMonth));
 
 		var scale = "days";
-    var settings = {
+		var settings = {
         source: daydatasource,
         navigate: "scroll",
         scale: scale,
@@ -281,17 +281,17 @@ function FormatDataForGantt(data)
 								});
             }
         }};
-    $(".gantt").gantt(settings);
-    /*$(".gantt").popover({
-        selector: ".bar",
-        title: function _getItemText() {
-            return this.textContent;
-        },
-        container: '.gantt',
-        content: "Here's some useful information.",
-        trigger: "hover",
-        placement: "auto right"
-    });*/
+		$(".gantt").gantt(settings);
+		/*$(".gantt").popover({
+			selector: ".bar",
+			title: function _getItemText() {
+				return this.textContent;
+			},
+			container: '.gantt',
+			content: "Here's some useful information.",
+			trigger: "hover",
+			placement: "auto right"
+		});*/
 
     //prettyPrint();
 

@@ -97,21 +97,23 @@ class Tj
 	{	
 		$tname = trim($task->extid)." ".substr($task->summary,0,10);
 		$pos  = strpos($task->summary,'$');// Task name with $ sign causes schedular error
-		if($pos != FALSE)
+		if($pos !== false)
 			$taskname = str_replace("$","-",$task->summary);
 		else
 			$taskname = $task->summary;
+		$first = substr($task->summary,0);
+		
 		
 		$pos  = strpos($taskname,';');// Task name with $ sign causes schedular error
-		if($pos != FALSE)
+		if($pos !== false)
 			$taskname = str_replace(";","-",$taskname);
 	
 		$pos  = strpos($taskname,'(');// Task name with $ sign causes schedular error
-		if($pos != FALSE)
+		if($pos !== false)
 			$taskname = str_replace("(","-",$taskname);
 		
 		$pos  = strpos($taskname,'\\');// Task name with $ sign causes schedular error
-		if($pos != FALSE)
+		if($pos !== false)
 			$taskname = str_replace("\\","-",$taskname);
 		
 		$taskname = str_replace('"',"'",$taskname);
@@ -310,15 +312,15 @@ class Tj
 		
 		"
 		
-		taskreport monthreporthtml \"monthreporthtml\" {
-			formats html
-			columns bsi, name, start, end, effort,resources, complete,Jira, monthly
+		#taskreport monthreporthtml \"monthreporthtml\" {
+		#	formats html
+		#	columns bsi, name, start, end, effort,resources, complete,Jira, monthly
 			# For this report we like to have the abbreviated weekday in front
 			# of the date. %a is the tag for this.
-			timeformat \"%a %Y-%m-%d\"
-			loadunit hours
-		    hideresource @all
-		}
+		#	timeformat \"%a %Y-%m-%d\"
+		#	loadunit hours
+		#    hideresource @all
+		#}
 		
 		taskreport monthreport \"monthreport\" {
 			formats csv
@@ -330,57 +332,57 @@ class Tj
 			hideresource @all
 		}
 		
-		taskreport weekreporthtml \"weekreporthtml\" {
-			formats html
-			columns bsi, name, start, end, effort,resources, complete,Jira, weekly
+		#taskreport weekreporthtml \"weekreporthtml\" {
+		#	formats html
+		#	columns bsi, name, start, end, effort,resources, complete,Jira, weekly
 			# For this report we like to have the abbreviated weekday in front
 			# of the date. %a is the tag for this.
-			timeformat \"%Y-%m-%d\"
-			loadunit hours
-			hideresource @all
-		}
+		#	timeformat \"%Y-%m-%d\"
+		#	loadunit hours
+		#	hideresource @all
+		#}
 		
-		taskreport weekreport \"weekreport\" {
-			formats csv
-			columns bsi { title \"ExtId\" },name, start { title \"Start\" }, end { title \"End\" }, resources { title \"Resource\" }, weekly
+		#taskreport weekreport \"weekreport\" {
+		#	formats csv
+		#	columns bsi { title \"ExtId\" },name, start { title \"Start\" }, end { title \"End\" }, resources { title \"Resource\" }, weekly
 			# For this report we like to have the abbreviated weekday in front
 			# of the date. %a is the tag for this.
-			timeformat \"%Y-%m-%d\"
-			loadunit hours
-			hideresource @all
-		}
+		#	timeformat \"%Y-%m-%d\"
+		#	loadunit hours
+		#	hideresource @all
+		#}
 		
-		taskreport dayreporthtml \"dayreporthtml\" {
-			formats html
-			columns bsi, name, start, end, effort,resources, complete,Jira, daily
+		#taskreport dayreporthtml \"dayreporthtml\" {
+		#	formats html
+		#	columns bsi, name, start, end, effort,resources, complete,Jira, daily
 			# For this report we like to have the abbreviated weekday in front
 			# of the date. %a is the tag for this.
-			timeformat \"%Y-%m-%d\"
-			loadunit hours
-			hideresource @all
-		}
+		#	timeformat \"%Y-%m-%d\"
+		#	loadunit hours
+		#	hideresource @all
+		#}
 	
 		
-		resourcereport resourcegraphhtm \"resourcehtml\" {
-		   formats html
-		   headline \"Resource Allocation Graph\"
-		   columns no, name, effort, weekly 
+		#resourcereport resourcegraphhtm \"resourcehtml\" {
+		#   formats html
+		#   headline \"Resource Allocation Graph\"
+		#   columns no, name, effort, weekly 
 		   #loadunit shortauto
 	       # We only like to show leaf tasks for leaf resources.
-		   hidetask ~(isleaf() & isleaf_())
-		   sorttasks plan.start.up
-		}
+		#   hidetask ~(isleaf() & isleaf_())
+		#   sorttasks plan.start.up
+		#}
 		
-		resourcereport resourcegraph \"resource\" {
-		   formats csv
-		   headline \"Resource Allocation Graph\"
-		   columns name, effort, weekly 
+		#resourcereport resourcegraph \"resource\" {
+		#   formats csv
+		#   headline \"Resource Allocation Graph\"
+		#   columns name, effort, weekly 
 		   #loadunit shortauto
 	       # We only like to show leaf tasks for leaf resources.
-		   hidetask 1
+		#   hidetask 1
 		   #hidetask ~(isleaf() & isleaf_())
 		   #sorttasks plan.start.up
-		}
+		#}
 		
 		
 		
@@ -511,14 +513,20 @@ class Tj
 			
 			if(!array_key_exists($extid,$scheduled_data))
 			{
-				Utility::ConsoleLog(time(),'Error::'.$extid.' does not exit');	
+				Utility::ConsoleLog(time(),'Error::'.$task->key.' have sceduling issues');
+				$task->sched_start = '';
+				$task->sched_end = '';
+				$task->sched_assignee = '';
+				$task->sched_estimatates_month = '';		
 				//dd($scheduled_data);
 			}
-			
+			else
+			{
 			$task->sched_start = $scheduled_data[$extid]->Start;
 			$task->sched_end = $scheduled_data[$extid]->End;
 			$task->sched_assignee = $scheduled_data[$extid]->Resource;
 			$task->sched_estimatates_month = $scheduled_data[$extid]->month;
+		         }
 		}
 		//dd($this->projecttree->tasks);
 		//$this->projecttree->Save();

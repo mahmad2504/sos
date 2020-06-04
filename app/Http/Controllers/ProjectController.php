@@ -221,7 +221,7 @@ class ProjectController extends Controller
 		if($request->user_id == null)
 			abort(403, 'Missing Parameters - ProjectController@GetProjects(user_id)');
 		
-		$lastdate = date("Y-m-d",strtotime("-15 days"));
+		$lastdate = date("Y-m-d",strtotime("-150 days"));
 		if($request->showclosedprojects == 1)
 		{
 			$projects = Project::where(

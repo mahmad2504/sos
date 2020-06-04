@@ -31,7 +31,7 @@ class MilestoneController extends Controller
 		return 0;  // a should be on top
 	}
 	
-    public function Show($user, $project,$key="1")
+    public function Show(Request $request,$user, $project,$key="1")
     {
         $user = User::where('name',$user)->first();
     	if($user==null)
@@ -46,6 +46,13 @@ class MilestoneController extends Controller
     	{
     		abort(403, 'Project Not Found');
 		}
+		
+		$projectdata = $this->GetStatus($project,$key);
+		if($projectdata == null)
+			abort(403, 'Key '.$key.' Not Found');
+		
+		//dump($data);
+		
 		$projecttree = new ProjectTree($project);
 		$head = $projecttree->GetTask($key);
 		if($head == null)
@@ -57,16 +64,26 @@ class MilestoneController extends Controller
 		
 		$baselinetree = $projecttree->ReadBaseline();
 		$data = [];
+		$now = time(); // or your date as well
 		for($i=0;$i<count($milestones);$i++)
 		{
 			$task = $milestones[$i];
 			$row = $this->GetStatus($project,$task->key);
+			$end_date = strtotime($row['tend']);
+			$datediff =  $end_date-$now;
+			$row['days_remaining'] = 0;
+			if($datediff > 0)
+				$row['days_remaining'] = round($datediff / (60 * 60 * 24));
 			if($row != null)
 				$data[] = $row;
 		}
-		$isloggedin = $this->isloggedin;
 		
-		return View('widgets.milestone',compact('user','project','isloggedin','data','key'));
+			
+		$isloggedin = $this->isloggedin;
+		if($request->view == null)
+			return View('widgets.milestone',compact('user','project','isloggedin','data','key'));
+		else
+			return View('widgets.milestone1',compact('projectdata','user','project','isloggedin','data','key'));
 	}
 	private function FillStatusData($task,$baselinetask,$project)
 	{
@@ -122,8 +139,11 @@ class MilestoneController extends Controller
 		if($baselinetree != null)
 		{
 			$baselinetask = $baselinetree->GetTask($key);
-			$data['bend'] = $baselinetask->_tend;
-			$data['bestimate'] =  $baselinetask->_orig_estimate;
+			if($baselinetask != null)
+			{
+				$data['bend'] = $baselinetask->_tend;
+				$data['bestimate'] =  $baselinetask->_orig_estimate;
+			}
 		}
 		$data = $this->FillStatusData($task,$baselinetask,$project);
 		$data['risksissues'] = $projecttree->GetRiskAndIssues($task);
@@ -162,12 +182,20 @@ class MilestoneController extends Controller
 			$milestone->key = $m->key;
 			$milestones[] = $milestone;
 		}
+		
 		$iframe = $request->iframe;
 		if($iframe == null)
 			$iframe = 0;
 		else
 			$iframe  = 1;
-		return View('widgets.status',compact('user','project','isloggedin','data','key','milestones','iframe'));
+		
+		$showhours = $request->showhours;
+		if($showhours == null)
+			$showhours = 0;
+		else
+			$showhours = 1;
+		
+		return View('widgets.status',compact('user','project','isloggedin','data','key','milestones','iframe','showhours'));
 	}
 	
 }

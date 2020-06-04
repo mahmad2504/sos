@@ -56,6 +56,7 @@ body {
 </div>
 <script src="{{ asset('js/msc-script.js') }}" ></script>
 <script src="{{ asset('js/dygraph.min.js') }}" ></script>
+
 @endsection
 @section('script')
 var user = @json($user);

@@ -74,6 +74,10 @@ Route::get('/widget/excel/{user}/{project}','Widgets\ReportController@Downloadex
 //// Burnup
 Route::get('/widget/burnup/{user}/{project}/{key?}','Widgets\BurnupController@Show')->name('showwburnupchart');
 
+//// Defect
+Route::get('/widget/defects/{user}/{project}/{key?}','Widgets\DefectController@Show')->name('showdefectchart');
+
+
 /// Milestone Report
 Route::get('/widget/milestone/{user}/{project}/{key?}','Widgets\MilestoneController@Show')->name('showwmilestonereport');
 

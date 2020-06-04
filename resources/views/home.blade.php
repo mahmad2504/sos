@@ -302,6 +302,14 @@ function ShowTable()
 				formatter:function(cell, formatterParams, onRendered)
 				{
 					data = cell.getRow().getData();
+					data.requirements = 0;
+					if(cell.getValue().toUpperCase().includes('REQUIREMENTS'))
+					{
+						data.requirements = 1;
+						$(cell.getElement()).css({"color":"green"});
+					}
+					
+					
 					if(data.status !== undefined)
 					{
 						risks = GetRisksIssues(data.status,'risks');
@@ -335,12 +343,13 @@ function ShowTable()
 							badge = GetBadge(escalations.type);
 							html += '<span style="margin-top:2px;" title="Escalations '+escalations.references+'" class="d-flex float-right badge '+badge+'">'+escalations.count+'</span>';
 						}
-						
+						return cell.getValue();
 						return html;
 					}
 					return cell.getValue();
 				}
 			},
+			//{width:90,title:"Estimate", field:"requirements", sorter:"numeric"},
 			/*{width:100,title:"Estimation", field:"estimation", sorter:"string",
 				formatter:function(cell, formatterParams, onRendered){
 					if(cell.getValue() == 1)
@@ -413,6 +422,8 @@ function ShowTable()
 				{
 					row = cell.getRow();
 					data = row.getData();
+					if(data.requirements == 1)
+						return '';
 					value  = data.status.status;
 					return "<img width='80px' src='/images/"+value+".png'></img>"; 
 

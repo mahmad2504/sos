@@ -100,8 +100,9 @@ var isloggedin = {{$isloggedin}};
 var data = @json($data);
 var milestones = @json($milestones);
 var key = '{{$key}}';
-var baseurl = '{{route('showwmilestonestatus',[$user->name,$project->name])}}';
-var iframe = {{$iframe}}
+var baseurl = '{{route('showwmilestonestatus',[$user->name,$project->id])}}';
+var iframe = {{$iframe}};
+var showhours = {{$showhours}};
 
 'use strict';
 if(iframe == 0)
@@ -254,6 +255,13 @@ $(function()
     estimate = Math.round(data['estimate']);
     bestimate = Math.round(data['bestimate']);
     consumed = Math.round(data['consumed']);
+	
+	if(showhours==1)
+	{
+		estimate = Math.round(data['estimate']*8);
+		bestimate = Math.round(data['bestimate']*8);
+		consumed = Math.round(data['consumed']*8);
+	}
     remaining = estimate - consumed;
 
     if(project.estimation == 0)
@@ -278,16 +286,37 @@ $(function()
     {
         $('#headerearned').text('Time Spent');
         if(estimate > 0)
+		{
+			if(showhours ==1)
+				$('#estimate').text(estimate+" Hours of work" ); 
+			else
             $('#estimate').text(estimate+" Days of work" ); 
+		}
 
         if(bestimate > 0)
+		{
+			if(showhours ==1)
+				$('#bestimate').text(bestimate+" Hours of work" ); 
+			else
             $('#bestimate').text(bestimate+" Days of work" ); 
+		}
+			
         
         if(consumed > 0)
+		{
+			if(showhours ==1)
+				 $('#consumed').text(consumed+" Hours of work" );
+			else
             $('#consumed').text(consumed+" Days of work" );
+		}
 
         if(remaining > 0)
+		{
+			if(showhours ==1)
+				$('#remaining').text(remaining+" Hours of work" );
+			else
             $('#remaining').text(remaining+" Days of work" );
+		}
 		else
 			$('#remaining').text("0");
     }
@@ -345,13 +374,9 @@ $(function()
     });
     $('#milestones').on('change', '', function (e) {
 		var optionSelected = $('#milestones').prop('selectedIndex');
-		console.log(optionSelected);
 		milestone = milestones[optionSelected];
 		url = baseurl+"/"+milestone.key;
-        console.log(url);
         window.location.href = url;
-
 	});
-
 });
 @endsection
