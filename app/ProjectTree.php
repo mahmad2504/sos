@@ -187,6 +187,7 @@ class Task
 		$this->assignee = 'unassigned';
 		$this->fixVersions = [];
 		$this->allfixVersions = [];
+		$this->allsprints = [];
 		$this->labels = [];
 		$this->description = '';
 		$this->created = '';
@@ -265,6 +266,7 @@ class Task
 		//dd($tasks);
 		return $tasks;
 	}
+	
 	private function ParseSprintData_newversion($task,$ntask,$sprint)
 	{
 		$lastid = 0;
@@ -1067,6 +1069,7 @@ testedby=true"	*/
 					if(!in_array ($fixVersion,$parent->allfixVersions))
 						$parent->allfixVersions[] = $fixVersion;
 				}
+				$parent->allsprints[$t->sprintname]=$t->sprintname;
 				$parent = $parent->_parenttask;
 			}
 		}

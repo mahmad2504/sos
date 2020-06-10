@@ -117,7 +117,13 @@ figure figcaption {
 				<a href="{{route('showdefectchart',[$user->name,$project->id])}}"><img class="widget" src="/images/defects.png"></img></a>
 				<figcaption styleclass="caption">Defect Closed Vs Resolved</figcaption>
 			</figure>
-  </div>
+        </div>
+		<div class="col-3">
+			<figure class="item">
+				<a href="{{route('showsprintsplitchart',[$user->name,$project->id])}}"><img class="widget" src="/images/reqsprint.jpg"></img></a>
+				<figcaption styleclass="caption">Sprint Split</figcaption>
+			</figure>
+        </div>
   </div>
   
   <div style="margin-top:10px;" class="row">

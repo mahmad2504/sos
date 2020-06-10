@@ -55,6 +55,9 @@ Route::get('/program/summary/{user}', 'Widgets\ProgramViewController@ShowSummary
 // Widgets
 Route::get('/widget/treeview/{user}/{project}','Widgets\TreeViewController@Show')->name('showtreeview');
 Route::get('/widget/data/treeview/{id}','Widgets\TreeViewController@GetData')->name('gettreeviewdata');// project id
+//showsprintsplitchart
+Route::get('/widget/sprintsplit/{user}/{project}','Widgets\TreeViewController@ShowSprintSplit')->name('showsprintsplitchart');
+
 
 Route::get('/widget/gantt/{user}/{project}/{key?}','Widgets\GanttController@Show')->name('showgantt');
 Route::get('/widget/data/gantt/{projectid}/{key?}','Widgets\GanttController@GetData')->name('getganttdata');// project id

@@ -1,0 +1,46 @@
+:root{
+    --rgbTheme:19,113,71;
+    --rgbFont: 50, 50, 50;
+    --rgbHeaderFont: 0, 0, 0;
+    --rgbRow: 255, 255, 255;
+}
+
+.RmoTable{
+    border-spacing: 0;
+    cursor: default;
+    font-size: 13px;
+	//table-layout: fixed;
+    white-space: nowrap;
+    width: 100%;
+}
+.RmoTable th{
+    
+    border-bottom: 1px solid rgba(var(--rgbTheme), 1);
+    border-left: 1px solid rgba(var(--rgbTheme), 1);
+    border-top: 1px solid rgba(var(--rgbTheme), 1);
+    color: rgba(var(--rgbHeaderFont), 1);
+    font-weight: bold;
+    line-height: 1.2;
+    padding: 8px 0;
+    text-align: center;
+	//width: 200px;
+}
+.RmoTable th:last-child{
+    border-right: 1px solid rgba(var(--rgbTheme), 1);
+}
+.RmoTable td:last-child{
+    border-right: 1px solid rgba(var(--rgbTheme), 0.5);
+}
+
+.RmoTable tr td{
+    border-bottom: 1px solid rgba(var(--rgbTheme), 0.5);
+    border-left: 1px solid rgba(var(--rgbTheme), 0.5);
+    //height: 30px;
+}
+.highlight
+{
+    border-top:solid 2px black ;
+    border-left:solid 2px black !important;
+    border-bottom:solid 2px black !important;
+    border-right:solid 2px black;
+}

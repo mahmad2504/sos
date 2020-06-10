@@ -68,6 +68,139 @@ class TreeViewController extends Controller
 		}
 	
 	}
+	public function ProcessSprintName($task)
+	{
+		$sprints=[];
+		
+		foreach($task->allsprints as $sprint)
+		{
+			$sprint_name = $sprint;
+			$sprint = preg_split("/ /", $sprint);
+			if(count($sprint)==0)
+			{
+				continue;
+				
+			}
+			
+			$obj =new \StdClass();
+			//dump($sprint);
+			if(in_array('CB',$sprint))
+				$obj->team = 'CB';
+			else if(in_array('NUC',$sprint))
+				$obj->team = 'NUC';
+			else if(in_array('MEIF',$sprint)) 
+				$obj->team = 'MEIF';
+			else
+				$obj->team = 'UNKN';
+			
+			if(in_array('2019',$sprint))
+				$obj->year = '2019';
+			else if(in_array('2020',$sprint))
+				$obj->year = '2020';
+			else if(in_array('2021',$sprint))
+				$obj->year = '2021';
+			else if(in_array('2022',$sprint))
+				$obj->year = '2022';
+			else if(in_array('2023',$sprint))
+				$obj->year = '2023';
+			else
+				continue;
+			
+			$obj->number = $sprint[count($sprint)-1];
+			if(strlen($obj->number)==1)
+				$obj->number = "0".$obj->number;
+			$obj->origname = $sprint_name;
+			$sprints[] = $obj;
+		}
+		return $sprints;
+	}
+	function cmp($a, $b) 
+	{
+		$a = $a->team.$a->year.$a->number;
+		$b = $b->team.$b->year.$b->number;
+		if ($a == $b) {
+			return 0;
+		}
+		return ($a < $b) ? -1 : 1;
+	}
+	public function ProcessSprints($task,$firstcall=1)
+	{
+		$task->allsprints = $this->ProcessSprintName($task);
+		usort( $task->allsprints, array( $this, 'cmp' ) ); 
+		$task->sprintsplit = [];
+		foreach($task->allsprints as $sprint)
+		{
+			if(!isset($task->sprintsplit[$sprint->team]))
+				$task->sprintsplit[$sprint->team] = [];
+			$task->sprintsplit[$sprint->team][] = $sprint;
+		}
+		krsort($task->sprintsplit);
+		//dd($task->sprintsplit);
+			
+		foreach($task->children as $ctask)
+		{
+			$this->ProcessSprints($ctask,0);
+		}
+		
+	}
+	public function ShowSprintSplit(Request $request)
+	{
+		if($request->user == null || $request->project==null)
+			abort(403, 'Some Missing Parameters ShowTreeView(project id/name)');
+		$user = $request->user;
+		$project = $request->project;
+		
+    	$user = User::where('name',$user)->first();
+    	if($user==null)
+    	{
+    		abort(403, 'Account Not Found');
+    	}
+		if(ctype_digit($project))
+			$project = $user->projects()->where('id',$project)->first();
+		else
+			$project = $user->projects()->where('name',$project)->first();
+		if($project==null)
+    	{
+    		abort(403, 'Project Not Found');
+    	}
+		if($project==null)
+    	{
+    		abort(403, 'Project Not Found');
+		}
+		$isloggedin = Auth::check();
+		if($isloggedin)
+			$isloggedin = 1;
+		else
+            $isloggedin = 0;
+		
+		$iframe = $request->iframe;
+		if($iframe == null)
+			$iframe = 0;
+		else
+			$iframe  = 1;
+		
+		$projecttree = new ProjectTree($project);
+		$url = $projecttree->GetJiraUrl();
+		
+		//dd($projecttree->tree);
+		$tree = $projecttree->GetHead();
+		
+		$this->ProcessSprints($tree);
+		$data = [];
+		foreach($tree->children as $child)
+		{
+			$obj = new \StdClass();
+			$obj->key = $child->key;
+			$obj->summary = $child->summary;
+			$obj->sprintsplit = $child->sprintsplit;
+			$data[] = $obj;
+		}
+		//$data = [];
+		//$data[] = $data1[0];
+		return View('widgets.sprintsplit',compact('url','user','project','isloggedin','data'));
+		//dd("I am here");
+		
+	}
     public function Show(Request $request)
     {
 		if($request->user == null || $request->project==null)
