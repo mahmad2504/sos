@@ -71,7 +71,6 @@ class TreeViewController extends Controller
 	public function ProcessSprintName($task)
 	{
 		$sprints=[];
-		
 		foreach($task->allsprints as $sprint)
 		{
 			$sprint_name = $sprint;
@@ -91,7 +90,7 @@ class TreeViewController extends Controller
 			else if(in_array('MEIF',$sprint)) 
 				$obj->team = 'MEIF';
 			else
-				$obj->team = 'UNKN';
+				continue;
 			
 			if(in_array('2019',$sprint))
 				$obj->year = '2019';
@@ -143,6 +142,20 @@ class TreeViewController extends Controller
 		}
 		
 	}
+	public function GetChildEpics($task)
+	{
+		$data = [];
+		foreach($task->children as $child)
+		{
+			$obj = new \StdClass();
+			$obj->key = $child->key;
+			$obj->summary = $child->summary;
+			$obj->sprintsplit = $child->sprintsplit;
+			$data[] = $obj;
+		}
+		return $data;
+	}
+	//mujhey pata nahin kion aysi aurat buhut dilchasp lagit hey jo  nikah keh baad mard ki banhoun main lutf ley 
 	public function ShowSprintSplit(Request $request)
 	{
 		if($request->user == null || $request->project==null)
@@ -193,8 +206,10 @@ class TreeViewController extends Controller
 			$obj->key = $child->key;
 			$obj->summary = $child->summary;
 			$obj->sprintsplit = $child->sprintsplit;
+			$obj->children = $this->GetChildEpics($child);
 			$data[] = $obj;
 		}
+		//dd($data);
 		//$data = [];
 		//$data[] = $data1[0];
 		return View('widgets.sprintsplit',compact('url','user','project','isloggedin','data'));

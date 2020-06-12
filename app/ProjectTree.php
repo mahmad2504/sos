@@ -358,20 +358,32 @@ class Task
 				}
 			}
 		}
+		
+		if(strpos($sprintstate, 'CLOSED') !== false)
+			$sprintstate = 'CLOSED';
+
 		if(($sprintstate == 'CLOSED')&&($ntask->status != 'RESOLVED'))
 			return;
 		if(!isset($sprintno))
 			return;
 		
+		//if($ntask->status != 'RESOLVED')
+		//	dd($ntask);
+	
 		$ntask->sprintname = $sprintname;
 		$ntask->sprintstate = $sprintstate;
 		$ntask->sprintid = $sprintid;
 		
 		$ntask->sprintno = $sprintno;
+		//if($ntask->key == 'INDLIN-947')
+		//	dd($ntask);
+		
 		if($sprintstart != '<null>')
 			$ntask->sprintstart = explode('T',$sprintstart)[0];
 		if($sprintend != '<null>')
+		{
 			$ntask->sprintend = explode('T',$sprintend)[0];
+	}
 	}
 	public function CreateTask($jiraconf,$task,$level,$pextid,$pos)
 	{

@@ -87,6 +87,63 @@ boundary["2023-0-1"]={y:2022,w:52};
 boundary["2024-11-30"]={y:2025,w:1};
 boundary["2024-11-31"]={y:2025,w:1};
 
+var sprint = [];
+sprint['2020_1'] = 1;
+sprint['2020_4'] = 2;
+sprint['2020_7'] = 3;
+sprint['2020_10'] = 4;
+sprint['2020_13'] = 5;
+sprint['2020_16'] = 6;
+sprint['2020_19'] = 7;
+sprint['2020_22'] = 8;
+sprint['2020_25'] = 9;
+sprint['2020_28'] = 10;
+sprint['2020_31'] = 11;
+sprint['2020_34'] = 12;
+sprint['2020_37'] = 13;
+sprint['2020_40'] = 14;
+sprint['2020_43'] = 15;
+sprint['2020_46'] = 16;
+sprint['2020_49'] = 17;
+sprint['2020_52'] = 18;
+sprint['2021_2'] = 1;
+sprint['2021_5'] = 2;
+sprint['2021_9'] = 3;
+sprint['2021_12'] = 4;
+sprint['2021_15'] = 5;
+sprint['2021_18'] = 6;
+sprint['2021_21'] = 7;
+sprint['2021_24'] = 8;
+sprint['2021_27'] = 9;
+sprint['2021_30'] = 10;
+sprint['2021_33'] = 11;
+sprint['2021_36'] = 12;
+sprint['2021_39'] = 13;
+sprint['2021_42'] = 14;
+sprint['2021_45'] = 15;
+sprint['2021_48'] = 16;
+sprint['2021_51'] = 17;
+sprint['2021_54'] = 17;
+sprint['2022_1'] = 17;
+sprint['2022_2'] = 1;
+sprint['2021_5'] = 2;
+sprint['2021_8'] = 3;
+sprint['2021_11'] = 4;
+sprint['2021_14'] = 5;
+sprint['2021_17'] = 6;
+sprint['2021_20'] = 7;
+sprint['2021_23'] = 8;
+sprint['2021_26'] = 9;
+sprint['2021_29'] = 10;
+sprint['2021_32'] = 11;
+sprint['2021_35'] = 12;
+sprint['2021_38'] = 13;
+sprint['2021_41'] = 14;
+sprint['2021_44'] = 15;
+sprint['2021_47'] = 16;
+sprint['2021_50'] = 17;
+sprint['2022_1'] = 1;
+
 var rows = [];
 function scrollTo(id)
 {
@@ -96,6 +153,7 @@ function scrollTo(id)
 
 function Rmo(start,end)
 {
+	start = '2020-01-01';
 	var self = this;
 	this.today_color='#8FBC8F';
 	this.start = start;
@@ -208,6 +266,8 @@ function Rmo(start,end)
 		var monthArray=[];
 		var weekArray=[];
 		var sprintArray=[];
+		var _sprint=1;
+		var last_sprint ='';
 		for (i = 0; i < dateArray.length; i ++ ) 
 		{
 			weekinfo=dateArray[i].GetWeekNumber();
@@ -227,13 +287,17 @@ function Rmo(start,end)
 			console.log(dateArray[i].today);
 			weekArray[year+"_"+week].push({'week':week,'today':today,'date':dateArray[i]});
 		   
-		    var sprint = Math.floor(week/3);
-			if(week%3 > 0)
-				sprint = sprint+1;
-			if(sprintArray[year+"_"+sprint] === undefined)
-				sprintArray[year+"_"+sprint]=[];
+		    console.log(year+"_"+week+ "   " +sprint[year+"_"+week]);
+		    if(sprint[year+"_"+week] != undefined)
+			{
+				_sprint = sprint[year+"_"+week];
+				last_sprint = year+"_"+_sprint;
+			}
 			
-			sprintArray[year+"_"+sprint].push({'year':year,'sprint':sprint,'today':today,'date':dateArray[i]});
+			if(sprintArray[last_sprint] === undefined)
+				sprintArray[last_sprint]=[];
+			
+			sprintArray[last_sprint].push({'year':year,'sprint':_sprint,'today':today,'date':dateArray[i]});
 			
 			year=dateArray[i].getFullYear();
 			if(yearArray[year] === undefined)
@@ -246,6 +310,7 @@ function Rmo(start,end)
 			
 			monthArray[year+"_"+month].push({'year':year,'today':today,'date':dateArray[i]});
 		}
+	console.log(weekArray);
 		ret = {};
 		ret.dayArray = dateArray;
 		ret.weekArray = weekArray;
@@ -254,6 +319,7 @@ function Rmo(start,end)
 		ret.sprintArray= sprintArray;
 		return ret;
 	}
+
 	this.CreateTable = function(tag)
 	{
 		var table = $('<table>');
@@ -281,6 +347,7 @@ function Rmo(start,end)
 		
 		for(var i=0;i<data.length;i++)
 		{
+		
 			var j=0;
 			if(data[i].sprintsplit.length == 0)
 			{
@@ -768,7 +835,7 @@ function Rmo(start,end)
 $(document).ready(function()
 {
 	//alert(localStorage.getItem("lastname"));
-	var rmo = new Rmo('2020-01-01','2021-12-31');
+	var rmo = new Rmo('','2021-12-31');// start sho
 	rmo.Show('divtable');
 	var hidden=0;
 	$('.sprintcell').click(function(){

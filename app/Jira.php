@@ -18,6 +18,7 @@ class Jira
 	static $user = null;
 	static $pass =  null;
 	static $error = 0;
+	static $more = 0;
 	public static function Initialize($jiraconfig,$path,$rebuild=0)
 	{
 		$url = $jiraconfig['uri'];
@@ -53,10 +54,25 @@ class Jira
 
 		$resource=self::$url.'/rest/api/latest/'."search?jql=".$query.'&maxResults='.$maxresults;
 
+
 		if($fields != null)
 			$resource.='&fields='.$fields;
-
-		$utasks =  self::GetJiraResource($resource);
+		//dump($resource);
+		$startat=0;
+		$utasks = [];
+		while(1)
+		{
+			$dt =  self::GetJiraResource($resource,null,$startat);
+			$utasks = array_merge($utasks, $dt);
+			if(self::$more == 1)
+			{
+				$startat = count($utasks);
+				continue;
+			}
+			break;
+		}
+		//dd(count($utasks));
+		//dd(count($utasks));
 		//print_r($tasks);
 
 		if($utasks == null)
@@ -69,8 +85,10 @@ class Jira
 		$tasks = json_decode(file_get_contents($filename));
 		return $tasks;
 	}
-	public static  function GetJiraResource($resource,$data=null)
+	public static  function GetJiraResource($resource,$data=null,$startat=null)
 	{
+		if($startat != null)
+			$resource = $resource.'&startAt='.$startat;
 		//echo $resource."<br>";
 		self::$error = 0;
 		$curl = curl_init();
@@ -104,7 +122,7 @@ class Jira
 		{
 
 			$data = json_decode($result,true);
-
+            
 			$tasks = array();
 			if(isset($data["worklogs"]))
 			{
@@ -112,6 +130,9 @@ class Jira
 			}
 			if(isset($data["issues"]))
 			{
+				self::$more = 0;
+				if($data["maxResults"] == count($data["issues"]))
+					self::$more = 1;
 				if(count($data["issues"])==0)
 				{
 					return $tasks;
