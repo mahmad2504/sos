@@ -90,6 +90,9 @@ Route::get('/widget/status/{user}/{project}/{key?}','Widgets\MilestoneController
 // Sprints
 Route::get('/widget/sprints/{user}/{project}/{key?}','Widgets\SprintsController@ShowSprints')->name('showsprints'); 
 
+// Sprints
+Route::get('/widget/governance/{user}/{project}/{key?}','Widgets\GovernanceController@Show')->name('showgovernance'); 
+
 
 
 //// Project Resource //////
@@ -125,6 +128,10 @@ Route::get('/test/worklogs/oa/{projectid}','TestController@OAWorklogs'); // proj
 Route::get('/test/resource/timelogs/{projectid}/','TestController@ResourceTimeLogs');
 Route::get('/test/tree/show/{projectid}','TestController@ShowTree'); // project id as input param
 Route::get('/test/resource/worklogs/{projectid}','TestController@ResourceTimeLogs'); // project id as input param
+
+
+Route::get('sprintcalendar','ServicesController@ShowCalendar'); // project id as input param
+Route::get('riskcalendar','ServicesController@ShowRisksCalendar');
 
 
 Route::get('schedule', function () {

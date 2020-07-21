@@ -165,6 +165,14 @@ class Jira
 		//$data = json_decode($result);
 		//var_dump($data);
 	}
+	static  function GetIssueInSprint($boardid,$sprintid)
+	{
+		$resource=self::$url.'/rest/agile/1.0/board/'.$boardid.'/sprint/'.$sprintid.'/issue?fields=issuetype,created,summary,key,fixVersions,status,assignee,reporter,duedate';
+		//dd($resource);
+		$tasks = self::GetJiraResource($resource);
+		//dd($tasks);
+		return $tasks;
+	}
 	static  function GetWorkLogs($key)
 	{
 		//echo "Getting worklogs of ".$key."<br>";

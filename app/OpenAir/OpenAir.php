@@ -95,7 +95,7 @@ class Response
 					}
 				}
 				if($debug)
-					echo EOL;
+					echo "<br>";
 			}
 		}
 		return $returndata;
@@ -799,7 +799,10 @@ class OpenAir
 	*/
 	function _ReadWorkLogsByProjectTaskId($approved,$projecttaskid)
 	{
-		$cworklogs = new Command_ReadWorklogsByProjectTaskId($approved,$projecttaskid,1000);
+		if($projecttaskid == 76157)
+			$cworklogs = new Command_ReadWorklogsByProjectTaskId($approved,$projecttaskid,"500,1000");
+		else
+			$cworklogs = new Command_ReadWorklogsByProjectTaskId($approved,$projecttaskid,"1000");
 		$this->AddCommand($cworklogs);
 		return $cworklogs;
 	}

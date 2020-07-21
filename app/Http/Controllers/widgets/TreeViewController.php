@@ -11,12 +11,14 @@ use Auth;
 
 use App\Utility;
 use App\ProjectTree;
-
+use Carbon\Carbon;
+use App\services\Calendar;
 class TreeViewController extends Controller
 {
 	private $treedata = []; 
 	private $blockedtasks = [];
 	private $jiraurl = null;
+	private $teams = [];
 	public function Reduce($task)
 	{
 		if(isset($task->fixVersions ))
@@ -91,7 +93,7 @@ class TreeViewController extends Controller
 				$obj->team = 'MEIF';
 			else
 				continue;
-			
+			$this->teams[$obj->team]= $obj->team;
 			if(in_array('2019',$sprint))
 				$obj->year = '2019';
 			else if(in_array('2020',$sprint))
@@ -102,6 +104,10 @@ class TreeViewController extends Controller
 				$obj->year = '2022';
 			else if(in_array('2023',$sprint))
 				$obj->year = '2023';
+			else if(in_array('2024',$sprint))
+				$obj->year = '2024';
+			else if(in_array('2025',$sprint))
+				$obj->year = '2025';
 			else
 				continue;
 			
@@ -195,7 +201,7 @@ class TreeViewController extends Controller
 		$projecttree = new ProjectTree($project);
 		$url = $projecttree->GetJiraUrl();
 		
-		//dd($projecttree->tree);
+		//dd($projecttree->tree->children[17]);
 		$tree = $projecttree->GetHead();
 		
 		$this->ProcessSprints($tree);
@@ -207,12 +213,35 @@ class TreeViewController extends Controller
 			$obj->summary = $child->summary;
 			$obj->sprintsplit = $child->sprintsplit;
 			$obj->children = $this->GetChildEpics($child);
+			foreach($obj->children as $cchild)
+			{
+				$c = $projecttree->tasks[$cchild->key];
+				if($c->issuetype == 'REQUIREMENT')
+				{
+					$cchild->children = $this->GetChildEpics($c);
+				}
+				
+			}
+				//if($cchild->issuetype == 'REQUIREMENT')
+				//{
+					//$cchild->children[] = $this->GetChildEpics($cchild);
+					//dd($cchild->children);
+				//}
+			//}
 			$data[] = $obj;
 		}
-		//dd($data);
-		//$data = [];
-		//$data[] = $data1[0];
-		return View('widgets.sprintsplit',compact('url','user','project','isloggedin','data'));
+		
+		$start = Carbon::now();
+		$start->subDays(63);
+		$end = Carbon::now();
+		$end=  $end->addDays(800);
+		
+		//ob_start('ob_gzhandler');
+
+		$calendar =  new Calendar($start,$end);
+		$tabledata = $calendar->GetGridData();
+		$teams = $this->teams;
+		return View('widgets.sprintsplit',compact('url','user','project','isloggedin','data','tabledata','teams'));
 		//dd("I am here");
 		
 	}

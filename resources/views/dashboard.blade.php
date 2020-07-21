@@ -124,6 +124,12 @@ figure figcaption {
 				<figcaption styleclass="caption">Sprint Split</figcaption>
 			</figure>
         </div>
+		<div class="col-3">
+			<figure class="item">
+				<a href="{{route('showgovernance',[$user->name,$project->id])}}"><img class="widget" src="/images/governance.png"></img></a>
+				<figcaption styleclass="caption">Governance</figcaption>
+			</figure>
+        </div>
   </div>
   
   <div style="margin-top:10px;" class="row">

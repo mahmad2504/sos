@@ -98,7 +98,7 @@ class DefectController extends Controller
 		{
 			if(strtotime($week) < strtotime('-90 days')) 
 			{
-				$remove[] = $week;
+				//$remove[] = $week;
 			}
 			$obj->acc_created = $obj->created + $acc_created;
 			$acc_created = $obj->acc_created;

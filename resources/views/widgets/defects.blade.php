@@ -202,7 +202,7 @@ console.log(high_tickets);
 			xlabel: 'Date',
 			xLabelHeight :12,
 			yLabelWidth :14,
-			labels: [ "Date", "Open" ,"Fixed","Delta","Created","Closed"],
+			labels: [ "Date", "Opened" ,"Fixed","Delta","Created","Closed"],
 			
 			labelsDiv: document.getElementById('all_status'),
             labelsSeparateLines: false,
@@ -218,7 +218,7 @@ console.log(high_tickets);
             visibility: visi,
 			series: 
 			{
-					'Open': 
+					'Opened': 
 					{
                         fillGraph:true,
 						color: '#FFB6C1',
@@ -305,7 +305,7 @@ console.log(high_tickets);
 			xlabel: 'Date',
 			xLabelHeight :12,
 			yLabelWidth :14,
-			labels: [ "x", "Open" ,"Fixed","Delta","Created","Closed"],
+			labels: [ "x", "Opened" ,"Fixed","Delta","Created","Closed"],
 			labelsDiv: document.getElementById('high_status'),
             labelsSeparateLines: false,
             legend: 'always',
@@ -319,7 +319,7 @@ console.log(high_tickets);
             visibility: visi,
 			series: 
 			{
-					'Open': 
+					'Opened': 
 					{
                         fillGraph:true,
 						color: '#FFB6C1',

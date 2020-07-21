@@ -7,7 +7,8 @@ use App\Calendar;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\CalendarController;
-
+use Carbon\Carbon;
+use App\services\Calendar as SprintCalendar;
 class Task
 {
 	public $children = array();
@@ -258,12 +259,11 @@ class Task
 		if($backlog_priority != '')
 			$backlog_priority=$backlog_priority.",";
 			
-		$fields = $backlog_priority.'statuscategorychangedate,created,labels,updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,fixVersions';
+		$fields = $backlog_priority.'statuscategorychangedate,created,labels,updated,duedate,id,subtasks,resolutiondate,description,summary,status,issuetype,priority,assignee,issuelinks,fixVersions,reporter';
 		if($this->parent->project->task_description==1)
 			$fields .= ',description';
 
 		$tasks = Jira::Search($query,1000,$fields.','.$story_points.','.$risk_severity.',timeoriginalestimate,timespent,'.$sprint.",".$other_field.",".$escalate,$order);
-		//dd($tasks);
 		return $tasks;
 	}
 	
@@ -420,6 +420,7 @@ class Task
 		
 		if(isset($task->fields->status->statusCategory))
 		{
+			$ntask->statusCategory = $task->fields->status->statusCategory->name;
 			$status1 = $this->MapStatus($task->fields->status->statusCategory->name);
 			$status2 = $ntask->status = $this->MapStatus($task->fields->status->name);
 			if($status1 != $status2)
@@ -481,10 +482,18 @@ class Task
 			$ntask->backlog_priority = $task->fields->$backlog_priority;
 		
 		$this->ParseSprintData($task,$ntask,$sprint);
+	
 
+		if(isset($task->fields->reporter))
+		{
+			$ntask->reporter = $task->fields->reporter->displayName;
+	
+		}
+		$ntask->assignedto = 'None';
 		if(isset($task->fields->assignee))
 		{
 			$resource =  new Resource;
+			$ntask->assignedto = $task->fields->assignee->displayName;
 			if(!isset($task->fields->assignee->name))
 			{
 				$task->fields->assignee->name = explode(" ",$task->fields->assignee->displayName)[0];
@@ -550,10 +559,15 @@ class Task
 		}
 		if($ntask->issuetype == 'EPIC')
 		{
+			if($ntask->parent->settings->issuesinepic == 0)
+				$ntask->query=null;
+			else
+			{
 			$ntask->query = "'Epic Link'=".$ntask->key;
 			if($ntask->parent->settings->epic_query != null)
 				if(strlen($ntask->parent->settings->epic_query)>0)
 					$ntask->query = $ntask->query . " and ".$ntask->parent->settings->epic_query;
+			}
 			//dd($ntask->query);
 		}
 		if(count($task->fields->subtasks)>0)
@@ -704,7 +718,7 @@ class Task
 			//echo $ntask->key." ".$task->fields->timespent." ".$ntask->timespent."<br>";
 			$ntask->otimespent = $ntask->timespent;
 		}
-
+		$ntask->duedate = $task->fields->duedate;
 		if(isset($task->fields->duedate)&&($ntask->status != 'RESOLVED'))
 		{
 			$ntask->duedate = $task->fields->duedate;
@@ -990,9 +1004,15 @@ class ProjectTree
 		$settings->parentof=1;
 		$settings->testedby=1;
 		$settings->epic_query = null;
+		$settings->issuesinepic = 1;
 		$settings->requirement_query = null;
 		$settings->filter_fixversion = null;
 
+		$value = $this->ParseForSetting("issues_in_epic",$str);
+		if($value != null)
+			if(substr($value,0,1)=="0")
+				$settings->issuesinepic = 0;
+		
 		$value = $this->ParseForSetting("link_implementedby",$str);
 		if($value != null)
 			if(substr($value,0,1)=="0")
@@ -1105,9 +1125,12 @@ testedby=true"	*/
 				var_dump($task->children[$i]->fixVersions);
 				var_dump($task->children[$i]->allfixVersions);
 			}*/
-			if(in_array ($fixversion,$task->children[$i]->fixVersions))
+			$search_array = array_map('strtolower', $task->children[$i]->fixVersions);
+			$search_all = array_map('strtolower', $task->children[$i]->allfixVersions);
+			
+			if(in_array (strtolower($fixversion),$search_array))
 				$indexes[] = $task->children[$i];
-			else if(in_array ($fixversion,$task->children[$i]->allfixVersions))
+			else if(in_array (strtolower($fixversion),$search_all))
 				$indexes[] = $task->children[$i];
 		}
 		$task->children = $indexes;
@@ -1452,9 +1475,7 @@ testedby=true"	*/
 		$this->tasks = [];
 		$this->tasksbyextid = [];
 
-
 		$this->FindDuplicates($task);
-
 		$this->ComputeStatus($task);
 		$e = $this->ComputeEstimate($task);
 
@@ -1640,6 +1661,11 @@ testedby=true"	*/
 	    //dd($this->tasks);
 		//dd($this->tasks);
 		$this->ValidateTasks();
+		if($this->settings->filter_fixversion != null)
+		{
+		Utility::ConsoleLog(time(),"Generating Governance Data");
+		$this->JiraGovernance();
+		}
     	Utility::ConsoleLog(time(),"Jira Sync Completed");
 	}
 	function ReadBaseline()
@@ -2267,7 +2293,6 @@ testedby=true"	*/
 		if($firstcall)
 			$this->sprints = [];
 			
-		
 		if(isset($task->sprintinfo))
 		{
 			$task->sprintinfo['key'] = $task->key;
@@ -2282,5 +2307,191 @@ testedby=true"	*/
 		}
 		if($firstcall)
 			return $this->sprints;
+	}
+	function cmp_func($a, $b)
+	{
+		if($a->start == null)
+			return -1;
+		
+		if ($a->start == $b->start) {
+			return 0;
+		}
+		return ($a->start < $b->start) ? -1 : 1;
+	}
+	function CreateObj($task)
+	{
+		$obj =  new \StdClass();
+		$obj->key = $task->key;
+		$obj->summary = $task->summary;
+		$obj->created = $task->created;
+		$obj->type = $task->oissuetype;
+		$obj->status = $task->ostatus;	
+		$obj->priority = $task->priority;	
+		$obj->assignee = $task->assignedto;	
+		$obj->reporter = $task->reporter;	
+		$obj->duedate = $task->duedate;
+		
+		return $obj;
+	}
+	function JiraGovernance($task=null,$firstcall=1)
+	{
+		if($firstcall==1)
+		{
+		if($task!=null)
+		{
+			$filename = $this->datapath."/governance";
+			if(file_exists($filename))
+				return json_decode(file_get_contents($filename));
+		}
+		else
+			$task = $this->tree;
+		}
+		
+		//dd($task);
+		if($firstcall)
+		{
+			$this->sprint_info = [];
+			$this->out_of_sprint_tasks = [];
+			$this->no_fixversion_tasks =[];
+			$this->pcr = [];
+			$this->risks = [] ;
+			$this->unestimated = [];
+			//dd($this->project->edate);
+			$start = Carbon::now();
+			$start->subDays(63);
+			$end = Carbon::now();
+			$end=  $end->addDays(800);
+			$calendar =  new SprintCalendar($start,$end);
+			$tabledata = $calendar->GetGridData();
+		}
+		if(($task->oissuetype == 'Product Change Request')&&($task->statusCategory != 'Done'))
+		{
+			$this->pcr[$task->key] = $this->CreateObj($task);
+		}
+		if((in_array("Risk", $task->labels)||in_array("risk", $task->labels))&&($task->statusCategory != 'Done'))
+		{
+			$this->risks[$task->key] = $this->CreateObj($task);
+			
+		}
+		if(($task->issuetype != 'WORKPACKAGE')&&($task->issuetype != 'REQUIREMENT')&&($task->issuetype != 'EPIC')&&($task->status != 'RESOLVED')&&($task->key != 1))
+		{
+			if($task->estimate == 0)
+				$this->unestimated[$task->key] = $this->CreateObj($task);
+		}
+			
+		if($task->sprintid>0)
+		{
+			$obj =  new \StdClass();
+			$obj->name = $task->sprintname;
+			if(strpos($task->sprintstate, 'ACTIVE') !== false)
+				$obj->state = 'ACTIVE';
+			else if(strpos($task->sprintstate, 'CLOSED') !== false)
+				$obj->state = 'CLOSED';
+			else
+				$obj->state = 'FUTURE';
+			
+			$obj->error=null;
+			if($task->sprintend != null)
+			{
+				//dump($task->sprintend);
+				if(  (Carbon::now() > Carbon::parse($task->sprintend))&&$obj->state != 'CLOSED')
+					$obj->error='Sprint should be closed';
+			}
+			//dump($obj->error);
+			$obj->no = $task->sprintno;
+			$obj->board = $task->sprintid;
+			$obj->start= $task->sprintstart;
+			$obj->end= $task->sprintend;
+			$this->sprint_info[$task->sprintno]=$obj;
+			//dump($obj);
+			
+		}
+		else
+		{
+			if(($task->issuetype != 'WORKPACKAGE')&&($task->issuetype != 'REQUIREMENT')&&($task->issuetype != 'EPIC')&&($task->status != 'RESOLVED')&&($task->key != 1))
+			{
+				$this->out_of_sprint_tasks[$task->key] = $this->CreateObj($task);
+			}
+		}
+		foreach($task->children as $ctask)
+		{
+			$this->JiraGovernance($ctask,0);
+		}
+		if($firstcall)
+		{
+			usort($this->sprint_info, [$this,"cmp_func"]);
+			Jira::Initialize($this->jiraconfig,$this->datapath,0);
+		    $this->no_fixversion_tasks = [];
+			foreach($this->sprint_info as $sprint)
+			{
+				if(($sprint->state == 'FUTURE')||($sprint->state == 'ACTIVE'))
+				{
+					$tasks = Jira::GetIssueInSprint($sprint->board,$sprint->no);
+					foreach($tasks as $key=>$t)
+					{
+						if(count($t['fields']['fixVersions'])==0)
+						{
+							$obj =  new \StdClass();
+							$obj->key = $t['key'];
+							$obj->summary = $t['fields']['summary'];
+							$obj->created = explode('T',$t['fields']['created'])[0];
+							$obj->type = $t['fields']['issuetype']['name'];
+							$obj->status = $t['fields']['status']['name'];	
+							$obj->sprint = $sprint->name;
+							$obj->assignee = $t['fields']['assignee']['displayName'];	
+							$obj->reporter = $t['fields']['reporter']['displayName'];
+							$obj->duedate = $t['fields']['duedate'];
+							$this->no_fixversion_tasks[$obj->key] = $obj;
+						}
+					}
+					$sprint_array = preg_split("/ /", $sprint->name);
+					$year = '';
+					if(in_array('2019',$sprint_array))
+						$year = '2019';
+					else if(in_array('2020',$sprint_array))
+						$year = '2020';
+					else if(in_array('2021',$sprint_array))
+						$year = '2021';
+					else if(in_array('2022',$sprint_array))
+						$year = '2022';
+					else if(in_array('2023',$sprint_array))
+						$year = '2023';
+					else if(in_array('2024',$sprint_array))
+						$year = '2024';
+					else if(in_array('2025',$sprint_array))
+						$year = '2025';
+					else
+						echo $sprint->name." year cannot be parsed ";
+					$number = $sprint_array[count($sprint_array)-1];
+					$sprint_tag=$year."_".$number;
+					if(!isset($tabledata->sprints[$sprint_tag]))
+					{
+						echo $sprint_tag." is not found in tabledata<br>";
+					}
+					else
+					{
+						//dd($this->project->edate);
+						if($this->project->edate < $tabledata->sprints[$sprint_tag][0]->date)
+						{
+							$sprint->error = "Beyond End Date";	
+						}
+					}
+				}
+			}
+			$filename = $this->datapath."/governance";
+			$obj=new \StdClass();
+			$obj->sprints = $this->sprint_info;
+			$obj->out_of_sprint_tasks = $this->out_of_sprint_tasks;
+			$obj->no_fixversion_tasks = $this->no_fixversion_tasks;
+			$obj->pcr = $this->pcr;
+			$obj->unestimated = $this->unestimated;
+			$obj->risks = $this->risks;
+			
+			file_put_contents($filename,json_encode($obj));
+			$obj = json_decode(file_get_contents($filename));
+			
+			return $obj;
+			//return $obj;
+		}
 	}
 }
