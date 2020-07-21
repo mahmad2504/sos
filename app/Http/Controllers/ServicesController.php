@@ -38,16 +38,28 @@ class ServicesController extends Controller
 		$tickets = $jira->Sync($jql,null);
 		foreach($tickets as $ticket)
 		{
-			$carbon = new Carbon();
-			$carbon->setTimeStamp($ticket->duedate);
-			$ticket->expired = 0;
-			if($carbon < $now)
+			$duedate = new Carbon();
+			$duedate->setTimeStamp($ticket->duedate);
+			$ticket->delayed = 0;
+			if($ticket->statuscategory != 'RESOLVED')
 			{
-				$ticket->expired = $carbon->diffInDays($now);
+				if($duedate->getTimeStamp() < $now->getTimeStamp())
+				{
+					$ticket->delayed = $duedate->diffInDays($now);
+				}
 			}
-			$ticket->duedate = $carbon->format('Y-m-d');
-			$ticket->dueday = $carbon->format('d');
-			$ticket->dueweek=$carbon->isoWeekYear()."_".$carbon->isoWeek();
+			else //If resolved then find how much delayed
+			{	
+				$resolutiondate = new Carbon();
+				$resolutiondate->setTimeStamp($ticket->resolutiondate);
+				
+				if($duedate->getTimeStamp() < $resolutiondate->getTimeStamp())
+					$ticket->delayed = $duedate->diffInDays($resolutiondate);
+			}
+			
+			$ticket->duedate = $duedate->format('Y-m-d');
+			$ticket->dueday = $duedate->format('d');
+			$ticket->dueweek=$duedate->isoWeekYear()."_".$duedate->isoWeek();
 		}
 		$url = env('JIRA_EPS_URL');
 		return View('services.riskcalendar',compact('tabledata','tickets','url'));

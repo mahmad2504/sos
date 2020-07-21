@@ -64,14 +64,36 @@
 			id = '#'+ticket.key+"_"+ticket.dueweek;
 			$(id).css('font-size','15px');
 			
+			var message = '';
+			if(ticket.statuscategory != 'RESOLVED')
+			{
+				if(ticket.delayed>0)
+				{
+					message = " Delayed by "+ticket.delayed+" days";
+					$(id).css('background-color','orange');
+				}
+				else
+				{
 			
-			if((ticket.statuscategory != 'RESOLVED')&&(ticket.expired > 0))
-				$(id).html('<a style="color:red;" href="'+jurl+'">'+ticket.dueday+'</a>');
+				}
+				$(id).html('<a style="" href="'+jurl+'">'+ticket.dueday+'</a>');
+			}
 			else
-				$(id).html('<a style="color:blue;" href="'+jurl+'">'+ticket.dueday+'</a>');
+			{
+				if(ticket.delayed>0)
+				{
+					color = 'red';
+					message = " Resolved "+ticket.delayed+" days after its due date";
+				}
+				else
+				{
+					color= 'white';
+				}
+				$(id).css('background-color','green');
+				$(id).html('<a style="color:'+color+';" href="'+jurl+'">'+ticket.dueday+'</a>');
+			}
 			
-			
-			$(id).attr('title',ticket.key);
+			$(id).attr('title',ticket.key+message);
 			
 			id = '#'+ticket.key+"3";
 			console.log(ticket);
