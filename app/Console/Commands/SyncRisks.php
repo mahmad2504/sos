@@ -42,6 +42,12 @@ class SyncRisks extends Command
      */
     public function handle()
     {
+		$minutes = $this->option('beat');
+		if($minutes % 60 == 0)// Every 60 minutes
+		{ }
+		else
+			return;
+		
 		$start = Carbon::now();
 		$start->subDays(90);
 		
