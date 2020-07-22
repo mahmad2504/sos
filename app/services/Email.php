@@ -4,7 +4,7 @@ namespace App\services;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
-
+use Carbon\Carbon;
 class Email
 {
 	public $addresses = [
@@ -38,6 +38,75 @@ class Email
 		$this->mail->addReplyTo('mumtaz_ahmad@mentor.com', 'Support Bot');
 		
 		$this->mail->isHTML(true);  
+	}
+	function SendRiskReminder($ticket,$delay)
+	{
+		$duedate =  new Carbon();
+		$duedate->setTimeStamp($ticket->duedate);
+		
+		$to = [];
+		$cc = [];
+		$url = env('JIRA_EPS_URL');
+		$ticketurl = '<a href="'.$url.'/browse/'.$ticket->key.'">'.$ticket->key.'</a>';
+		if($ticket->key != 'HMIP-100')
+			return;
+		$this->mail->Subject = 'Risk/Dependency Notification  ';
+		$cc[]=$ticket->reporter['emailAddress'];
+		$cc[]='Mumtaz_Ahmad@mentor.com';
+		$msg = ' Hi, ';
+		if($ticket->assignee['name'] == 'none')
+		{
+			$to[]=$ticket->reporter['emailAddress'];
+			$msg .= $ticket->reporter['displayName']."<br><br>";
+			$msg .= 'You are receiving this email because Jira ticket '.$ticketurl ." was created by you<br><br>";
+			$msg .= '<span style="color:red">'.'This ticket is not assigned to anybody yet'.'</span><br>';
+		}
+		else
+		{
+			$to[]=$ticket->assignee['emailAddress'];
+			$msg .= $ticket->assignee['displayName']."<br><br>";
+			$msg .= 'You are receiving this email because Jira ticket '.$ticketurl." is assigned to you<br>";
+			
+		}
+		
+		if($ticket->fixVersions[0] == 'none')
+		{
+			$msg .= '<span style="color:red">'.'This ticket does not have any fix version'.'</span><br>';
+		}
+		if($delay > 0)
+		{
+			$msg .= '<br><span style="font-weight:bold;">This ticket is due on '.$duedate->isoFormat('MMMM Do YYYY').' in '.$delay.' days</span><br><br>';
+		}
+		else if($delay == 0)
+		{
+			$msg .= '<br><span style="font-weight:bold;">This ticket is due today</span><br><br>';
+		}
+		else
+		{
+			$msg .= '<br><span style="color:red">'.'This ticket was due on  '.$duedate->isoFormat('MMMM Do YYYY').' Delayed by '.$delay.' days'.'</span><br><br>';
+		}
+		$msg .= "If you think deliverable against this ticket cannot be delivered by due date or ticket is mistakenly assigned to you, then please send an email to ".$ticket->reporter['emailAddress']."<br><br>";
+		$msg .= "[THIS IS AN AUTOMATED EMAIL - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]<br>"; 
+		$this->mail->ClearAllRecipients( );
+		foreach($to as $add)
+			$this->mail->addAddress($add);
+		
+		foreach($cc as $add)
+			$this->mail->addCC($add);
+			
+		
+		//$msg = "For complete sprint calender please <a href='https://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
+        $this->mail->Body= $msg;
+		try {
+				$this->mail->send();
+			} 
+			catch (phpmailerException $e) 
+			{
+				echo $e->errorMessage(); //Pretty error messages from PHPMailer
+			} 
+			catch (Exception $e) {
+				echo $e->getMessage(); //Boring error messages from anything else!
+			}
 	}
 	function SendSprintReminder($sprint_name, $start)
 	{

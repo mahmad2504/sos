@@ -60,7 +60,8 @@
 			$(id).attr('title',ticket.summary);
 			
 			id = '#'+ticket.key+"2";
-			$(id).html('&nbsp'+ticket.assignee.displayName+'&nbsp');
+			if(ticket.assignee.displayName !== undefined)
+				$(id).html('&nbsp'+ticket.assignee.displayName+'&nbsp');
 			id = '#'+ticket.key+"_"+ticket.dueweek;
 			$(id).css('font-size','15px');
 			
