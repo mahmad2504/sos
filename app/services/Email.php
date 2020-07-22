@@ -43,13 +43,13 @@ class Email
 	{
 		$duedate =  new Carbon();
 		$duedate->setTimeStamp($ticket->duedate);
+		$manager['FLEX_12.0.0']=['Noor_Ahsan@mentor.com','Khula_Azmi@mentor.com','mohamed_hussein@mentor.com'];
 		
 		$to = [];
 		$cc = [];
 		$url = env('JIRA_EPS_URL');
 		$ticketurl = '<a href="'.$url.'/browse/'.$ticket->key.'">'.$ticket->key.'</a>';
-		if($ticket->key != 'HMIP-100')
-			return;
+		
 		$this->mail->Subject = 'Risk/Dependency Notification  ';
 		$cc[]=$ticket->reporter['emailAddress'];
 		$cc[]='Mumtaz_Ahmad@mentor.com';
@@ -73,6 +73,14 @@ class Email
 		{
 			$msg .= '<span style="color:red">'.'This ticket does not have any fix version'.'</span><br>';
 		}
+		else
+		{
+			if(isset($manager[$ticket->fixVersions[0]]))
+			{
+				foreach($manager[$ticket->fixVersions[0]] as $email)
+				$cc[] = $email;
+			}
+		}
 		if($delay > 0)
 		{
 			$msg .= '<br><span style="font-weight:bold;">This ticket is due on '.$duedate->isoFormat('MMMM Do YYYY').' in '.$delay.' days</span><br><br>';
@@ -89,11 +97,13 @@ class Email
 		$msg .= "[THIS IS AN AUTOMATED EMAIL - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]<br>"; 
 		$this->mail->ClearAllRecipients( );
 		foreach($to as $add)
+		{
 			$this->mail->addAddress($add);
-		
+		}
 		foreach($cc as $add)
+		{
 			$this->mail->addCC($add);
-			
+		}	
 		
 		//$msg = "For complete sprint calender please <a href='https://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
         $this->mail->Body= $msg;
