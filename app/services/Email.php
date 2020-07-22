@@ -93,7 +93,7 @@ class Email
 		{
 			$msg .= '<br><span style="color:red">'.'This ticket was due on  '.$duedate->isoFormat('MMMM Do YYYY').' Delayed by '.$delay.' days'.'</span><br><br>';
 		}
-		$msg .= "If you think deliverable against this ticket cannot be delivered by due date or ticket is mistakenly assigned to you, then please send an email to ".$ticket->reporter['emailAddress']."<br><br>";
+		$msg .= "If you think deliverable against this ticket cannot be delivered by due date or ticket is mistakenly assigned to you, then please send an email to ticket reporter ".$ticket->reporter['emailAddress']."<br><br>";
 		$msg .= "[THIS IS AN AUTOMATED EMAIL - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]<br>"; 
 		$this->mail->ClearAllRecipients( );
 		foreach($to as $add)
