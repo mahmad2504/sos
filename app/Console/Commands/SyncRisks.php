@@ -54,58 +54,34 @@ class SyncRisks extends Command
 		$dt = new \DateTime();
 		$jql = 'labels = risk and duedate >=  '.$start->format('Y-m-d');
 		$jira =  new Jira();
+		
 		$tickets = $jira->Sync($jql,null);
 		
 		$now = Carbon::now();
-		
+		$now->hour = 00;
+		$now->minute =00;
 		foreach($tickets as $ticket)
 		{
 			$duedate = new Carbon();
 			$duedate->setTimeStamp($ticket->duedate);
-			$duedate->hour = 18;
+			$duedate->hour = 23;
+			$duedate->minute = 59;
 			if($ticket->statuscategory != 'RESOLVED')
 			{
-				$delay = $duedate->diffInHours($now);
+				$delay = $duedate->diffInDays($now);
+				
 				if($duedate->getTimeStamp() > $now->getTimeStamp())
 				{
-					// Not delayed
-					if($delay <= 24)
-						$delay = 0;
-					else if($delay <= 48)
-						$delay = 2;
-					else if($delay <= 72)
-						$delay = 3;
-					else if($delay <= 96)
-						$delay = 4;
-					else if($delay <= 120)
-						$delay = 5;
-					else if($delay <= 144)
-						$delay = 6;
-					else if($delay <= 168)
-						$delay = 7;
-					else if($delay <= 192)
-						$delay = 8;
-					
 					if($delay <= 8)
 					{
-						if(($delay % 2)==0)
-						{
+						if(($delay==8) || ($delay==6) || ($delay==4) || ($delay==2) ||($delay==8))
 							$this->SendEmail($ticket,$delay);
-						}
 					}
 				}
 				else
 				{
-					if($delay >= 24)
-						$delay = round($delay / 24);
-					else
-						$delay = 1;
-					
-					
-					if(($delay % 2)==0)
-					{
-						$this->SendEmail($ticket,$delay*-1);
-					}
+					if((($delay%2) == 0)&&($delay !=0)) 					
+						$this->SendEmail($ticket,$delay);
 				}
 			}
 			else
@@ -126,9 +102,7 @@ class SyncRisks extends Command
 		if(file_exists('ticketdata/'.$ticket->key))
 		{
 			$data = json_decode(file_get_contents('ticketdata/'.$ticket->key));
-		
 			$ticket->emails = $data->emails;
-			
 			if(!isset($ticket->emails->$now))
 			{
 				echo "Sending email for ".$ticket->key." delay is ".$delay."\n";

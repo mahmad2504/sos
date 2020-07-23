@@ -102,21 +102,24 @@ class Email
 		}
 		foreach($cc as $add)
 		{
-			$this->mail->addCC($add);
+			//$this->mail->addCC($add);
 		}	
-		
+		$this->mail->ClearAllRecipients( );
+		$this->mail->addAddress('Mumtaz_Ahmad@mentor.com');
 		//$msg = "For complete sprint calender please <a href='https://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
         $this->mail->Body= $msg;
-		try {
-				$this->mail->send();
-			} 
-			catch (phpmailerException $e) 
-			{
-				echo $e->errorMessage(); //Pretty error messages from PHPMailer
-			} 
-			catch (Exception $e) {
-				echo $e->getMessage(); //Boring error messages from anything else!
-			}
+		try 
+		{
+			$this->mail->send();
+		} 
+		catch (phpmailerException $e) 
+		{
+			echo $e->errorMessage(); //Pretty error messages from PHPMailer
+		} 
+		catch (Exception $e) 
+		{
+			echo $e->getMessage(); //Boring error messages from anything else!
+		}
 	}
 	function SendSprintReminder($sprint_name, $start)
 	{
