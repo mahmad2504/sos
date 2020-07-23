@@ -491,10 +491,10 @@ class Tj
 		if(App::runningInConsole())
 			$cmd = "public\\tj3 -o ".$this->datapath."  ".$this->planpath." 2>&1";
 		
-		//echo $cmd;
+		//cho $cmd;
 		exec($cmd,$result);
 		//var_dump($result);
-		//exit();
+	//	exit();
 		$pos1 = strpos($result[0], 'Error');
 		if ($pos1 != false)
 		{
