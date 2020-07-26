@@ -242,13 +242,15 @@ function Rmo(tabledata)
 	{
 		weekArray = this.tabledata.weeks;
 		var c=1;
-		var row = $('<tr>');
+		var row = $('<tr style="color:red">');
 		row.addClass("rowweek");
 		
 		if(this.col[0])
 		{
-			var col = $('<th style="white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:230px;"  >');
+			var col = $('<th style="padding:0;white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:230px;"  >');
 			col.attr('id',r+'1');
+			col.css('text-align','left');
+			col.css('font-weight','normal');
 			col.html('Week');
 			row.append(col);
 			col.addClass('sticky-col');
@@ -259,6 +261,9 @@ function Rmo(tabledata)
 			var col = $('<th>');
 			col.attr('id',r+'2');
 			col.addClass('sticky-col1');
+			col.css("padding",0);
+			col.css('font-weight','normal');
+			col.css('text-align','left');
 			row.append(col);
 		}
 		
@@ -266,6 +271,9 @@ function Rmo(tabledata)
 		{
 			var col = $('<th>');
 			col.attr('id',r+'3');
+			col.css("padding",0);
+			col.css('font-weight','normal');
+			col.css('text-align','left');
 			row.append(col);
 		}
 		var color='#DCDCDC';
@@ -283,6 +291,7 @@ function Rmo(tabledata)
 			colspan = Object.keys(weekArray[week]).length;
 			col = $('<th colspan="'+colspan+'">');
 			col.attr('id',r+'_'+week);
+			col.css("padding",0);
 			year = week.substring(0,4);
 			weeknum = week.substring(5);
 			//col.html(weeknum);

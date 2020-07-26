@@ -69,12 +69,13 @@ class SyncRisks extends Command
 			if($ticket->statuscategory != 'RESOLVED')
 			{
 				$delay = $duedate->diffInDays($now);
-				
+				//dump($ticket->key);
+				//dump($delay);
 				if($duedate->getTimeStamp() > $now->getTimeStamp())
 				{
 					if($delay <= 8)
 					{
-						if(($delay==8) || ($delay==6) || ($delay==4) || ($delay==2) ||($delay==8))
+						if(($delay==8) || ($delay==6) || ($delay==4) || ($delay==2) ||($delay==0))
 							$this->SendEmail($ticket,$delay);
 					}
 				}
@@ -86,8 +87,16 @@ class SyncRisks extends Command
 			}
 			else
 			{ //Resolved
+				$email =  new Email();
+		        //echo "Closed ".$ticket->key."\n";
+				//if($ticket->key == 'SB-15218')
+					//$email->SendRiskClosedNotification($ticket);
 				if(file_exists('ticketdata/'.$ticket->key))
+				{
+					$email =  new Email();
 					unlink('ticketdata/'.$ticket->key);
+					$email->SendRiskClosedNotification($ticket);
+				}
 			}
 		}
 		echo $jql;
@@ -109,7 +118,7 @@ class SyncRisks extends Command
 				
 				$email =  new Email();
 				$email->SendRiskReminder($ticket,$delay);
-				$ticket->emails[$now] = 1;
+				$ticket->emails->$now = 1;
 				
 				file_put_contents('ticketdata/'.$ticket->key,json_encode($ticket));
 			}

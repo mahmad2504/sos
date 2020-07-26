@@ -53,17 +53,30 @@
 			var ticket = tickets[i];
 			var row = rmo.GenerateWeekRowT2(ticket.key);
 			rmo.AppendRow(row);
+			
 			var id = '#'+ticket.key+"1";
 			var jurl = url + "/browse/"+ ticket.key;
 			$(id).html('<a href="'+jurl+'">'+ticket.key+'</a>');
 			$(id).html('&nbsp&nbsp&nbsp'+ticket.summary);
 			$(id).attr('title',ticket.summary);
 			
+			
+			if(ticket.statuscategory == 'RESOLVED')
+				$(id).css('color','grey');
+			else
+			{
+				$(id).css('font-weight','bold');
+				if(ticket.delayed>0)
+					$(id).css('color','red');
+				else
+					$(id).css('color','green');
+			}
+			
 			id = '#'+ticket.key+"2";
 			if(ticket.assignee.displayName !== undefined)
 				$(id).html('&nbsp'+ticket.assignee.displayName+'&nbsp');
 			id = '#'+ticket.key+"_"+ticket.dueweek;
-			$(id).css('font-size','15px');
+			//$(id).css('font-size','12px');
 			
 			var message = '';
 			if(ticket.statuscategory != 'RESOLVED')

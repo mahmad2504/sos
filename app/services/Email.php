@@ -23,8 +23,10 @@ class Email
 		'Rizwan_Rasheed@mentor.com',
 		'Muhammad_Shafique@mentor.com'
 	];
+	public $manager = [];
 	function __construct()
 	{
+		$this->manager['FLEX_12.0.0']=['Noor_Ahsan@mentor.com','Khula_Azmi@mentor.com','mohamed_hussein@mentor.com'];
 		$this->mail = new PHPMailer(true);	
 		$this->mail->isSMTP();     
 		$this->mail->Host = 'localhost';
@@ -39,11 +41,65 @@ class Email
 		
 		$this->mail->isHTML(true);  
 	}
+	function SendRiskClosedNotification($ticket)
+	{
+		$to = [];
+		$cc = [];
+		$url = env('JIRA_EPS_URL');
+		$ticketurl = '<a href="'.$url.'/browse/'.$ticket->key.'">'.$ticket->key.'</a>';
+		$this->mail->Subject = 'Risk/Dependency Notification  ';
+		$cc[]=$ticket->reporter['emailAddress'];
+		$cc[]='Mumtaz_Ahmad@mentor.com';
+		$msg = '';
+		if($ticket->assignee['name'] == 'none')
+		{
+			$to[]=$ticket->reporter['emailAddress'];
+			//$msg .= $ticket->reporter['displayName']."<br><br>";
+			//$msg .= 'You are receiving this email because Jira ticket '.$ticketurl ." was created by you<br><br>";
+		}
+		else
+		{
+			$to[]=$ticket->assignee['emailAddress'];
+			//$msg .= $ticket->assignee['displayName']."<br><br>";
+			//$msg .= 'You are receiving this email because Jira ticket '.$ticketurl." is assigned to you<br>";
+			
+		}
+		
+		$msg .= 'This ticket '.$ticketurl.' is marked closed today <br><br>';
+		
+		
+		$msg .= "[THIS IS AN AUTOMATED EMAIL - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]<br>"; 
+		$msg .= "For complete  calender please <a href='http://sos.pkl.mentorg.com/riskcalendar'>click here</a>";
+		$this->mail->ClearAllRecipients( );
+		foreach($to as $add)
+		{
+			$this->mail->addAddress($add);
+		}
+		foreach($cc as $add)
+		{
+			$this->mail->addCC($add);
+		}	
+		//$this->mail->ClearAllRecipients( );
+		//$this->mail->addAddress('Mumtaz_Ahmad@mentor.com');
+		//$msg = "For complete sprint calender please <a href='http://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
+        $this->mail->Body= $msg;
+		try 
+		{
+			$this->mail->send();
+		} 
+		catch (phpmailerException $e) 
+		{
+			echo $e->errorMessage(); //Pretty error messages from PHPMailer
+		} 
+		catch (Exception $e) 
+		{
+			echo $e->getMessage(); //Boring error messages from anything else!
+		}
+	}
 	function SendRiskReminder($ticket,$delay)
 	{
 		$duedate =  new Carbon();
 		$duedate->setTimeStamp($ticket->duedate);
-		$manager['FLEX_12.0.0']=['Noor_Ahsan@mentor.com','Khula_Azmi@mentor.com','mohamed_hussein@mentor.com'];
 		
 		$to = [];
 		$cc = [];
@@ -75,9 +131,9 @@ class Email
 		}
 		else
 		{
-			if(isset($manager[$ticket->fixVersions[0]]))
+			if(isset($this->manager[$ticket->fixVersions[0]]))
 			{
-				foreach($manager[$ticket->fixVersions[0]] as $email)
+				foreach($this->manager[$ticket->fixVersions[0]] as $email)
 				$cc[] = $email;
 			}
 		}
@@ -95,6 +151,7 @@ class Email
 		}
 		$msg .= "If you think deliverable against this ticket cannot be delivered by due date or ticket is mistakenly assigned to you, then please send an email to ticket reporter ".$ticket->reporter['emailAddress']."<br><br>";
 		$msg .= "[THIS IS AN AUTOMATED EMAIL - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]<br>"; 
+		$msg .= "For complete  calender please <a href='http://sos.pkl.mentorg.com/riskcalendar'>click here</a>";
 		$this->mail->ClearAllRecipients( );
 		foreach($to as $add)
 		{
@@ -102,11 +159,11 @@ class Email
 		}
 		foreach($cc as $add)
 		{
-			//$this->mail->addCC($add);
+			$this->mail->addCC($add);
 		}	
-		$this->mail->ClearAllRecipients( );
-		$this->mail->addAddress('Mumtaz_Ahmad@mentor.com');
-		//$msg = "For complete sprint calender please <a href='https://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
+		//$this->mail->ClearAllRecipients( );
+		//$this->mail->addAddress('Mumtaz_Ahmad@mentor.com');
+		//$msg .= "For complete  calender please <a href='https://sos.pkl.mentorg.com/riskcalendar'>click here</a>";
         $this->mail->Body= $msg;
 		try 
 		{
@@ -135,7 +192,7 @@ class Email
 		$msg .= "This is an auto generated notification so please donot reply to this email<br>";
 		$msg .= "If you are not interested in these notifications, please send an email to mumtaz_ahmad@mentor.com".'<br>';
 		$msg .= '<br>';
-		$msg .= "For complete sprint calender please <a href='https://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
+		$msg .= "For complete sprint calender please <a href='http://sos.pkl.mentorg.com/sprintcalendar'>click here</a>";
         $this->mail->Body= $msg;
 		//$this->mail->AltBody =$msg;
 		//echo $msg;

@@ -33,7 +33,7 @@ class ServicesController extends Controller
 		$calendar =  new Calendar($start,$end);
 		$tabledata = $calendar->GetGridData();
 		
-		$jql = 'labels = risk and duedate >=  '.$start->format('Y-m-d');
+		$jql = 'labels = risk and duedate >=  '.$start->format('Y-m-d').'  ORDER By duedate ASC';
 		$jira =  new Jira();
 		$tickets = $jira->Sync($jql,null);
 		foreach($tickets as $ticket)
