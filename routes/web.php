@@ -141,5 +141,5 @@ Route::get('calendars', function () {
     return view('scripts/calendars');
 });
 
-//URL::forceScheme('https');
+URL::forceScheme('https');
 
