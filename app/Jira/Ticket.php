@@ -36,11 +36,11 @@ class Ticket
 				else if(strtotime($this->$field)!=false)
 				{
 					
-					$dt = new \DateTime($this->$field);
-					$this->SetTimeZone($dt);
-					$carbon = Carbon::instance($dt);
-					$carbon->second = 0;
-					$this->$field = $carbon->getTimestamp();//$dt->format('Y-m-d H:i');
+					//$dt = new \DateTime($this->$field);
+					//$this->SetTimeZone($dt);
+					//$carbon = Carbon::instance($dt);
+					//$carbon->second = 0;
+					//$this->$field = $carbon->getTimestamp();//$dt->format('Y-m-d H:i');
 				}
 				else if(is_object($this->$field))
 				{
@@ -98,6 +98,34 @@ class Ticket
 	{
 		switch($prop)
 		{
+			case 'duedate':
+				if(isset($issue->fields->duedate))
+				{
+					$duedate= new Carbon($issue->fields->duedate);
+					$this->SetTimeZone($duedate);
+					return $duedate->getTimestamp();
+				}
+				else 
+				{
+					return '';
+				}
+				break;
+			case 'issuetype':
+				return  strtolower($issue->fields->issuetype->name);
+				break;
+			case 'timespent':
+				if(isset($issue->fields->timespent))
+				{
+					return $issue->fields->timespent;
+				}
+				return 0;
+			case'timeoriginalestimate':
+				if(isset($issue->fields->timeoriginalestimate))
+				{
+					return $issue->fields->timeoriginalestimate->scalar;
+				}
+				return 0;
+				break;
 			case 'reporter':
 				$reporter = [];
 				$reporter['name'] = 'none';

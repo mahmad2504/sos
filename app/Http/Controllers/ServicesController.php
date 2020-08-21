@@ -64,4 +64,35 @@ class ServicesController extends Controller
 		$url = env('JIRA_EPS_URL');
 		return View('services.riskcalendar',compact('tabledata','tickets','url'));
 	}
+	public function ShowEpicDetails(Request $request)
+	{
+		if($request->jql== null)
+		{
+			dd("Invalid query");
+		}
+		$jql = $request->jql;
+		$jira =  new Jira();
+		$tickets = $jira->Sync($jql,null,'IESD');
+		foreach($tickets as $ticket)
+		{
+			if($ticket->issuetype == 'epic')
+			{
+				$jql = '"Epic Link" = '.$ticket->key;
+				$stickets = $jira->Sync($jql,null,'IESD');
+				if(count($stickets) > 0)
+				{
+					$ticket->timeoriginalestimate  = 0;
+					$ticket->timespent  = 0;
+					foreach($stickets as $child)
+					{
+						$ticket->timeoriginalestimate += $child->timeoriginalestimate;
+						$ticket->timespent += $child->timespent;
+					}
+				}
+			}
+			echo $ticket->key." ".$ticket->issuetype." Estimate=".round($ticket->timeoriginalestimate/(60*60*8),2)." Days  Timespent=".round($ticket->timespent/(60*60*8),2)."Days<br>";
+		}
+		
+		//return View('services.riskcalendar',compact('tabledata','tickets','url'));
+	}
 }

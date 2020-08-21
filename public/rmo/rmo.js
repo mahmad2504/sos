@@ -607,7 +607,7 @@ function Rmo(tabledata)
 		{
 			var col = $('<th style="padding:0px;">');
 			col.attr('id','r'+r+'c'+c++);
-			col.html('<span style="padding:0px;font-weight:bold;">Risk/Dependency</span>');
+			col.html('<span style="padding:0px;font-weight:bold;"></span>');
 			row.append(col);
 			col.addClass('sticky-col');
 		}
@@ -623,7 +623,7 @@ function Rmo(tabledata)
 		if(this.col[2])
 		{
 			var col = $('<th>');
-			col.html('<span style="padding:0px;font-weight:bold;">Product</span>');
+			col.html('<span style="padding:0px;font-weight:bold;"></span>');
 
 			col.attr('id','r'+r+'c'+c++);
 			row.append(col);

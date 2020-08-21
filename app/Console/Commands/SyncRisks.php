@@ -56,7 +56,7 @@ class SyncRisks extends Command
 		$jira =  new Jira();
 		
 		$tickets = $jira->Sync($jql,null);
-		
+	
 		$now = Carbon::now();
 		$now->hour = 00;
 		$now->minute =00;
@@ -68,9 +68,10 @@ class SyncRisks extends Command
 			$duedate->minute = 59;
 			if($ticket->statuscategory != 'RESOLVED')
 			{
+				$this->SendEmail($ticket,null);
 				$delay = $duedate->diffInDays($now);
-				//dump($ticket->key);
-				//dump($delay);
+				dump($ticket->key);
+				dump($delay);
 				if($duedate->getTimeStamp() > $now->getTimeStamp())
 				{
 					if($delay <= 8)
@@ -81,8 +82,8 @@ class SyncRisks extends Command
 				}
 				else
 				{
-					if((($delay%2) == 0)&&($delay !=0)) 					
-						$this->SendEmail($ticket,$delay);
+					if((($delay%2) == 0)||($delay ==0)) 					
+						$this->SendEmail($ticket,$delay*-1);
 				}
 			}
 			else
@@ -96,6 +97,7 @@ class SyncRisks extends Command
 					$email =  new Email();
 					unlink('ticketdata/'.$ticket->key);
 					$email->SendRiskClosedNotification($ticket);
+					
 				}
 			}
 		}
@@ -106,10 +108,23 @@ class SyncRisks extends Command
 		//$email =  new Email();
 		//$email->SendRiskReminder($ticket,['Mumtaz_Ahmad@mentor.com'],['Mumtaz_Ahmad@mentor.com']);
 		//return;
-		
+		if ($delay === null)
+		{
+			if(!file_exists('ticketdata/'.$ticket->key))
+			{
+				$email =  new Email();
+				$email->SendRiskCreatedNotification($ticket);
+				$now = Carbon::now()->format('Y-m-d');
+				$ticket->emails[$now] = 1;
+				file_put_contents('ticketdata/'.$ticket->key,json_encode($ticket));
+			}
+			return;
+		}
+	
 		$now = Carbon::now()->format('Y-m-d');
 		if(file_exists('ticketdata/'.$ticket->key))
 		{
+			echo "Sending email for ".$ticket->key." delay is ".$delay."\n";
 			$data = json_decode(file_get_contents('ticketdata/'.$ticket->key));
 			$ticket->emails = $data->emails;
 			if(!isset($ticket->emails->$now))

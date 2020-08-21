@@ -132,6 +132,8 @@ Route::get('/test/resource/worklogs/{projectid}','TestController@ResourceTimeLog
 
 Route::get('sprintcalendar','ServicesController@ShowCalendar'); // project id as input param
 Route::get('riskcalendar','ServicesController@ShowRisksCalendar');
+Route::get('epiclogs','ServicesController@ShowEpicDetails');
+
 
 
 Route::get('schedule', function () {

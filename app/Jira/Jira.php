@@ -16,15 +16,27 @@ class Jira
 	{
 		$this->jf = new JiraFields();
 	}
-	public function Sync($jql,$updated=null)
+	public function Sync($jql,$updated=null,$server='EPS')
 	{
 		$max = 500;
 		$start = 0;
-		$issueService = new IssueService(new ArrayConfiguration([
+		if($server=='EPS')
+		{
+			$issueService = new IssueService(new ArrayConfiguration([
 			 'jiraHost' => env('JIRA_EPS_URL'),
               'jiraUser' => env('JIRA_EPS_USERNAME'),
              'jiraPassword' => env('JIRA_EPS_PASSWORD'),
-		]));
+			]));
+		}
+		if($server=='IESD')
+		{
+			$issueService = new IssueService(new ArrayConfiguration([
+			 'jiraHost' => env('JIRA_IESD_URL'),
+              'jiraUser' => env('JIRA_IESD_USERNAME'),
+             'jiraPassword' => env('JIRA_IESD_PASSWORD'),
+			]));
+		}
+		
 		if($updated!=null)
 			$jql = $jql." and updated >= '".$updated."'";
 

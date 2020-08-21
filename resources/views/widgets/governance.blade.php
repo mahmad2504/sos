@@ -71,13 +71,14 @@ table, th, td {
 		
 		
 	<hr>
-	<h3 style="display:none" class="table_out_of_sprints" >Out of sprint</h3>
+	<h3 style="display:none" class="table_out_of_sprints" >Missing sprint</h3>
 	<table style="display:none" class="table_out_of_sprints" id="table_out_of_sprints">
 		<tr>
 			<th>Key</th>
 			<th>Summary</th>
 			<th>Type</th>
 			<th>Status</th>
+			<th>Estimate</th>
 			<th>Assignee</th>
 			<th>Reporter</th>
 			<th>Created</th>
@@ -111,7 +112,7 @@ var pcr =  data.pcr;
 var risk = data.risks;
 var unestimated = data.unestimated;
 'use strict';
-
+console.log(data);
 function CreateSprintsRow(sprint)
 {
 	var row = $('<tr>');
@@ -164,6 +165,21 @@ function CreateSprintsRow(sprint)
 }
 function ShowSprintsTable()
 {
+	for(var i in sprints)
+	{
+		var sprint =  sprints[i];
+		if(sprint.state != 'CLOSED')
+			continue;
+		var row=CreateSprintsRow(sprint);
+		if(sprint.error != null)
+			row.css('color','red');
+		else
+			row.css('color','grey');
+		
+		row.css('font-weight','bold');
+		$('#table_sprints').append(row);
+		$('.table_sprints').show();
+	}
 	for(var i in sprints)
 	{
 		var sprint =  sprints[i];
@@ -254,9 +270,11 @@ function NoEstimatesTable()
 }
 function OutOfSprintTable()
 {
+	var totalestimate = 0;
 	for(var i in out_of_sprint_tasks)
 	{
 		var task =  out_of_sprint_tasks[i];
+		totalestimate += task.estimate;
 		var row = $('<tr>');
 		var col = $('<td>');
 		col.html('<a href="'+jiraurl+'/browse/'+task.key+'">'+task.key+'</a>');
@@ -279,6 +297,12 @@ function OutOfSprintTable()
 		
 		var col = $('<td>');
 		col.html(task.status);
+		col.css('padding-left','5px');
+		col.css('padding-right','5px');
+		row.append(col);
+		
+		var col = $('<td>');
+		col.html(task.estimate);
 		col.css('padding-left','5px');
 		col.css('padding-right','5px');
 		row.append(col);
@@ -309,6 +333,24 @@ function OutOfSprintTable()
 		$('#table_out_of_sprints').append(row);
 		$('.table_out_of_sprints').show();
 	}	
+	var row = $('<tr>');
+	var col = $('<td>');
+	col.html('Total');
+	col.css('padding-left','5px');
+	col.css('padding-right','5px');
+	row.append(col);
+	col = $('<td>');
+	row.append(col);
+	col = $('<td>');
+	row.append(col);
+	col = $('<td>');
+	row.append(col);
+	col = $('<td>');
+	col.html(Math.round(totalestimate));
+	col.css('padding-left','5px');
+	col.css('padding-right','5px');
+	row.append(col);
+	$('#table_out_of_sprints').append(row);
 }
 function FixversionTable()
 {

@@ -3,7 +3,7 @@ namespace App\Jira;
 class JiraFields
 {
 	private $customfields=[];
-	private $fields=['key','summary','duedate','fixVersions','assignee','reporter','status','statuscategory','summary','resolutiondate'];
+	private $fields=['key','summary','duedate','fixVersions','assignee','reporter','status','statuscategory','summary','resolutiondate','timeoriginalestimate','timespent','issuetype'];
 	function __construct()
 	{
 		if(!file_exists("customefields.json"))

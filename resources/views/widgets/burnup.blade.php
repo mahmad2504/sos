@@ -14,7 +14,7 @@ body {
 
 <div style="width:80%; margin-left: auto; margin-right: auto" class="center">
 	<div id="selectbox" style="display:none;">
-	<h3 >{{ $project->name}}</h3>
+	<!--<h3 >{{ $project->name}}</h3> -->
 	<div class="d-flex form-group">
 			<label  for="jirauri"></label>
 			<select class="form-control-sm" id="milestones" name="jirauri">
@@ -30,8 +30,13 @@ body {
 				@if ($selected == 0)
 					<option value="i" selected="selected">{{$key}}</option>
 				@endif
-			</select>
+			</select>			
 	</div>
+	@for($i=0;$i<count($milestones);$i++)
+		@if (strcmp($milestones[$i]->key,$key)==0)
+			<h3>{{$milestones[$i]->summary}}</h3>
+		@endif
+	@endfor
 	</div>
 	
 	<div class="row">

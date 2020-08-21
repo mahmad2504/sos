@@ -26,7 +26,7 @@ class Email
 	public $manager = [];
 	function __construct()
 	{
-		$this->manager['FLEX_12.0.0']=['Noor_Ahsan@mentor.com','Khula_Azmi@mentor.com','mohamed_hussein@mentor.com'];
+		$this->manager['FLEX_12.0.0']=['Noor_Ahsan@mentor.com'];
 		$this->mail = new PHPMailer(true);	
 		$this->mail->isSMTP();     
 		$this->mail->Host = 'localhost';
@@ -40,6 +40,78 @@ class Email
 		$this->mail->addReplyTo('mumtaz_ahmad@mentor.com', 'Support Bot');
 		
 		$this->mail->isHTML(true);  
+	}
+	function SendRiskCreatedNotification($ticket)
+	{
+		$duedate =  new Carbon();
+		$duedate->setTimeStamp($ticket->duedate);
+		
+		$to = [];
+		$cc = [];
+		$url = env('JIRA_EPS_URL');
+		$ticketurl = '<a href="'.$url.'/browse/'.$ticket->key.'">'.$ticket->key.'</a>';
+		$this->mail->Subject = 'Risk/Dependency Notification  ';
+		$cc[]=$ticket->reporter['emailAddress'];
+		$cc[]='Mumtaz_Ahmad@mentor.com';
+		$msg = ' Hi, ';
+		
+		if($ticket->assignee['name'] == 'none')
+		{
+			$to[]=$ticket->reporter['emailAddress'];
+			$msg .= $ticket->reporter['displayName']."<br><br>";
+			$msg .= 'You are receiving this email because Jira dependency  ticket '.$ticketurl ." was created by you<br><br>";
+			$msg .= '<span style="color:red">'.'This ticket is not assigned to anybody yet'.'</span><br>';
+		}
+		else
+		{
+			$to[]=$ticket->assignee['emailAddress'];
+			$msg .= $ticket->assignee['displayName']."<br><br>";
+			$msg .= 'You are receiving this email because Jira dependency ticket '.$ticketurl." is assigned to you<br>";
+			
+		}
+		if($ticket->fixVersions[0] == 'none')
+		{
+			$msg .= '<span style="color:red">'.'This dependency ticket does not have any fix version'.'</span><br>';
+		}
+		else
+		{
+			if(isset($this->manager[$ticket->fixVersions[0]]))
+			{
+				foreach($this->manager[$ticket->fixVersions[0]] as $email)
+				$cc[] = $email;
+			}
+		}
+		$msg .= '<br><span style="font-weight:bold;">This ticket is due on '.$duedate->isoFormat('MMMM Do YYYY').'</span><br><br>';
+		
+		$msg .= "If you think deliverable against this ticket cannot be delivered by due date or ticket is mistakenly assigned to you, then please send an email to ticket reporter ".$ticket->reporter['emailAddress']."<br><br>";
+		$msg .= "[THIS IS AN AUTOMATED EMAIL - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]<br>"; 
+		$msg .= "For complete  calender please <a href='http://sos.pkl.mentorg.com/riskcalendar'>click here</a>";
+		$this->mail->ClearAllRecipients( );
+		foreach($to as $add)
+		{
+			$this->mail->addAddress($add);
+		}
+		foreach($cc as $add)
+		{
+			$this->mail->addCC($add);
+		}	
+		//$this->mail->ClearAllRecipients( );
+	    //$this->mail->addAddress('Mumtaz_Ahmad@mentor.com');
+		//$msg .= "For complete  calender please <a href='https://sos.pkl.mentorg.com/riskcalendar'>click here</a>";
+        $this->mail->Body= $msg;
+		try 
+		{
+			$this->mail->send();
+		} 
+		catch (phpmailerException $e) 
+		{
+			echo $e->errorMessage(); //Pretty error messages from PHPMailer
+		} 
+		catch (Exception $e) 
+		{
+			echo $e->getMessage(); //Boring error messages from anything else!
+		}
+		
 	}
 	function SendRiskClosedNotification($ticket)
 	{
@@ -167,6 +239,7 @@ class Email
         $this->mail->Body= $msg;
 		try 
 		{
+			echo "Sending email";
 			$this->mail->send();
 		} 
 		catch (phpmailerException $e) 

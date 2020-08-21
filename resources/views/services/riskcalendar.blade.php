@@ -121,6 +121,8 @@
 			
 		}
 		$('#r5c2').html('Assignee');
+		$('#r5c3').html('Product');
+		$('#r5c1').html('Details');
 	});
 	
 	</script>

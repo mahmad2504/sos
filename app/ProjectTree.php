@@ -1102,6 +1102,7 @@ testedby=true"	*/
 						$parent->allfixVersions[] = $fixVersion;
 				}
 				$parent->allsprints[$t->sprintname]=$t->sprintname;
+				$t->allsprints[$t->sprintname]=$t->sprintname;
 				$parent = $parent->_parenttask;
 			}
 		}
@@ -2330,7 +2331,7 @@ testedby=true"	*/
 		$obj->assignee = $task->assignedto;	
 		$obj->reporter = $task->reporter;	
 		$obj->duedate = $task->duedate;
-		
+		$obj->estimate = $task->estimate;
 		return $obj;
 	}
 	function JiraGovernance($task=null,$firstcall=1)
@@ -2378,6 +2379,7 @@ testedby=true"	*/
 			if($task->estimate == 0)
 				$this->unestimated[$task->key] = $this->CreateObj($task);
 		}
+		
 			
 		if($task->sprintid>0)
 		{

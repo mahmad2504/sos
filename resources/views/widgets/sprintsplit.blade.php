@@ -208,6 +208,9 @@ $(document).ready(function()
 			rmo.AddRow(row);
 			var link='<a href="'+url+'/browse/'+datarow.key+'">'+datarow.key+'</a>';
 			$('#'+id+"_1").html(link);
+			
+			$('#'+datarow.key+'_cell1').css("text-align","left");
+		
 			$('#'+id+"_2").html(datarow.summary.substr(0,40));
 			$('#'+id+"_2").attr('title',datarow.summary);
 			//console.log(datarow.sprintsplit);

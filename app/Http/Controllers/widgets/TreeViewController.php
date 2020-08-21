@@ -88,9 +88,13 @@ class TreeViewController extends Controller
 			if(in_array('CB',$sprint))
 				$obj->team = 'CB';
 			else if(in_array('NUC',$sprint))
-				$obj->team = 'NUC';
+				$obj->team = 'NU';
 			else if(in_array('MEIF',$sprint)) 
-				$obj->team = 'MEIF';
+				$obj->team = 'MF';
+			else if(in_array('Flex QA',$sprint)) 
+				$obj->team = 'QA';
+			else if(in_array('Flex',$sprint)) 
+				$obj->team = 'FX';
 			else
 				continue;
 			$this->teams[$obj->team]= $obj->team;
@@ -131,6 +135,7 @@ class TreeViewController extends Controller
 	public function ProcessSprints($task,$firstcall=1)
 	{
 		$task->allsprints = $this->ProcessSprintName($task);
+		
 		usort( $task->allsprints, array( $this, 'cmp' ) ); 
 		$task->sprintsplit = [];
 		foreach($task->allsprints as $sprint)
@@ -206,8 +211,34 @@ class TreeViewController extends Controller
 		
 		$this->ProcessSprints($tree);
 		$data = [];
+		$ntree = [];
 		foreach($tree->children as $child)
 		{
+			if($child->issuetype == 'REQUIREMENT')
+				$ntree[] = $child;
+			else
+			{
+				foreach($child->children as $c)
+				{
+					if($c->issuetype == 'REQUIREMENT')
+						$ntree[] = $c;
+					else
+					{
+						foreach($c->children as $cc)
+						{
+							if($cc->issuetype == 'REQUIREMENT')
+								$ntree[] = $cc;
+						}
+					}
+				}
+				
+			}
+		}
+		
+		foreach($ntree as $child)
+		{
+			//if($child->key == 'MELMR-940')
+			//	dd($child);
 			$obj = new \StdClass();
 			$obj->key = $child->key;
 			$obj->summary = $child->summary;
@@ -230,7 +261,10 @@ class TreeViewController extends Controller
 			//}
 			$data[] = $obj;
 		}
-		
+		if(count($data) == 0 )
+		{
+			dd("This report is generated for Requirements only");
+		}
 		$start = Carbon::now();
 		$start->subDays(63);
 		$end = Carbon::now();

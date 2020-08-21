@@ -58,12 +58,14 @@ class SyncCalendar extends Command
 		$cal = new Calendar($start,$end);
 		$sstart = Carbon::parse($cal->GetCurrentSprintStart()->date);
 		$send =   Carbon::parse($cal->GetCurrentSprintEnd()->date);
+		$send->subDays(2);///since sprint closes on friday and now sunday
 		$sprint = $cal->GetCurrentSprint();
 		$path = 'public/storage/events';
 		if(!file_exists($path))
 		{
 			mkdir($path, 0777, true);
 		}
+		
 		if($sstart->IsToday())
 		{
 			$name = $path."/".$sprint."_1";

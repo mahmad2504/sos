@@ -203,9 +203,17 @@ class Jira
 				$data[$date][$author] =  new \StdClass();
 				$data[$date][$author]->hours = $hours;
 				$data[$date][$author]->name = $worklog['author']['name'];
-				$data[$date][$author]->displayname =  $worklog['author']['displayName'];
-				$data[$date][$author]->email =  $worklog['author']['emailAddress'];
-				$data[$date][$author]->timeZone =  $worklog['author']['timeZone'];
+				$data[$date][$author]->displayname  = $worklog['author']['name'];
+				if(isset( $worklog['author']['displayName']))
+					$data[$date][$author]->displayname =  $worklog['author']['displayName'];
+				
+				$data[$date][$author]->email  = 'none';
+				if(isset( $worklog['author']['emailAddress']))
+					$data[$date][$author]->email =  $worklog['author']['emailAddress'];
+				
+				$data[$date][$author]->timeZone = 'none';
+				if(isset( $worklog['author']['timeZone']))
+					$data[$date][$author]->timeZone =  $worklog['author']['timeZone'];
 				$data[$date][$author]->comment = $comment;
 			}
 		}
