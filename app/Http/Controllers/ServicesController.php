@@ -33,9 +33,11 @@ class ServicesController extends Controller
 		$calendar =  new Calendar($start,$end);
 		$tabledata = $calendar->GetGridData();
 		
-		$jql = 'labels = risk and duedate >=  '.$start->format('Y-m-d').'  ORDER By duedate ASC';
+		$jql = 'labels in (risk,milestone) and duedate >=  '.$start->format('Y-m-d').'  ORDER By duedate ASC';
 		$jira =  new Jira();
 		$tickets = $jira->Sync($jql,null);
+		$versions = [];
+		$versions[] = 'all';
 		foreach($tickets as $ticket)
 		{
 			$duedate = new Carbon();
@@ -56,13 +58,21 @@ class ServicesController extends Controller
 				if($duedate->getTimeStamp() < $resolutiondate->getTimeStamp())
 					$ticket->delayed = $duedate->diffInDays($resolutiondate);
 			}
-			
+			foreach($ticket->fixVersions as &$fixVersion)
+			{
+				$fixVersion = strtolower($fixVersion);
+				$versions[$fixVersion] = $fixVersion;
+				break;
+			}
+							
 			$ticket->duedate = $duedate->format('Y-m-d');
 			$ticket->dueday = $duedate->format('d');
 			$ticket->dueweek=$duedate->isoWeekYear()."_".$duedate->isoWeek();
 		}
+		
 		$url = env('JIRA_EPS_URL');
-		return View('services.riskcalendar',compact('tabledata','tickets','url'));
+		$versions = array_values($versions);
+		return View('services.riskcalendar',compact('tabledata','tickets','url','versions'));
 	}
 	public function ShowEpicDetails(Request $request)
 	{

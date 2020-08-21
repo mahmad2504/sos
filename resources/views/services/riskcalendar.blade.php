@@ -31,7 +31,15 @@
     </head>
     <body>
 		<div style="overflow-x: scroll;">
-		
+			<select class="form-control-sm" id="versions" name="versions">
+				@for($i=0;$i<count($versions);$i++)
+					@if (strcmp($versions[$i],'all')==0)
+						<option value="i" selected="selected">{{$versions[$i]}}</option>
+					@else
+						<option value="i">{{$versions[$i]}}</option>
+					@endif
+				@endfor
+			</select>			
 			<div id="table"></div>
 		</div>
 	</div>
@@ -42,17 +50,57 @@
 	//define data
 	var tabledata = @json($tabledata);
 	var tickets = @json($tickets);
+	var versions = @json($versions);
     var url = "{{$url}}";
+	var rows = [];
 	$(document).ready(function()
 	{
 		//console.log("Showing sprint table");
+		
+		$('#versions').on('change', '', function (e) 
+		{
+			var optionSelected = $('#versions').prop('selectedIndex');
+			console.log(versions[optionSelected]);
+			if(optionSelected == 'all')
+			{
+				for(var row in rows)
+				{
+					rows[row].show();
+				}
+			}
+			else
+			{
+				for(var row in rows)
+				{
+					if(rows[row].ticket.fixVersions.length > 0)
+					{
+						if(versions[optionSelected] == rows[row].ticket.fixVersions[0])
+							rows[row].show();
+						else
+							rows[row].hide();
+					}
+					else
+							rows[row].hide();
+				}
+			}
+			//milestone = milestones[optionSelected];
+			//url = url+"/"+milestone.key;
+			//ShowLoading();
+			//window.location.replace(url);
+	
+		});
+	
 		var rmo = new Rmo(tabledata);	
 		rmo.Show("table");
 		for(var i=0;i<tickets.length;i++)
 		{
 			var ticket = tickets[i];
 			var row = rmo.GenerateWeekRowT2(ticket.key);
+			row.ticket = ticket;
 			rmo.AppendRow(row);
+			rows.push(row);
+			
+			
 			
 			var id = '#'+ticket.key+"1";
 			var jurl = url + "/browse/"+ ticket.key;
@@ -110,7 +158,7 @@
 			$(id).attr('title',ticket.key+message);
 			
 			id = '#'+ticket.key+"3";
-			console.log(ticket);
+			
 			for(var j=0;j<ticket.fixVersions.length;j++)
 			{
 				$(id).html('&nbsp'+ticket.fixVersions[j]+'&nbsp');
@@ -123,6 +171,7 @@
 		$('#r5c2').html('Assignee');
 		$('#r5c3').html('Product');
 		$('#r5c1').html('Details');
+		console.log(rows);
 	});
 	
 	</script>

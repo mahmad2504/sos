@@ -52,7 +52,7 @@ class SyncRisks extends Command
 		$start->subDays(90);
 		
 		$dt = new \DateTime();
-		$jql = 'labels = risk and duedate >=  '.$start->format('Y-m-d');
+		$jql = 'labels in (risk,milestone) and duedate >=  '.$start->format('Y-m-d');
 		$jira =  new Jira();
 		
 		$tickets = $jira->Sync($jql,null);
